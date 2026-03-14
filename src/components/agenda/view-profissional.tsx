@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import { buscarProfissionais, buscarAgendaData, registrarSessaoHistorico } from "@/app/actions"
 import { projectAgendaSessions, AgendaSession } from "@/lib/agenda-utils"
 import { format, startOfDay, endOfDay, parseISO, isValid } from "date-fns"
@@ -114,7 +115,7 @@ export function ViewProfissional() {
               onValueChange={(val) => setUrlParams({ profId: val })} 
               value={selectedProf}
             >
-              <SelectTrigger className="w-[320px] bg-slate-50 border-none shadow-none font-medium">
+              <SelectTrigger className="w-[320px] font-medium">
                 <SelectValue placeholder="Selecione o seu nome profissional" />
               </SelectTrigger>
               <SelectContent>
@@ -127,9 +128,9 @@ export function ViewProfissional() {
           
           <div className="space-y-1">
             <span className="text-xs font-semibold text-slate-500 tracking-wider">Período</span>
-            <input 
+            <Input 
               type="date" 
-              className="flex h-10 w-full rounded-md border-none bg-slate-50 px-3 py-2 text-sm font-medium focus-visible:outline-none"
+              className="w-[180px] font-medium"
               value={format(dataSelecionada, 'yyyy-MM-dd')}
               onChange={(e) => setUrlParams({ date: e.target.value })}
             />
