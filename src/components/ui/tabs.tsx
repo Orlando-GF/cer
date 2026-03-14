@@ -22,9 +22,9 @@ const tabsListVariants = cva(
   {
     variants: {
       variant: {
-        default: "p-1 bg-secondary/50 border border-border/50 rounded-none",
+        default: "p-1 bg-muted/40 border border-border/50 rounded-none",
         line: "gap-4 bg-transparent",
-        segmented: "p-1 bg-secondary border border-border/50 rounded-none gap-1",
+        segmented: "p-1 bg-muted/40 border border-border/50 rounded-none gap-1",
         // Nova variante: barra de navegação com ícone + label empilhados
         nav: "gap-0 bg-background border-b border-border w-full h-auto",
       },
