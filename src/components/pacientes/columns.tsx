@@ -1,0 +1,129 @@
+"use client"
+
+import { RowData, ColumnDef } from "@tanstack/react-table"
+import { Badge } from "@/components/ui/badge"
+import { MoreHorizontal, Copy, Eye, Clock } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+export interface Paciente {
+  id: string
+  nome_completo: string
+  cns: string
+  cpf: string | null
+  data_nascimento: string
+  sexo: string
+  nome_mae: string
+  nome_pai?: string | null
+  telefone_principal: string | null
+  telefone_secundario?: string | null
+  nome_responsavel?: string | null
+  telefone_responsavel?: string | null
+  endereco_cep?: string | null
+  logradouro?: string | null
+  numero?: string | null
+  bairro?: string | null
+  cidade: string
+  uf: string
+  pactuado?: boolean
+  criado_em?: string // timestamp
+}
+
+declare module '@tanstack/react-table' {
+  interface TableMeta<TData extends RowData> {
+    onOpenPacienteSheet?: (paciente: Paciente) => void
+  }
+}
+
+function calcularIdade(dataNascimento: string) {
+  if (!dataNascimento) return "-"
+  const nasci = new Date(dataNascimento)
+  const hoje = new Date()
+  let idade = hoje.getFullYear() - nasci.getFullYear()
+  const m = hoje.getMonth() - nasci.getMonth()
+  if (m < 0 || (m === 0 && hoje.getDate() < nasci.getDate())) {
+    idade--
+  }
+  return idade
+}
+
+export const columns: ColumnDef<Paciente>[] = [
+  {
+    accessorKey: "cns",
+    header: "Prontuário (CNS)",
+    cell: ({ row }) => (
+      <span className="font-mono text-sm font-medium text-slate-700 tabular-nums">{row.getValue("cns")}</span>
+    ),
+  },
+  {
+    accessorKey: "nome_completo",
+    header: "Nome do Paciente",
+    cell: ({ row }) => (
+      <div className="font-medium text-slate-800">{row.getValue("nome_completo")}</div>
+    ),
+  },
+  {
+    accessorKey: "cpf",
+    header: "CPF",
+    cell: ({ row }) => {
+      const cpf = row.getValue("cpf") as string | null
+      return <span className="text-slate-500 text-sm tabular-nums">{cpf ? cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4") : "Não informado"}</span>
+    },
+  },
+  {
+    accessorKey: "data_nascimento",
+    header: "Idade",
+    cell: ({ row }) => {
+      const dataStr = row.getValue("data_nascimento") as string
+      return (
+        <Badge variant="outline" className="font-normal bg-slate-50 border-slate-200 tabular-nums">
+          {calcularIdade(dataStr)} anos
+        </Badge>
+      )
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row, table }) => {
+      const paciente = row.original
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors focus:outline-none"
+            title="Opções do paciente"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="sr-only">Opções</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem
+              className="gap-2 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation()
+                navigator.clipboard.writeText(paciente.cns)
+              }}
+            >
+              <Copy className="h-4 w-4" />
+              Copiar Prontuário
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="gap-2 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation()
+                table.options.meta?.onOpenPacienteSheet?.(paciente)
+              }}
+            >
+              <Eye className="h-4 w-4" />
+              Ver Ficha Completa
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    },
+  },
+]
