@@ -29,7 +29,7 @@ import {
   User,
   ArrowRight
 } from "lucide-react"
-import { buscarPacientePorDocumento, incluirPacienteNaFila, type ActionResponse } from "@/app/actions"
+import { buscarPacientePorDocumento, incluirPacienteNaFila, type ActionResponse } from "@/actions"
 import Link from "next/link"
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
   return (
     <>
       <Button
-        className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm"
+        className="gap-2 shadow-sm"
         onClick={() => setOpen(true)}
       >
         <Plus className="w-4 h-4" />
@@ -227,7 +227,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                   />
                   <Button type="button" onClick={handleBuscar}
                     disabled={buscando || !identificador.trim()}
-                    className="h-12 px-6 bg-blue-600 hover:bg-blue-700 shrink-0 shadow-sm">
+                    className="h-12 px-6 shadow-sm">
                     {buscando ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buscar"}
                   </Button>
                 </div>
@@ -376,7 +376,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                   onClick={() => handleOpen(false)} disabled={isPending}>
                   Cancelar
                 </Button>
-                <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 gap-2"
+                <Button type="submit" className="flex-1 gap-2"
                   disabled={isPending || !especialidadeId}>
                   {isPending ? (
                     <><Loader2 className="h-4 w-4 animate-spin" />Salvando...</>

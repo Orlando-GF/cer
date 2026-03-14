@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { buscarAlertasAbsenteismo, processarDesligamentoPorAbandono } from "@/app/actions"
+import { buscarAlertasAbsenteismo, processarDesligamentoPorAbandono } from "@/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -49,13 +49,13 @@ export default function AbsenteismoPage() {
   return (
     <div className="p-8 space-y-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Gestão de Absenteísmo</h1>
-        <p className="text-slate-500">Pacientes com 3 ou mais faltas consecutivas (Regra de Desligamento).</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Gestão de Absenteísmo</h1>
+        <p className="text-muted-foreground">Pacientes com 3 ou mais faltas consecutivas (Regra de Desligamento).</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <Card className="border-none shadow-sm overflow-hidden">
-          <CardHeader className="bg-slate-50/50 border-b pb-4">
+        <Card className="border-none shadow-sm overflow-hidden bg-card">
+          <CardHeader className="bg-muted/30 border-b pb-4">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg font-semibold flex items-center gap-2 text-red-700">

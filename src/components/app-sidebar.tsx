@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { getMeuPerfil } from "@/app/actions"
+import { getMeuPerfil } from "@/actions"
 import {
   Sidebar,
   SidebarContent,
@@ -34,7 +34,7 @@ import {
 
 const navItems = [
   {
-    group: "Atendimento",
+    group: "ATENDIMENTO",
     roles: ["Administracao", "Recepcao", "Enfermagem"],
     items: [
       { label: "Painel Geral", href: "/", icon: LayoutDashboard },
@@ -44,7 +44,7 @@ const navItems = [
     ],
   },
   {
-    group: "Clínico",
+    group: "CLÍNICO",
     roles: ["Administracao", "Enfermagem", "Medico_Terapeuta"],
     items: [
       { label: "Meus Atendimentos", href: "/meus-atendimentos", icon: UserCheck },
@@ -52,14 +52,14 @@ const navItems = [
     ],
   },
   {
-    group: "Logística",
+    group: "LOGÍSTICA",
     roles: ["Administracao", "Motorista"],
     items: [
       { label: "Rotas de Transporte", href: "/logistica", icon: Truck },
     ],
   },
   {
-    group: "Gestão e auditoria",
+    group: "GESTÃO E AUDITORIA",
     roles: ["Administracao", "Recepcao"],
     items: [
       { label: "Absenteísmo", href: "/absenteismo", icon: ShieldCheck },
@@ -68,7 +68,7 @@ const navItems = [
     ],
   },
   {
-    group: "Configurações",
+    group: "CONFIGURAÇÕES",
     roles: ["Administracao"],
     items: [
       { label: "Profissionais & Acessos", href: "/profissionais", icon: Briefcase },
@@ -105,12 +105,12 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="px-4 py-5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-black/20">
             <span className="text-white font-bold text-sm">C2</span>
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-sm leading-tight">CER 2</p>
-            <p className="text-xs text-sidebar-foreground/60 truncate">Sistema de Gestão SUS</p>
+            <p className="font-semibold text-sm leading-tight text-white">CER 2</p>
+            <p className="text-[10px] text-sidebar-foreground/60 truncate uppercase tracking-wider font-medium">Sistema de Gestão SUS</p>
           </div>
         </div>
       </SidebarHeader>
@@ -120,14 +120,14 @@ export function AppSidebar() {
       <SidebarContent className="px-2 py-2">
         {loading ? (
           <div className="p-4 space-y-4">
-             <div className="h-4 w-24 bg-slate-100 rounded animate-pulse" />
-             <div className="h-8 w-full bg-slate-50 rounded animate-pulse" />
-             <div className="h-4 w-24 bg-slate-100 rounded animate-pulse" />
-             <div className="h-8 w-full bg-slate-50 rounded animate-pulse" />
+             <div className="h-4 w-24 bg-sidebar-foreground/10 rounded animate-pulse" />
+             <div className="h-8 w-full bg-sidebar-foreground/5 rounded animate-pulse" />
+             <div className="h-4 w-24 bg-sidebar-foreground/10 rounded animate-pulse" />
+             <div className="h-8 w-full bg-sidebar-foreground/5 rounded animate-pulse" />
           </div>
         ) : filteredGroups.map((group) => (
           <SidebarGroup key={group.group}>
-            <SidebarGroupLabel className="text-xs tracking-wider">
+            <SidebarGroupLabel className="text-[10px] tracking-[0.15em] uppercase text-sidebar-foreground/40 font-bold mb-1">
               {group.group}
             </SidebarGroupLabel>
             <SidebarMenu>

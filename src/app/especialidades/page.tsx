@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Stethoscope, Plus, ClipboardCheck } from "lucide-react"
-import { buscarEspecialidades } from "@/app/actions"
+import { buscarEspecialidades } from "@/actions"
 import { NovaEspecialidadeSheet } from "@/components/especialidades/nova-especialidade-sheet"
 
 export default async function EspecialidadesPage() {
@@ -16,19 +16,19 @@ export default async function EspecialidadesPage() {
   const especialidades = res.success ? res.data : []
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 space-y-8">
+    <main className="min-h-screen bg-background p-6 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Linhas de Cuidado e Especialidades</h1>
-          <p className="text-slate-500 mt-1">Configuração das especialidades para faturamento e vinculação clínica.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Linhas de Cuidado e Especialidades</h1>
+          <p className="text-muted-foreground mt-1">Configuração das especialidades para faturamento e vinculação clínica.</p>
         </div>
         <NovaEspecialidadeSheet />
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
-          <ClipboardCheck className="h-4 w-4 text-slate-500" />
-          <h2 className="font-semibold text-slate-700">Especialidades Configuradas</h2>
+      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+        <div className="p-4 border-b border-border bg-muted/30 flex items-center gap-2">
+          <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
+          <h2 className="font-semibold text-foreground">Especialidades Configuradas</h2>
         </div>
         
         <Table>

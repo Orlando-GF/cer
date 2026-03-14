@@ -44,10 +44,10 @@ export const columns: ColumnDef<PacienteFila>[] = [
     cell: ({ row }) => {
       const v = row.getValue("prioridade") as string
       if (v === "Mandado Judicial")
-        return <Badge className="bg-red-100 text-red-800 border-none whitespace-nowrap">Mandado Judicial</Badge>
+        return <Badge className="bg-alert-danger-bg text-alert-danger-text border-none whitespace-nowrap">Mandado Judicial</Badge>
       if (v === "Urgencia Clinica")
-        return <Badge className="bg-orange-100 text-orange-800 border-none whitespace-nowrap">Urgência Clínica</Badge>
-      return <Badge variant="secondary">Rotina</Badge>
+        return <Badge className="bg-alert-warning-bg text-alert-warning-text border-none whitespace-nowrap">Urgência Clínica</Badge>
+      return <Badge variant="secondary" className="opacity-70">Rotina</Badge>
     },
   },
   {
@@ -56,13 +56,14 @@ export const columns: ColumnDef<PacienteFila>[] = [
     cell: ({ row }) => {
       const v = row.getValue("status") as string
       const map: Record<string, string> = {
-        "Aguardando": "bg-blue-50 text-blue-600 border-blue-100",
-        "Em Atendimento": "bg-emerald-100 text-emerald-800 border-none",
+        "Aguardando": "bg-alert-warning-bg text-alert-warning-text border-none",
+        "Em Atendimento": "bg-alert-success-bg text-alert-success-text border-none",
         "Desistencia": "bg-slate-100 text-slate-500 border-none",
-        "Alta": "bg-purple-100 text-purple-700 border-none",
+        "Alta": "bg-alert-shared-bg text-alert-shared-text border-none",
+        "Em Risco": "bg-alert-danger-bg text-alert-danger-text border-none",
       }
       return (
-        <Badge variant="outline" className={`font-normal ${map[v] ?? ""}`}>
+        <Badge className={`font-normal border-none shadow-none ${map[v] ?? ""}`}>
           {v === "Desistencia" ? "Desistência" : v}
         </Badge>
       )
@@ -75,7 +76,7 @@ export const columns: ColumnDef<PacienteFila>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="flex h-8 w-8 items-center justify-center rounded-none border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none"
+            className="flex h-8 w-8 items-center justify-center rounded-none border-[0.5px] border-[#C8D9EE] bg-[#FFFFFF] text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none"
             title="Opções do paciente"
             onClick={(e) => e.stopPropagation()}
           >
@@ -118,7 +119,7 @@ export const columns: ColumnDef<PacienteFila>[] = [
             <DropdownMenuSeparator />
             
             <DropdownMenuItem
-              className="gap-2 cursor-pointer text-emerald-600 focus:text-emerald-700 focus:bg-emerald-50"
+              className="gap-2 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation()
                 if(confirm("Deseja dar ALTA para este paciente? Ele sairá da fila ativa.")) {
@@ -131,7 +132,7 @@ export const columns: ColumnDef<PacienteFila>[] = [
             </DropdownMenuItem>
 
             <DropdownMenuItem
-              className="gap-2 cursor-pointer text-slate-500 focus:text-slate-700 focus:bg-slate-50"
+              className="gap-2 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation()
                 if(confirm("Registrar DESISTÊNCIA? O paciente sairá da fila ativa.")) {

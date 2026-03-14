@@ -9,11 +9,15 @@ import { ViewLogistica } from "@/components/agenda/view-logistica"
 import { ViewCoordenacao } from "@/components/agenda/view-coordenacao"
 import { ViewConfiguracao } from "@/components/agenda/view-configuracao"
 
+// 3. Tipos
+import type { Profissional } from "@/types"
+
 interface AgendaContentProps {
   perfil: string | null
+  profissionaisIniciais: Profissional[]
 }
 
-export function AgendaContent({ perfil }: AgendaContentProps) {
+export function AgendaContent({ perfil, profissionaisIniciais }: AgendaContentProps): React.ReactNode {
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -39,7 +43,7 @@ export function AgendaContent({ perfil }: AgendaContentProps) {
       className="space-y-6 w-full" 
       onValueChange={handleTabChange}
     >
-      <TabsList variant="segmented">
+      <TabsList variant="agenda">
         {canSeeRecepcao && (
           <TabsTrigger value="recepcao" icon={<Users />}>
             Recepção
@@ -68,11 +72,11 @@ export function AgendaContent({ perfil }: AgendaContentProps) {
       </TabsList>
 
       <TabsContent value="recepcao" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-        {activeTab === "recepcao" && <ViewRecepcao />}
+        {activeTab === "recepcao" && <ViewRecepcao profissionaisIniciais={profissionaisIniciais} />}
       </TabsContent>
       
       <TabsContent value="profissional" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-        {activeTab === "profissional" && <ViewProfissional />}
+        {activeTab === "profissional" && <ViewProfissional profissionaisIniciais={profissionaisIniciais} />}
       </TabsContent>
       
       <TabsContent value="logistica" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
@@ -80,7 +84,7 @@ export function AgendaContent({ perfil }: AgendaContentProps) {
       </TabsContent>
       
       <TabsContent value="coordenacao" className="mt-0 focus-visible:outline-none focus-visible:ring-0 w-full max-w-full overflow-hidden">
-        {activeTab === "coordenacao" && <ViewCoordenacao />}
+        {activeTab === "coordenacao" && <ViewCoordenacao profissionaisIniciais={profissionaisIniciais} />}
       </TabsContent>
       
       <TabsContent value="configuracao" className="mt-0 focus-visible:outline-none focus-visible:ring-0">

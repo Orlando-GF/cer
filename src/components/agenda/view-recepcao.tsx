@@ -1,51 +1,60 @@
-"use client"
+// 1. Externos
+import { useState, useEffect, useTransition, useMemo } from "react"
+import { format, startOfDay, endOfDay, parseISO, isValid } from "date-fns"
+import { CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
-import { useState, useEffect, useTransition } from "react"
+// 2. Internos
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { buscarProfissionais, buscarAgendaData, registrarSessaoHistorico } from "@/app/actions"
-import { projectAgendaSessions, AgendaSession } from "@/lib/agenda-utils"
-import { format, startOfDay, endOfDay, parseISO, isValid } from "date-fns"
-import { CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react"
-import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Input } from "@/components/ui/input"
+import { buscarProfissionais, buscarAgendaData, registrarSessaoHistorico } from "@/actions"
+import { projectAgendaSessions } from "@/lib/agenda-utils"
 
-export function ViewRecepcao() {
+// 3. Tipos
+import type { AgendaSession, Profissional } from "@/types"
+
+interface ViewRecepcaoProps {
+  profissionaisIniciais: Profissional[]
+}
+
+export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps): React.ReactNode {
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
 
-  const [profissionais, setProfissionais] = useState<any[]>([])
+  const [profissionais, setProfissionais] = useState<Profissional[]>(profissionaisIniciais)
   const [sessões, setSessões] = useState<AgendaSession[]>([])
   const [loading, setLoading] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   // Sincronizar com URL
   const selectedProf = searchParams.get("profId") || ""
+  // Sincronizar com URL de forma estável para evitar loop de renderização
   const dateParam = searchParams.get("date")
-  const dataSelecionada = dateParam && isValid(parseISO(dateParam)) 
-    ? parseISO(dateParam) 
-    : new Date()
+  const dataSelecionada = useMemo(() => {
+    if (dateParam && isValid(parseISO(dateParam))) {
+      return parseISO(dateParam)
+    }
+    return startOfDay(new Date())
+  }, [dateParam]) // Agora depende apenas da string da data na URL
 
-  const setUrlParams = (paramsToUpdate: Record<string, string | null | undefined>) => {
+  const setUrlParams = (paramsToUpdate: Record<string, string | null | undefined>): void => {
     const params = new URLSearchParams(searchParams.toString())
     Object.entries(paramsToUpdate).forEach(([key, value]) => {
-      if (value) params.set(key, value)
-      else params.delete(key)
+      if (value) {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
     })
     router.replace(`${pathname}?${params.toString()}`)
   }
 
-  useEffect(() => {
-    async function loadProfissionais() {
-      const res = await buscarProfissionais()
-      if (res.success && res.data) setProfissionais(res.data)
-    }
-    loadProfissionais()
-  }, [])
+  // Carregamento inicial de profissionais removido (agora via SSR)
 
   useEffect(() => {
     if (!selectedProf) return
@@ -70,7 +79,7 @@ export function ViewRecepcao() {
     updateAgenda()
   }, [selectedProf, dataSelecionada])
 
-  const handleMarcarPresenca = async (sessao: AgendaSession, status: string) => {
+  const handleMarcarPresenca = async (sessao: AgendaSession, status: string): Promise<void> => {
     startTransition(async () => {
       const res = await registrarSessaoHistorico({
         paciente_id: sessao.paciente_id,
@@ -83,16 +92,18 @@ export function ViewRecepcao() {
         tipo_vaga: sessao.tipo_vaga
       })
       
-      if (res.success) {
-        // Refresh local
-        const start = startOfDay(dataSelecionada).toISOString()
-        const end = endOfDay(dataSelecionada).toISOString()
-        const resRefresh = await buscarAgendaData(selectedProf, start, end)
-        if (resRefresh.success && resRefresh.data) {
-          setSessões(projectAgendaSessions(resRefresh.data.vagas, resRefresh.data.hist, dataSelecionada, dataSelecionada))
-        }
-      } else {
+      if (!res.success) {
         alert("Erro: " + res.error)
+        return
+      }
+
+      // Refresh local
+      const start = startOfDay(dataSelecionada).toISOString()
+      const end = endOfDay(dataSelecionada).toISOString()
+      const resRefresh = await buscarAgendaData(selectedProf, start, end)
+      
+      if (resRefresh.success && resRefresh.data) {
+        setSessões(projectAgendaSessions(resRefresh.data.vagas, resRefresh.data.hist, dataSelecionada, dataSelecionada))
       }
     })
   }
@@ -100,15 +111,17 @@ export function ViewRecepcao() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-xl border shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold text-slate-500 tracking-wider">Profissional</span>
+        <div className="flex items-end gap-4">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">Profissional</span>
             <Select 
               onValueChange={(val) => setUrlParams({ profId: val })} 
               value={selectedProf}
             >
-              <SelectTrigger className="w-[280px]">
-                <SelectValue placeholder="Selecione o profissional" />
+              <SelectTrigger className="w-[280px] h-10" aria-label="Selecione o profissional">
+                <SelectValue placeholder="Selecione o profissional">
+                  {profissionais.find(p => p.id === selectedProf)?.nome_completo}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {profissionais.map(p => (
@@ -118,11 +131,11 @@ export function ViewRecepcao() {
             </Select>
           </div>
           
-          <div className="space-y-1">
-            <span className="text-xs font-semibold text-slate-500 tracking-wider">Data</span>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">Data</span>
             <Input 
               type="date" 
-              className="w-full"
+              className="w-[180px] font-medium h-10"
               value={format(dataSelecionada, 'yyyy-MM-dd')}
               onChange={(e) => setUrlParams({ date: e.target.value })}
             />
@@ -166,14 +179,14 @@ export function ViewRecepcao() {
                   <TableCell>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-900">{sessao.paciente_nome}</span>
+                        <span className="text-[20px] font-semibold text-slate-900">{sessao.paciente_nome}</span>
                         {sessao.conflito_intensivo && (
                           <Badge className="bg-amber-100 text-amber-700 border-none text-[10px] font-bold h-5">
                             ⚠️ Compartilhado
                           </Badge>
                         )}
                         {sessao.tipo_vaga === "Bloco" && (
-                          <Badge variant="outline" className="text-[10px] border-slate-200 text-slate-500 h-5">
+                          <Badge variant="outline" className="text-[10px] border-slate-200 text-slate-500 h-5 tabular-nums">
                             {sessões.filter(s => s.data_hora_inicio.getTime() === sessao.data_hora_inicio.getTime()).indexOf(sessao) + 1}º da Fila
                           </Badge>
                         )}

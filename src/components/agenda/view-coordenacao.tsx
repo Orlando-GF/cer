@@ -1,23 +1,31 @@
-"use client"
-
+// 1. Externos
 import { useState, useEffect, useMemo } from "react"
-import { Card } from "@/components/ui/card"
-import { buscarAgendaCoordenação, buscarProfissionais } from "@/app/actions"
-import { projectAgendaSessions, AgendaSession } from "@/lib/agenda-utils"
-import { format, startOfDay, endOfDay, parseISO, isValid, addMinutes, eachHourOfInterval, startOfHour } from "date-fns"
-import { Badge } from "@/components/ui/badge"
-import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { format, startOfDay, endOfDay, parseISO, isValid, addMinutes, eachHourOfInterval } from "date-fns"
 import { User } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
-export function ViewCoordenacao() {
+// 2. Internos
+import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { buscarAgendaCoordenação } from "@/actions"
+import { projectAgendaSessions } from "@/lib/agenda-utils"
+import { cn } from "@/lib/utils"
+
+// 3. Tipos
+import type { AgendaSession, Profissional } from "@/types"
+
+interface ViewCoordenacaoProps {
+  profissionaisIniciais: Profissional[]
+}
+
+export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps): React.ReactNode {
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
 
   const [sessões, setSessões] = useState<AgendaSession[]>([])
-  const [profissionais, setProfissionais] = useState<any[]>([])
+  const [profissionais, setProfissionais] = useState<Profissional[]>(profissionaisIniciais)
   const [loading, setLoading] = useState(false)
 
   // Sincronizar com URL de forma estável para evitar loop de renderização
@@ -38,15 +46,7 @@ export function ViewCoordenacao() {
     router.replace(`${pathname}?${params.toString()}`)
   }
 
-  useEffect(() => {
-    async function init() {
-      const resProf = await buscarProfissionais()
-      if (resProf.success && resProf.data) {
-        setProfissionais(resProf.data)
-      }
-    }
-    init()
-  }, [])
+  // Carregamento inicial de profissionais via SSR
 
   useEffect(() => {
     async function updateCoord() {
@@ -83,7 +83,7 @@ export function ViewCoordenacao() {
     return (totalMinutes / 60) * 200 // 200px por hora
   }
 
-  const getWidth = (start: Date, end: Date) => {
+  const getWidth = (start: Date, end: Date): number => {
     const diffMs = end.getTime() - start.getTime()
     const diffMin = diffMs / (1000 * 60)
     return (diffMin / 60) * 200
@@ -91,10 +91,10 @@ export function ViewCoordenacao() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-xl border shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-none border shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold text-slate-500 tracking-wider">Visualização macro</span>
+          <div className="space-y-3">
+            <h3 className="text-base font-semibold text-foreground tracking-tight">Visualização macro</h3>
             <Input 
               type="date" 
               className="w-full"
@@ -118,7 +118,7 @@ export function ViewCoordenacao() {
             <div className="flex border-b sticky top-0 bg-white z-10 w-full">
               <div className="w-[200px] shrink-0 p-4 border-r bg-slate-50 font-bold text-slate-900 sticky left-0 z-30 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">Profissional</div>
               {horas.map(h => (
-                <div key={h.toISOString()} className="w-[200px] shrink-0 p-4 text-center text-xs font-bold text-slate-500 border-r border-slate-100 tracking-tighter">
+                <div key={h.toISOString()} className="w-[200px] shrink-0 p-4 text-center text-xs font-bold text-slate-500 border-r border-slate-100 tracking-tighter tabular-nums">
                   {format(h, 'HH:mm')}
                 </div>
               ))}
@@ -139,10 +139,10 @@ export function ViewCoordenacao() {
                   <div className="w-[2600px] shrink-0 relative h-20 border-r border-slate-100 bg-white">
                     {/* Linhas de grade verticais */}
                     {horas.map(h => (
-                      <div key={h.toISOString()} className="absolute top-0 bottom-0 w-px bg-slate-100 border-l border-dashed left-[var(--pos)]" style={{ '--pos': `${getPosition(h)}px` } as any} />
+                      <div key={h.toISOString()} className="absolute top-0 bottom-0 w-px bg-slate-100 border-l border-dashed left-[var(--pos)]" style={{ '--pos': `${getPosition(h)}px` } as React.CSSProperties} />
                     ))}
                     {/* Linha de fechamento final (19:00) */}
-                    <div className="absolute top-0 bottom-0 w-px bg-slate-200 border-l border-solid left-[var(--pos)] z-10" style={{ '--pos': `${getPosition(addMinutes(startOfDay(dataSelecionada), 19 * 60))}px` } as any} />
+                    <div className="absolute top-0 bottom-0 w-px bg-slate-200 border-l border-solid left-[var(--pos)] z-10" style={{ '--pos': `${getPosition(addMinutes(startOfDay(dataSelecionada), 19 * 60))}px` } as React.CSSProperties} />
 
                     {/* Cards de Sessão */}
                     {sessoesProf.map(sessao => {
@@ -163,7 +163,7 @@ export function ViewCoordenacao() {
                         >
                           <div className="font-bold truncate">{sessao.paciente_nome}</div>
                           <div className="opacity-70 truncate font-medium">{sessao.especialidade_nome}</div>
-                          <div className="mt-1 font-mono">{format(sessao.data_hora_inicio, 'HH:mm')}</div>
+                          <div className="mt-1 font-mono tabular-nums">{format(sessao.data_hora_inicio, 'HH:mm')}</div>
                         </div>
                       )
                     })}

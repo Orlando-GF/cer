@@ -1,4 +1,4 @@
-import { buscarPacientes } from "@/app/actions"
+import { buscarPacientes } from "@/actions"
 import { DataTable } from "@/components/pacientes/data-table"
 import { columns } from "@/components/pacientes/columns"
 import { NovoPacienteSheet } from "@/components/pacientes/novo-paciente-sheet"

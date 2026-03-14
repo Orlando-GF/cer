@@ -104,6 +104,39 @@ function TableCaption({
   )
 }
 
+function TableEmpty({
+  className,
+  icon: Icon,
+  title,
+  description,
+  children,
+  ...props
+}: React.ComponentProps<"div"> & {
+  icon?: React.ElementType
+  title?: string
+  description?: string
+}) {
+  return (
+    <div
+      data-slot="table-empty"
+      className={cn(
+        "flex min-h-[200px] flex-col items-center justify-center p-8 text-center",
+        className
+      )}
+      {...props}
+    >
+      {Icon && <Icon className="mb-4 size-12 text-clinico-100" />}
+      {title && (
+        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      )}
+      {description && (
+        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+      )}
+      {children && <div className="mt-6">{children}</div>}
+    </div>
+  )
+}
+
 export {
   Table,
   TableHeader,
@@ -113,4 +146,5 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  TableEmpty,
 }

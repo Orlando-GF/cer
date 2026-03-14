@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { buscarProfissionais, buscarEspecialidades, salvarVagaFixa } from "@/app/actions"
+import { buscarProfissionais, buscarEspecialidades, salvarVagaFixa } from "@/actions"
 import { Plus, Trash2, Calendar, Clock } from "lucide-react"
 
 const DIAS_SEMANA = [
@@ -141,7 +141,7 @@ export function ViewConfiguracao() {
           </div>
 
           <Button 
-            className="w-full bg-blue-600 hover:bg-blue-700 mt-4" 
+            className="w-full mt-4" 
             onClick={handleSave}
             disabled={isPending}
           >

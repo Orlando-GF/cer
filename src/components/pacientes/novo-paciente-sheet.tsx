@@ -80,7 +80,7 @@ export function NovoPacienteSheet() {
   return (
     <>
       <Button
-        className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm"
+        className="gap-2 shadow-sm"
         onClick={() => setOpen(true)}
       >
         <Plus className="w-4 h-4" />
@@ -143,7 +143,7 @@ export function NovoPacienteSheet() {
                   />
                   <Button type="button" onClick={handleBuscar}
                     disabled={buscando || !identificador.trim()}
-                    className="h-11 px-5 bg-blue-600 hover:bg-blue-700 shrink-0">
+                    className="h-11 px-5 shrink-0">
                     {buscando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                   </Button>
                 </div>
@@ -165,7 +165,7 @@ export function NovoPacienteSheet() {
               <div className="w-full max-w-md flex flex-col gap-2">
                 <Button type="button" onClick={handleAvancar}
                   disabled={!identificador.trim()}
-                  className="w-full h-11 bg-blue-600 hover:bg-blue-700 gap-2">
+                  className="w-full h-11 gap-2">
                   {statusBusca === "encontrado" ? "Confirmar e avançar" : "Preencher manualmente"}
                   <ChevronRight className="w-4 h-4" />
                 </Button>

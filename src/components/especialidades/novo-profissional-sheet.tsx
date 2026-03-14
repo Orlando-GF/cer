@@ -20,7 +20,7 @@ import {
   SelectValue 
 } from "@/components/ui/select"
 import { UserPlus, Loader2, Check } from "lucide-react"
-import { cadastrarProfissional, buscarEspecialidades } from "@/app/actions"
+import { cadastrarProfissional, buscarEspecialidades } from "@/actions"
 import { formatarNomeClinico } from "@/lib/utils/string-utils"
 
 // Componente de Campo Reutilizável (Padrão PacienteForm)
@@ -113,7 +113,7 @@ export function NovoProfissionalSheet() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger render={<Button className="bg-blue-600 hover:bg-blue-700 gap-2" />}>
+      <SheetTrigger render={<Button className="gap-2" />}>
         <UserPlus className="h-4 w-4" />
         Novo Profissional
       </SheetTrigger>
@@ -209,7 +209,7 @@ export function NovoProfissionalSheet() {
               Cancelar
             </Button>
             <Button 
-              className="flex-1 bg-blue-600 hover:bg-blue-700 shadow-sm"
+              className="flex-1 shadow-sm"
               disabled={isPending}
               onClick={handleSubmit}
             >

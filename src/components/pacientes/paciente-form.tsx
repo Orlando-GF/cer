@@ -23,7 +23,7 @@ import {
   Truck,
   Tag,
 } from "lucide-react"
-import { cadastrarPaciente, atualizarPaciente, type ActionResponse } from "@/app/actions"
+import { cadastrarPaciente, atualizarPaciente, type ActionResponse } from "@/actions"
 import { useRouter } from "next/navigation"
 import { formatarNomeClinico, buscarEnderecoPorCep } from "@/lib/utils/string-utils"
 
@@ -518,7 +518,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
         <Button type="button" variant="outline" className="flex-1" onClick={onCancel} disabled={isPending}>
           Cancelar
         </Button>
-        <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 gap-2" disabled={isPending}>
+        <Button type="submit" className="flex-1 gap-2" disabled={isPending}>
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
           {dados.id ? "Salvar Alterações" : "Cadastrar Paciente"}
         </Button>

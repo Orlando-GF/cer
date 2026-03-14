@@ -1,26 +1,5 @@
 import { addDays, isSameDay, parseISO, startOfDay, format } from "date-fns"
-
-/**
- * Representa uma sessão na agenda, que pode ser uma regra (vaga fixa) 
- * ou uma materialização (presença/falta/evolução registrada).
- */
-export interface AgendaSession {
-  id: string // Se materializada, ID do histórico. Se projetada, ID da vaga fixa + data
-  paciente_id: string
-  paciente_nome: string
-  profissional_id: string
-  profissional_nome: string
-  especialidade_id: string
-  especialidade_nome: string
-  data_hora_inicio: Date
-  data_hora_fim: Date
-  status: "Agendado" | "Presente" | "Falta Justificada" | "Falta Nao Justificada" | "Cancelado" | "Projetado"
-  tipo_vaga: string
-  vaga_fixa_id?: string
-  conflito_intensivo?: boolean
-  laudo_vencido?: boolean
-  criado_em?: string // Data de criação do registro no banco (usado para ordem de chegada)
-}
+import type { AgendaSession } from "@/types"
 
 /**
  * Motor Dinâmico de Projeção de Agenda
@@ -74,7 +53,12 @@ export function projectAgendaSessions(
           tipo_vaga: materializacao.tipo_vaga,
           vaga_fixa_id: regra.id,
           laudo_vencido: checkLaudoVencido(materializacao.pacientes.data_ultimo_laudo),
-          criado_em: materializacao.criado_em
+          criado_em: materializacao.criado_em,
+          paciente_logradouro: materializacao.pacientes.logradouro,
+          paciente_numero: materializacao.pacientes.numero,
+          paciente_bairro: materializacao.pacientes.bairro,
+          paciente_cidade: materializacao.pacientes.cidade,
+          tags_acessibilidade: materializacao.pacientes.tags_acessibilidade
         })
       } else {
         // Sessão Projetada (Virtual)
@@ -100,7 +84,12 @@ export function projectAgendaSessions(
           status: "Projetado",
           tipo_vaga: "Regular",
           vaga_fixa_id: regra.id,
-          laudo_vencido: checkLaudoVencido(regra.pacientes.data_ultimo_laudo)
+          laudo_vencido: checkLaudoVencido(regra.pacientes.data_ultimo_laudo),
+          paciente_logradouro: regra.pacientes.logradouro,
+          paciente_numero: regra.pacientes.numero,
+          paciente_bairro: regra.pacientes.bairro,
+          paciente_cidade: regra.pacientes.cidade,
+          tags_acessibilidade: regra.pacientes.tags_acessibilidade
         })
       }
     }
@@ -124,7 +113,12 @@ export function projectAgendaSessions(
       status: a.status_comparecimento,
       tipo_vaga: a.tipo_vaga,
       laudo_vencido: checkLaudoVencido(a.pacientes.criado_em),
-      criado_em: a.criado_em
+      criado_em: a.criado_em,
+      paciente_logradouro: a.pacientes.logradouro,
+      paciente_numero: a.pacientes.numero,
+      paciente_bairro: a.pacientes.bairro,
+      paciente_cidade: a.pacientes.cidade,
+      tags_acessibilidade: a.pacientes.tags_acessibilidade
     })
   }
 

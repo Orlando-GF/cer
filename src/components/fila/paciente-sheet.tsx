@@ -1,20 +1,17 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect, useMemo } from "react"
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
 } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, AlertTriangle, Stethoscope, User, Hash, Loader2, CheckCircle2, History } from "lucide-react"
+import { Calendar, Clock, AlertTriangle, Stethoscope, Hash, Loader2, CheckCircle2, History } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { registrarFaltaPaciente, buscarHistoricoFaltas } from "@/app/actions"
+import { registrarFaltaPaciente, buscarHistoricoFaltas } from "@/actions"
 
 export type PacienteFila = {
   id: string
@@ -26,6 +23,14 @@ export type PacienteFila = {
   dataEntrada: string
   faltas: number
 }
+
+/*
+## Fase 8: Depuração de Erro Runtime [/]
+- [x] Analisar logs do terminal e stack traces (Identificada causa provável em hooks/promessas)
+- [x] Corrigir erro de hooks no `paciente-sheet.tsx` (Hook order fix)
+- [/] Adicionar robustez a promessas no `paciente-sheet.tsx` (.catch e neutralização de undefined)
+- [ ] Validar integridade dos componentes de UI recém-modificados
+*/
 
 interface PacienteSheetProps {
   paciente: PacienteFila | null
@@ -40,11 +45,11 @@ const prioridadeConfig = {
 }
 
 const statusConfig = {
-  "Aguardando": { color: "bg-amber-100 text-amber-800", label: "Aguardando" },
-  "Em Atendimento": { color: "bg-emerald-100 text-emerald-800", label: "Em Atendimento" },
-  "Em Risco": { color: "bg-red-100 text-red-800 border border-red-200", label: "Em Risco (Faltas)" },
+  "Aguardando": { color: "bg-alert-warning-bg text-alert-warning-text", label: "Aguardando" },
+  "Em Atendimento": { color: "bg-alert-success-bg text-alert-success-text", label: "Em Atendimento" },
+  "Em Risco": { color: "bg-alert-danger-bg text-alert-danger-text border border-alert-danger-text/20", label: "Em Risco (Faltas)" },
   "Desistencia": { color: "bg-slate-100 text-slate-600", label: "Desistência" },
-  "Alta": { color: "bg-blue-100 text-blue-800", label: "Alta" },
+  "Alta": { color: "bg-alert-shared-bg text-alert-shared-text", label: "Alta" },
 }
 
 export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetProps) {
@@ -53,14 +58,50 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
   const [observacao, setObservacao] = useState("")
   const [isPending, startTransition] = useTransition()
 
-  // Estados do Histórico de Faltas
   const [historicoFaltas, setHistoricoFaltas] = useState<any[]>([])
   const [isLoadingHistorico, setIsLoadingHistorico] = useState(false)
+
+  // Busca histórico de faltas ao abrir o paciente
+  useEffect(() => {
+    if (open && paciente?.id) {
+      setIsLoadingHistorico(true)
+      buscarHistoricoFaltas(paciente.id)
+        .then((res) => {
+          if (res?.success && res?.data) {
+            setHistoricoFaltas(res.data)
+          } else {
+            setHistoricoFaltas([])
+          }
+          setIsLoadingHistorico(false)
+        })
+        .catch((err) => {
+          console.error("Erro ao buscar histórico:", err)
+          setHistoricoFaltas([])
+          setIsLoadingHistorico(false)
+        })
+    } else {
+      setHistoricoFaltas([])
+    }
+  }, [open, paciente?.id])
+
+  const diasEspera = useMemo(() => {
+    if (!paciente) return 0
+    const entrada = new Date(paciente.dataEntrada).getTime()
+    if (isNaN(entrada)) return 0
+    // Usamos um valor fixo de referência para o render atual se necessário, 
+    // ou assumimos que no servidor/cliente inicial o valor deve ser estável.
+    const hoje = new Date().setHours(0, 0, 0, 0)
+    return Math.floor((hoje - entrada) / (1000 * 60 * 60 * 24))
+  }, [paciente?.dataEntrada])
+
+  const prio = paciente ? prioridadeConfig[paciente.prioridade] : { color: "", label: "" }
+  const stat = paciente ? statusConfig[paciente.status] : { color: "", label: "" }
 
   if (!paciente) return null
 
   const handleRegistrarFalta = () => {
     startTransition(async () => {
+      if (!paciente) return
       const result = await registrarFaltaPaciente({
         fila_id: paciente.id,
         justificada,
@@ -71,31 +112,12 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
         setIsRegisteringFalta(false)
         setJustificada(false)
         setObservacao("")
-        onOpenChange(false) // Fecha o modal após sucesso (a página já será revalidada na action)
+        onOpenChange(false)
       } else {
         alert(result.error || "Erro ao registrar falta.")
       }
     })
   }
-
-  // Busca histórico de faltas ao abrir o paciente
-  import("react").then((React) => {
-    React.useEffect(() => {
-      if (open && paciente?.id) {
-        setIsLoadingHistorico(true)
-        buscarHistoricoFaltas(paciente.id).then((res: any) => {
-          if (res.success && res.data) {
-            setHistoricoFaltas(res.data)
-          } else {
-            setHistoricoFaltas([])
-          }
-          setIsLoadingHistorico(false)
-        })
-      } else {
-        setHistoricoFaltas([])
-      }
-    }, [open, paciente?.id])
-  })
 
   const fecharOuCancelar = (isOpen: boolean) => {
     if (!isOpen) {
@@ -105,12 +127,6 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
     }
     onOpenChange(isOpen)
   }
-
-  const prio = prioridadeConfig[paciente.prioridade]
-  const stat = statusConfig[paciente.status]
-  const diasEspera = Math.floor(
-    (Date.now() - new Date(paciente.dataEntrada).getTime()) / (1000 * 60 * 60 * 24)
-  )
 
   return (
     <Sheet open={open} onOpenChange={fecharOuCancelar}>
@@ -144,7 +160,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
               Situação na fila
             </h3>
             <div className="grid grid-cols-3 gap-4">
-              <div className="rounded-lg border border-slate-100 bg-white p-4">
+              <div className="rounded-none border border-slate-100 bg-white p-4">
                 <div className="flex items-center gap-2 text-slate-500 mb-1">
                   <Stethoscope className="w-4 h-4" />
                   <span className="text-xs">Especialidade</span>
@@ -175,7 +191,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
             <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">
               Histórico
             </h3>
-            <div className="flex items-center gap-3 p-4 rounded-lg border border-slate-100 bg-white">
+            <div className="flex items-center gap-3 p-4 rounded-none border border-slate-100 bg-white">
               <Calendar className="w-4 h-4 text-slate-500 shrink-0" />
               <div>
                 <p className="text-xs text-slate-500">Data de entrada na fila</p>
@@ -192,7 +208,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
 
           {/* Alerta de faltas críticas */}
           {paciente.faltas >= 2 && (
-            <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+            <div className="flex items-start gap-3 rounded-none border border-red-200 bg-red-50 p-4">
               <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-red-800">
@@ -219,14 +235,14 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
                 <Loader2 className="w-5 h-5 animate-spin" />
               </div>
             ) : historicoFaltas.length === 0 ? (
-              <div className="text-center py-6 px-4 rounded-lg bg-slate-50 border border-slate-100 border-dashed">
+              <div className="text-center py-6 px-4 rounded-none bg-slate-50 border border-slate-100 border-dashed">
                 <CheckCircle2 className="w-6 h-6 text-emerald-400 mx-auto mb-2" />
                 <p className="text-sm text-slate-500">Nenhum registro de falta para este paciente.</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {historicoFaltas.map((falta: any) => (
-                  <div key={falta.id} className="flex flex-col gap-1 p-3 rounded-lg border border-slate-100 bg-white">
+                {historicoFaltas.map((falta) => (
+                  <div key={falta.id} className="flex flex-col gap-1 p-3 rounded-none border border-slate-100 bg-white">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-slate-800 flex items-center gap-2">
                         <Calendar className="w-3.5 h-3.5 text-slate-500" />
@@ -255,7 +271,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
         <div className="shrink-0 border-t bg-white px-7 py-4">
           {!isRegisteringFalta ? (
             <div className="flex gap-3">
-              <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
+              <Button className="flex-1 shadow-sm" onClick={() => alert("Função em breve: Agendar sessão.")}>
                 Agendar sessão
               </Button>
               <Button 

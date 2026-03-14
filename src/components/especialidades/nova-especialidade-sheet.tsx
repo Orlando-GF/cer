@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Loader2 } from "lucide-react"
-import { cadastrarEspecialidade } from "@/app/actions"
+import { cadastrarEspecialidade } from "@/actions"
 
 export function NovaEspecialidadeSheet() {
   const [open, setOpen] = useState(false)
@@ -44,7 +44,7 @@ export function NovaEspecialidadeSheet() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger 
         render={
-          <Button className="bg-blue-600 hover:bg-blue-700 gap-2">
+          <Button className="gap-2">
             <Plus className="h-4 w-4" /> Nova Especialidade
           </Button>
         }

@@ -17,11 +17,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableEmpty,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PacienteSheet, PacienteFila } from "./paciente-sheet"
-import { alterarStatusFila } from "@/app/actions"
+import { alterarStatusFila } from "@/actions"
 import { useTransition, useMemo, useState } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
@@ -52,7 +53,7 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [selectedPaciente, setSelectedPaciente] = useState<PacienteFila | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
 
   // Filtros via URL
   const statusFilter = searchParams.get("status") || "ativos"
@@ -219,8 +220,11 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                  Nenhum registro encontrado.
+                <TableCell colSpan={columns.length} className="p-0">
+                  <TableEmpty 
+                    title="Nenhum registro encontrado"
+                    description="Tente ajustar seus filtros ou termos de busca para encontrar o que procura."
+                  />
                 </TableCell>
               </TableRow>
             )}
@@ -233,6 +237,7 @@ export function DataTable<TData, TValue>({
           size="sm"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
+          className="bg-white border-[0.5px] border-[#C8D9EE] text-[#0F2D52] rounded-[6px] px-[14px] py-[6px] h-auto hover:bg-[#E8F1FB] hover:text-[#0F2D52] disabled:text-[#C8D9EE] disabled:opacity-100 disabled:bg-white"
         >
           Anterior
         </Button>
@@ -241,6 +246,7 @@ export function DataTable<TData, TValue>({
           size="sm"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
+          className="bg-white border-[0.5px] border-[#C8D9EE] text-[#0F2D52] rounded-[6px] px-[14px] py-[6px] h-auto hover:bg-[#E8F1FB] hover:text-[#0F2D52] disabled:text-[#C8D9EE] disabled:opacity-100 disabled:bg-white"
         >
           Próxima
         </Button>

@@ -139,8 +139,8 @@ export default async function Dashboard() {
       </div>
 
       {/* Fila Real-time DataTable */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold tracking-tight text-foreground">Prontuários da fila</h2>
+      <div className="space-y-3">
+        <h3 className="text-base font-semibold tracking-tight text-foreground">Prontuários da fila</h3>
         <DataTable columns={columns} data={filaReal} />
       </div>
     </main>
