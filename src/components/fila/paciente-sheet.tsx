@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition, useEffect, useMemo } from "react"
+import { toast } from "sonner"
 import {
   Sheet,
   SheetContent,
@@ -98,11 +99,9 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
     if (!paciente) return 0
     const entrada = new Date(paciente.dataEntrada).getTime()
     if (isNaN(entrada)) return 0
-    // Usamos um valor fixo de referência para o render atual se necessário, 
-    // ou assumimos que no servidor/cliente inicial o valor deve ser estável.
     const hoje = new Date().setHours(0, 0, 0, 0)
     return Math.floor((hoje - entrada) / (1000 * 60 * 60 * 24))
-  }, [paciente?.dataEntrada])
+  }, [paciente])
 
   const prio = paciente ? prioridadeConfig[paciente.prioridade] : { color: "", label: "" }
   const stat = paciente ? statusConfig[paciente.status] : { color: "", label: "" }
@@ -119,12 +118,13 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
       })
 
       if (result.success) {
+        toast.success("Falta registrada com sucesso.")
         setIsRegisteringFalta(false)
         setJustificada(false)
         setObservacao("")
         onOpenChange(false)
       } else {
-        alert(result.error || "Erro ao registrar falta.")
+        toast.error(result.error || "Erro ao registrar falta.")
       }
     })
   }
@@ -179,14 +179,14 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
                 </div>
                 <p className="text-sm font-medium text-slate-800">{paciente.especialidade}</p>
               </div>
-              <div className="rounded-lg border border-slate-100 bg-white p-4">
-                <div className="flex items-center gap-2 text-slate-500 mb-1">
+              <div className="rounded-none border border-border bg-card p-4">
+                <div className="flex items-center gap-2 text-muted mb-1">
                   <Clock className="w-4 h-4" />
                   <span className="text-xs">Dias em espera</span>
                 </div>
-                <p className="text-2xl font-bold text-blue-600">{diasEspera}</p>
+                <p className="text-2xl font-bold text-primary">{diasEspera}</p>
               </div>
-              <div className="rounded-lg border border-slate-100 bg-white p-4">
+              <div className="rounded-none border border-border bg-card p-4">
                 <div className="flex items-center gap-2 text-slate-500 mb-1">
                   <AlertTriangle className="w-4 h-4" />
                   <span className="text-xs">Faltas</span>
@@ -283,7 +283,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
         <div className="shrink-0 border-t bg-white px-7 py-4">
           {!isRegisteringFalta ? (
             <div className="flex gap-3">
-              <Button className="flex-1 shadow-sm" onClick={() => alert("Função em breve: Agendar sessão.")}>
+              <Button className="flex-1 shadow-sm" onClick={() => toast.info("Agendamento em desenvolvimento.", { description: "Esta funcionalidade estará disponível em breve." })}>
                 Agendar sessão
               </Button>
               <Button 

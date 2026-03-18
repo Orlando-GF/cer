@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useTransition } from "react"
+import { toast } from "sonner"
 import { 
   Sheet, 
   SheetContent, 
@@ -95,7 +96,7 @@ export function NovoProfissionalSheet() {
     startTransition(async () => {
       const res = await cadastrarProfissional(dados)
       if (res.success) {
-        alert("Profissional cadastrado com sucesso!")
+        toast.success("Profissional cadastrado com sucesso!")
         setOpen(false)
         setDados({
           nome_completo: "",
@@ -107,7 +108,7 @@ export function NovoProfissionalSheet() {
         })
         setErrors({})
       } else {
-        alert("Erro no cadastro: " + res.error)
+        toast.error("Erro no cadastro: " + res.error)
       }
     })
   }
@@ -168,6 +169,7 @@ export function NovoProfissionalSheet() {
                 <SelectItem value="Enfermagem" className="font-bold uppercase text-[11px]">Enfermagem / Acolhimento</SelectItem>
                 <SelectItem value="Recepcao" className="font-bold uppercase text-[11px]">Recepção</SelectItem>
                 <SelectItem value="Administracao" className="font-bold uppercase text-[11px]">Administração</SelectItem>
+                <SelectItem value="Motorista" className="font-bold uppercase text-[11px]">Motorista</SelectItem>
               </SelectContent>
             </Select>
           </Field>
@@ -184,10 +186,10 @@ export function NovoProfissionalSheet() {
                   onClick={() => toggleEspecialidade(esp.id)}
                 >
                   <div className={`
-                    h-5 w-5 rounded border flex items-center justify-center transition-colors
+                    h-5 w-5 rounded-none border flex items-center justify-center transition-colors
                     ${dados.especialidades_permitidas.includes(esp.id) 
-                      ? "bg-blue-600 border-blue-600" 
-                      : "bg-white border-slate-300 group-hover:border-blue-400"}
+                      ? "bg-primary border-primary" 
+                      : "bg-card border-border group-hover:border-primary"}
                   `}>
                     {dados.especialidades_permitidas.includes(esp.id) && (
                       <Check className="h-3.5 w-3.5 text-white stroke-[3px]" />

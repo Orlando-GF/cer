@@ -2,6 +2,7 @@
 
 import { RowData, ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
+import { toast } from "sonner"
 
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
@@ -109,7 +110,7 @@ export const columns: ColumnDef<PacienteFila>[] = [
               onClick={(e) => {
                 e.stopPropagation()
                 // Futura implementação de agendamento que muda status para Em Atendimento
-                alert("Em breve: Abre modal de agendamento e move para Em Atendimento.")
+                toast.info("Agendamento em desenvolvimento.", { description: "Esta funcionalidade estará disponível em breve." })
               }}
             >
               <CalendarPlus className="h-4 w-4" />

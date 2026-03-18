@@ -25,6 +25,7 @@ import { PacienteSheet, PacienteFila } from "./paciente-sheet"
 import { alterarStatusFila } from "@/actions"
 import { useTransition, useMemo, useState } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
+import { toast } from "sonner"
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -72,7 +73,7 @@ export function DataTable<TData, TValue>({
 
   // Obter lista única de especialidades para o filtro
   const especialidadesUnicas = useMemo(() => {
-    const list = Array.from(new Set(data.map((d: any) => d.especialidade as string)))
+    const list = Array.from(new Set((data as PacienteFila[]).map(d => d.especialidade)))
     return list.sort()
   }, [data])
 
@@ -114,7 +115,7 @@ export function DataTable<TData, TValue>({
   }
 
   const table = useReactTable({
-    data: filteredRows as any,
+    data: filteredRows as TData[],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -129,7 +130,7 @@ export function DataTable<TData, TValue>({
         startTransition(async () => {
           const res = await alterarStatusFila({ fila_id: filaId, novo_status: novoStatus })
           if (!res.success) {
-            alert(`Erro: ${res.error}`)
+            toast.error(`Erro ao alterar status: ${res.error}`)
           }
         })
       }
@@ -169,7 +170,7 @@ export function DataTable<TData, TValue>({
             className="flex-1 min-w-[200px]"
           />
           <Select value={especialidadeFilter} onValueChange={(val) => setUrlParams({ esp: val })}>
-            <SelectTrigger className="w-full sm:w-[250px] bg-white">
+            <SelectTrigger className="w-full sm:w-[250px] bg-card">
               <SelectValue placeholder="Todas Especialidades" />
             </SelectTrigger>
             <SelectContent>

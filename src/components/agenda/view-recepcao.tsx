@@ -113,10 +113,10 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-none border shadow-none">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-card p-5 rounded-none border border-border shadow-none">
         <div className="flex items-end gap-4">
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">Profissional</span>
+            <span className="text-xs font-semibold text-muted uppercase tracking-wider">Profissional</span>
             <Select 
               onValueChange={(val) => setUrlParams({ profId: val })} 
               value={selectedProf}
@@ -135,7 +135,7 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
           </div>
           
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">Data</span>
+            <span className="text-xs font-semibold text-muted uppercase tracking-wider">Data</span>
             <Input 
               type="date" 
               className="w-[180px] font-medium h-10 rounded-none h-10"
@@ -146,13 +146,13 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
         </div>
 
         <div className="flex gap-2">
-          <Badge variant="outline" className="bg-slate-50 border-slate-200 text-slate-600 px-3 py-1 rounded-none">
+          <Badge variant="outline" className="bg-muted/40 border-border text-muted-foreground px-3 py-1 rounded-none">
             {sessões.length} Pacientes Esperados
           </Badge>
           <Button 
             variant="outline" 
             size="sm" 
-            className="rounded-none border-slate-200 text-slate-700 hover:bg-slate-50 gap-1"
+            className="rounded-none border-border text-foreground hover:bg-muted gap-1"
             onClick={loadAgenda}
             disabled={loading || isPending}
           >
@@ -164,14 +164,14 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
 
       <Card className="border-none shadow-none rounded-none overflow-hidden">
         <Table>
-          <TableHeader className="bg-slate-50/50">
-            <TableRow className="border-b-2 border-slate-100">
-              <TableHead className="w-[100px] text-slate-900 font-bold uppercase text-[10px] tracking-widest pl-6">Horário</TableHead>
-              <TableHead className="text-slate-900 font-bold uppercase text-[10px] tracking-widest">Paciente</TableHead>
-              <TableHead className="text-slate-900 font-bold uppercase text-[10px] tracking-widest">Especialidade</TableHead>
-              <TableHead className="text-center text-slate-900 font-bold uppercase text-[10px] tracking-widest">Status</TableHead>
-              <TableHead className="text-center text-slate-900 font-bold uppercase text-[10px] tracking-widest">Chegada</TableHead>
-              <TableHead className="text-right text-slate-900 font-bold uppercase text-[10px] tracking-widest pr-6">Ações</TableHead>
+          <TableHeader className="bg-muted/30">
+            <TableRow className="border-b-2 border-border">
+              <TableHead className="w-[100px] text-foreground font-bold uppercase text-[10px] tracking-widest pl-6">Horário</TableHead>
+              <TableHead className="text-foreground font-bold uppercase text-[10px] tracking-widest">Paciente</TableHead>
+              <TableHead className="text-foreground font-bold uppercase text-[10px] tracking-widest">Especialidade</TableHead>
+              <TableHead className="text-center text-foreground font-bold uppercase text-[10px] tracking-widest">Status</TableHead>
+              <TableHead className="text-center text-foreground font-bold uppercase text-[10px] tracking-widest">Chegada</TableHead>
+              <TableHead className="text-right text-foreground font-bold uppercase text-[10px] tracking-widest pr-6">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -192,7 +192,7 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
                   <TableCell>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
-                        <span className="text-[18px] font-bold text-slate-900 uppercase tracking-tight">{sessao.paciente_nome}</span>
+                        <span className="text-lg font-bold text-foreground uppercase tracking-tight">{sessao.paciente_nome}</span>
                         {sessao.conflito_intensivo && (
                           <Badge className="bg-amber-500 text-white border-none text-[8px] font-bold h-4 rounded-none px-1">
                             COMPARTILHADO
@@ -213,13 +213,13 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
                   </TableCell>
                   <TableCell className="text-center">
                     {sessao.status === "Projetado" ? (
-                      <Badge className="bg-amber-100 text-amber-800 border-none shadow-none font-bold text-[10px] rounded-none">AGUARDANDO</Badge>
+                      <Badge className="bg-[var(--color-alert-warning-bg)] text-[var(--color-alert-warning-text)] border-none shadow-none font-bold text-[10px] rounded-none">AGUARDANDO</Badge>
                     ) : sessao.status === "Presente" ? (
-                      <Badge className="bg-emerald-100 text-emerald-800 border-none shadow-none font-bold text-[10px] rounded-none">PRESENTE</Badge>
+                      <Badge className="bg-[var(--color-alert-success-bg)] text-[var(--color-alert-success-text)] border-none shadow-none font-bold text-[10px] rounded-none">PRESENTE</Badge>
                     ) : sessao.status === "Falta Justificada" || sessao.status === "Falta Nao Justificada" ? (
-                      <Badge className="bg-red-100 text-red-800 border-none shadow-none font-bold text-[10px] rounded-none">FALTA</Badge>
+                      <Badge className="bg-[var(--color-alert-danger-bg)] text-[var(--color-alert-danger-text)] border-none shadow-none font-bold text-[10px] rounded-none">FALTA</Badge>
                     ) : (
-                      <Badge className="bg-slate-100 text-slate-500 border-none shadow-none font-bold text-[10px] rounded-none uppercase">{sessao.status}</Badge>
+                      <Badge className="bg-muted text-muted-foreground border-none shadow-none font-bold text-[10px] rounded-none uppercase">{sessao.status}</Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-center tabular-nums text-slate-500 font-bold">
@@ -250,7 +250,7 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
                         </Button>
                       </div>
                     ) : (
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Registrado</span>
+                      <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Registrado</span>
                     )}
                   </TableCell>
                 </TableRow>
