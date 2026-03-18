@@ -81,8 +81,14 @@
   --color-primary-100: var(--color-primary-100);
   --color-primary-300: var(--color-primary-300);
   --color-primary-800: var(--color-primary-800);
+  --color-primary-800: var(--color-primary-800);
   --color-primary-900: var(--color-primary-900);
-  --color-muted:      var(--color-muted);
+  
+  /* Compatibilidade Mútua do Design System x Shadcn */
+  --color-muted:            var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent:           var(--accent);
+  --color-accent-foreground:var(--accent-foreground);
 
   /* Sidebar Tokens Conectados */
   --color-sidebar:            var(--sidebar-background);

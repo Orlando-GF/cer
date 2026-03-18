@@ -67,7 +67,7 @@ function TabsTrigger({ className, children, icon, ...props }: TabsTriggerProps) 
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
 
         // Estado inativo
-        "text-muted hover:text-foreground",
+        "text-muted-foreground hover:text-foreground",
 
         // default/segmented: bg branco puro + borda + sombra no ativo (Estilo Lyra Sharp)
         // Seletores ultra-resilientes (suporta data-state, data-selected e aria-selected)
@@ -91,7 +91,7 @@ function TabsTrigger({ className, children, icon, ...props }: TabsTriggerProps) 
 
         // agenda: fundo primary-50, ativa branca com borda, inativa com cor específica
         "group-data-[variant=agenda]/tabs-list:flex-1",
-        "group-data-[variant=agenda]/tabs-list:text-muted",
+        "group-data-[variant=agenda]/tabs-list:text-muted-foreground",
         "group-data-[variant=agenda]/tabs-list:data-[state=active]:bg-card group-data-[variant=agenda]/tabs-list:data-[selected]:bg-card group-data-[variant=agenda]/tabs-list:aria-[selected=true]:bg-card",
         "group-data-[variant=agenda]/tabs-list:data-[state=active]:text-primary group-data-[variant=agenda]/tabs-list:data-[selected]:text-primary group-data-[variant=agenda]/tabs-list:aria-[selected=true]:text-primary",
         "group-data-[variant=agenda]/tabs-list:data-[state=active]:border group-data-[variant=agenda]/tabs-list:data-[selected]:border group-data-[variant=agenda]/tabs-list:aria-[selected=true]:border",
