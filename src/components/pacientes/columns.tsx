@@ -2,7 +2,7 @@
 
 import { RowData, ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
-import { MoreHorizontal, Copy, Eye, Clock } from "lucide-react"
+import { MoreHorizontal, Copy, Eye } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,14 +56,14 @@ export const columns: ColumnDef<Paciente>[] = [
     accessorKey: "cns",
     header: "Prontuário (CNS)",
     cell: ({ row }) => (
-      <span className="font-mono text-sm font-medium text-slate-700 tabular-nums">{row.getValue("cns")}</span>
+      <span className="font-mono text-sm font-medium text-foreground tabular-nums">{row.getValue("cns")}</span>
     ),
   },
   {
     accessorKey: "nome_completo",
     header: "Nome do Paciente",
     cell: ({ row }) => (
-      <div className="font-medium text-slate-800">{row.getValue("nome_completo")}</div>
+      <div className="font-medium text-foreground">{row.getValue("nome_completo")}</div>
     ),
   },
   {
@@ -71,7 +71,7 @@ export const columns: ColumnDef<Paciente>[] = [
     header: "CPF",
     cell: ({ row }) => {
       const cpf = row.getValue("cpf") as string | null
-      return <span className="text-slate-500 text-sm tabular-nums">{cpf ? cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4") : "Não informado"}</span>
+      return <span className="text-muted-foreground text-sm tabular-nums">{cpf ? cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4") : "Não informado"}</span>
     },
   },
   {
@@ -80,7 +80,7 @@ export const columns: ColumnDef<Paciente>[] = [
     cell: ({ row }) => {
       const dataStr = row.getValue("data_nascimento") as string
       return (
-        <Badge variant="outline" className="font-normal bg-slate-50 border-slate-200 tabular-nums">
+        <Badge variant="outline" className="font-normal bg-muted/40 border-border tabular-nums">
           {calcularIdade(dataStr)} anos
         </Badge>
       )
@@ -93,7 +93,7 @@ export const columns: ColumnDef<Paciente>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors focus:outline-none"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-none border border-border bg-card text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors focus:outline-none"
             title="Opções do paciente"
             onClick={(e) => e.stopPropagation()}
           >

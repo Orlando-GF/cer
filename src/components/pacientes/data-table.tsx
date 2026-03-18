@@ -67,7 +67,7 @@ export function DataTable<TData, TValue>({
   }, [data, searchTerm])
 
   const table = useReactTable({
-    data: filteredRows as any,
+    data: filteredRows as TData[],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -89,26 +89,26 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       {/* Barra de Busca - Visual Minimalista */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-3 rounded-lg border border-slate-200">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-card p-3 rounded-none border border-border">
         <div className="relative w-full sm:w-[350px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por Nome ou Prontuário (CNS)..."
             value={searchTerm}
             onChange={(event) => setUrlParams({ q: event.target.value })}
-            className="pl-9 h-10 w-full bg-slate-50 border-transparent focus-visible:bg-white transition-colors"
+            className="pl-9 h-10 w-full bg-muted/40 border-transparent focus-visible:bg-card transition-colors"
           />
         </div>
       </div>
 
-      <div className="rounded-md border bg-white shadow-sm overflow-hidden">
+      <div className="rounded-none border border-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-slate-50/50">
+              <TableRow key={headerGroup.id} className="bg-muted/30">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="text-slate-600 font-medium">
+                    <TableHead key={header.id} className="text-muted-foreground font-semibold uppercase text-[10px] tracking-widest">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -127,7 +127,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="cursor-pointer hover:bg-slate-50 transition-colors"
+                  className="cursor-pointer hover:bg-muted/40 transition-colors"
                   onClick={() => handleRowClick(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -158,7 +158,7 @@ export function DataTable<TData, TValue>({
           >
             Anterior
           </Button>
-          <span className="text-sm text-slate-500 mx-2">
+          <span className="text-sm text-muted-foreground mx-2">
             Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
           </span>
           <Button

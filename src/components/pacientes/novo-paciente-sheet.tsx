@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState } from "react"
 import {
   Sheet,
   SheetContent,
@@ -119,8 +119,8 @@ export function NovoPacienteSheet() {
           {etapa === "busca" && (
             <div className="flex-1 flex flex-col items-center justify-center px-10 gap-8">
               <div className="flex flex-col items-center gap-3 text-center">
-                <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center">
-                  <Search className="w-7 h-7 text-blue-500" />
+                <div className="w-16 h-16 rounded-none bg-muted/40 flex items-center justify-center">
+                  <Search className="w-7 h-7 text-primary" />
                 </div>
                 <p className="text-slate-600 text-sm max-w-xs">
                   Digite o <strong>CNS</strong> (15 dígitos) ou <strong>CPF</strong> (11 dígitos) para buscar os dados automaticamente.
@@ -138,7 +138,7 @@ export function NovoPacienteSheet() {
                     }}
                     onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
                     placeholder="CNS OU CPF"
-                    className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider"
+                    className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider"
                     autoFocus
                   />
                   <Button type="button" onClick={handleBuscar}
@@ -149,13 +149,13 @@ export function NovoPacienteSheet() {
                 </div>
 
                 {statusBusca === "encontrado" && (
-                  <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-4 py-2.5">
+                  <div className="flex items-center gap-2 text-sm text-[var(--color-alert-success-text)] bg-[var(--color-alert-success-bg)] border border-[var(--color-alert-success-text)]/20 rounded-none px-4 py-2.5">
                     <CheckCircle2 className="w-4 h-4 shrink-0" />
                     <span>Paciente encontrado! Dados pré-preenchidos.</span>
                   </div>
                 )}
                 {statusBusca === "nao_encontrado" && (
-                  <div className="flex items-start gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-4 py-2.5">
+                  <div className="flex items-start gap-2 text-sm text-[var(--color-alert-warning-text)] bg-[var(--color-alert-warning-bg)] border border-[var(--color-alert-warning-text)]/20 rounded-none px-4 py-2.5">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                     <span>Nenhum registro encontrado. Preencha os dados manualmente.</span>
                   </div>
@@ -165,7 +165,7 @@ export function NovoPacienteSheet() {
               <div className="w-full max-w-md flex flex-col gap-2">
                 <Button type="button" onClick={handleAvancar}
                   disabled={!identificador.trim()}
-                  className="w-full h-14 rounded-none text-sm bg-clinico-900 border-none hover:bg-black gap-2 shadow-lg uppercase font-bold tracking-widest">
+                  className="w-full h-14 rounded-none text-sm bg-foreground text-background border-none hover:bg-foreground/90 gap-2 shadow-lg uppercase font-bold tracking-widest">
                   {statusBusca === "encontrado" ? "Confirmar e avançar" : "Preencher manualmente"}
                   <ChevronRight className="w-4 h-4" />
                 </Button>
