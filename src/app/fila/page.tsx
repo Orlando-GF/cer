@@ -41,8 +41,9 @@ export default async function Dashboard() {
 
   if (!error && dbData) {
     // 3. Mapeamento
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     filaReal = dbData.map((row: any) => ({
-      id: row.id,
+      id: row.id as string,
       nome: row.pacientes?.nome_completo || "Desconhecido",
       cns: row.pacientes?.cns || "S/N",
       prioridade: row.nivel_prioridade,
@@ -50,7 +51,8 @@ export default async function Dashboard() {
       especialidade: row.linhas_cuidado_especialidades?.nome_especialidade || "Sem Especialidade",
       dataEntrada: row.data_entrada_fila,
       faltas: row.faltas_consecutivas || 0
-    }));
+    })) as unknown as PacienteFila[];
+
 
     // 4. Ordenação Semântica Forte (Server-side antes de renderizar)
     // 1º = Mandado Judicial | 2º = Urgência Clínica | 3º = Rotina
@@ -106,17 +108,17 @@ export default async function Dashboard() {
         <Card className="shadow-sm border-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Mandados judiciais</CardTitle>
-            <Scale className="h-4 w-4 text-red-600" />
+            <Scale className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{judiciais}</div>
+            <div className="text-2xl font-bold text-destructive">{judiciais}</div>
             <p className="text-xs text-muted-foreground">Prioridade Máxima Cumprimento</p>
           </CardContent>
         </Card>
 
         <Card className="shadow-sm border-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <Badge variant="outline" className="bg-emerald-100 text-emerald-800 border-none font-normal">
+            <Badge variant="outline" className="bg-alert-success-bg text-alert-success-text border-none font-normal">
               Em atendimento
             </Badge>
           </CardHeader>
@@ -129,10 +131,10 @@ export default async function Dashboard() {
         <Card className="shadow-sm border-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Desistências e altas</CardTitle>
-            <AlertCircle className="h-4 w-4 text-slate-500" />
+            <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-500">{desitencias}</div>
+            <div className="text-2xl font-bold text-muted-foreground">{desitencias}</div>
             <p className="text-xs text-muted-foreground">Histórico de saídas da fila</p>
           </CardContent>
         </Card>

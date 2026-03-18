@@ -50,16 +50,16 @@ interface PacienteSheetProps {
 }
 
 const prioridadeConfig = {
-  "Rotina": { color: "bg-slate-100 text-slate-700", label: "Rotina" },
-  "Urgencia Clinica": { color: "bg-orange-100 text-orange-800", label: "Urgência Clínica" },
-  "Mandado Judicial": { color: "bg-red-100 text-red-800", label: "Mandado Judicial" },
+  "Rotina": { color: "bg-muted text-muted-foreground", label: "Rotina" },
+  "Urgencia Clinica": { color: "bg-alert-warning-bg text-alert-warning-text", label: "Urgência Clínica" },
+  "Mandado Judicial": { color: "bg-alert-danger-bg text-alert-danger-text", label: "Mandado Judicial" },
 }
 
 const statusConfig = {
   "Aguardando": { color: "bg-alert-warning-bg text-alert-warning-text", label: "Aguardando" },
   "Em Atendimento": { color: "bg-alert-success-bg text-alert-success-text", label: "Em Atendimento" },
   "Em Risco": { color: "bg-alert-danger-bg text-alert-danger-text border border-alert-danger-text/20", label: "Em Risco (Faltas)" },
-  "Desistencia": { color: "bg-slate-100 text-slate-600", label: "Desistência" },
+  "Desistencia": { color: "bg-muted text-muted-foreground", label: "Desistência" },
   "Alta": { color: "bg-alert-shared-bg text-alert-shared-text", label: "Alta" },
 }
 
@@ -152,7 +152,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
                 <Hash className="w-4 h-4 text-white/70" />
                 {paciente.nome}
               </SheetTitle>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
                 CNS: <span className="font-mono text-white/90">{paciente.cns}</span>
               </p>
             </div>
@@ -172,12 +172,12 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
               Situação na fila
             </h3>
             <div className="grid grid-cols-3 gap-4">
-              <div className="rounded-none border border-slate-100 bg-white p-4">
-                <div className="flex items-center gap-2 text-slate-500 mb-1">
+              <div className="rounded-none border border-border bg-card p-4">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Stethoscope className="w-4 h-4" />
                   <span className="text-xs">Especialidade</span>
                 </div>
-                <p className="text-sm font-medium text-slate-800">{paciente.especialidade}</p>
+                <p className="text-sm font-medium text-foreground">{paciente.especialidade}</p>
               </div>
               <div className="rounded-none border border-border bg-card p-4">
                 <div className="flex items-center gap-2 text-muted mb-1">
@@ -187,12 +187,12 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
                 <p className="text-2xl font-bold text-primary">{diasEspera}</p>
               </div>
               <div className="rounded-none border border-border bg-card p-4">
-                <div className="flex items-center gap-2 text-slate-500 mb-1">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <AlertTriangle className="w-4 h-4" />
                   <span className="text-xs">Faltas</span>
                 </div>
-                <p className={`text-2xl font-bold ${paciente.faltas >= 2 ? "text-red-600" : "text-slate-700"}`}>
-                  {paciente.faltas}<span className="text-sm font-normal text-slate-500">/3</span>
+                <p className={`text-2xl font-bold ${paciente.faltas >= 2 ? "text-destructive" : "text-foreground"}`}>
+                  {paciente.faltas}<span className="text-sm font-normal text-muted-foreground">/3</span>
                 </p>
               </div>
             </div>
@@ -203,11 +203,11 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
             <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
               Histórico
             </h3>
-            <div className="flex items-center gap-3 p-4 rounded-none border border-slate-100 bg-white">
-              <Calendar className="w-4 h-4 text-slate-500 shrink-0" />
+            <div className="flex items-center gap-3 p-4 rounded-none border border-border bg-card">
+              <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
               <div>
-                <p className="text-xs text-slate-500">Data de entrada na fila</p>
-                <p className="text-sm font-medium text-slate-800">
+                <p className="text-xs text-muted-foreground">Data de entrada na fila</p>
+                <p className="text-sm font-medium text-foreground">
                   {new Date(paciente.dataEntrada).toLocaleDateString("pt-BR", {
                     day: "2-digit",
                     month: "long",
@@ -220,13 +220,13 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
 
           {/* Alerta de faltas críticas */}
           {paciente.faltas >= 2 && (
-            <div className="flex items-start gap-3 rounded-none border border-red-200 bg-red-50 p-4">
-              <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 rounded-none border border-destructive/20 bg-destructive/10 p-4">
+              <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-red-800">
+                <p className="text-sm font-medium text-destructive">
                   {paciente.faltas >= 3 ? "Limite de faltas atingido" : "Atenção: próximo do limite"}
                 </p>
-                <p className="text-xs text-red-600 mt-0.5">
+                <p className="text-xs text-destructive/80 mt-0.5">
                   {paciente.faltas >= 3
                     ? "Paciente pode ser desligado da fila por 3 faltas injustificadas."
                     : "1 falta restante antes de atingir o limite de desligamento."}
@@ -236,38 +236,38 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
           )}
 
           {/* Histórico de Faltas - Secão Nova */}
-          <section className="pt-4 border-t border-slate-100">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
+          <section className="pt-4 border-t border-border">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
               <History className="w-4 h-4" />
               Últimas faltas registradas
             </h3>
             
             {isLoadingHistorico ? (
-              <div className="flex items-center justify-center py-6 text-slate-500">
+              <div className="flex items-center justify-center py-6 text-muted-foreground">
                 <Loader2 className="w-5 h-5 animate-spin" />
               </div>
             ) : historicoFaltas.length === 0 ? (
-              <div className="text-center py-6 px-4 rounded-none bg-slate-50 border border-slate-100 border-dashed">
-                <CheckCircle2 className="w-6 h-6 text-emerald-400 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">Nenhum registro de falta para este paciente.</p>
+              <div className="text-center py-6 px-4 rounded-none bg-muted/30 border border-dashed border-border">
+                <CheckCircle2 className="w-6 h-6 text-alert-success-text mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Nenhum registro de falta para este paciente.</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {historicoFaltas.map((falta) => (
-                  <div key={falta.id} className="flex flex-col gap-1 p-3 rounded-none border border-slate-100 bg-white">
+                  <div key={falta.id} className="flex flex-col gap-1 p-3 rounded-none border border-border bg-card">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-slate-800 flex items-center gap-2">
-                        <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                      <span className="text-sm font-medium text-foreground flex items-center gap-2">
+                        <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                         {new Date(falta.data_falta + 'T00:00:00').toLocaleDateString("pt-BR")}
                       </span>
                       {falta.justificada ? (
-                        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 shadow-none text-[10px] font-semibold h-5">Justificada</Badge>
+                        <Badge variant="outline" className="bg-alert-success-bg text-alert-success-text border-none shadow-none text-[10px] font-semibold h-5">Justificada</Badge>
                       ) : (
-                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 shadow-none text-[10px] font-semibold h-5">Não justificada</Badge>
+                        <Badge variant="outline" className="bg-alert-danger-bg text-alert-danger-text border-none shadow-none text-[10px] font-semibold h-5">Não justificada</Badge>
                       )}
                     </div>
                     {falta.observacao && (
-                      <p className="text-xs text-slate-500 pl-5 border-l-2 border-slate-100 ml-1.5 py-0.5 mt-1 align-middle">
+                      <p className="text-xs text-muted-foreground pl-5 border-l-2 border-border ml-1.5 py-0.5 mt-1 align-middle">
                         {falta.observacao}
                       </p>
                     )}
@@ -280,7 +280,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
         </div>
 
         {/* FOOTER fixo - Adaptativo */}
-        <div className="shrink-0 border-t bg-white px-7 py-4">
+        <div className="shrink-0 border-t bg-card px-7 py-4">
           {!isRegisteringFalta ? (
             <div className="flex gap-3">
               <Button className="flex-1 shadow-sm" onClick={() => toast.info("Agendamento em desenvolvimento.", { description: "Esta funcionalidade estará disponível em breve." })}>
@@ -288,7 +288,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
               </Button>
               <Button 
                 variant="outline" 
-                className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
+                className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10"
                 onClick={() => setIsRegisteringFalta(true)}
               >
                 Registrar falta
@@ -307,14 +307,14 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
                     checked={justificada} 
                     onCheckedChange={setJustificada} 
                   />
-                  <Label htmlFor="justificada" className="text-xs text-slate-600 cursor-pointer">
+                  <Label htmlFor="justificada" className="text-xs text-muted-foreground cursor-pointer">
                     Falta justificada?
                   </Label>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="obs" className="text-xs text-slate-500">Observação (Opcional)</Label>
+                <Label htmlFor="obs" className="text-xs text-muted-foreground">Observação (Opcional)</Label>
                 <Textarea 
                   id="obs" 
                   placeholder="Motivo da falta ou observação pertinente..."

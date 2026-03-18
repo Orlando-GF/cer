@@ -62,11 +62,11 @@ function maskCNS(value: string): string {
 
 function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
   return (
-    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
-      <div className="flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 shrink-0">
-        <Icon className="w-4 h-4 text-blue-600" />
+    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border">
+      <div className="flex items-center justify-center w-7 h-7 rounded-none bg-muted shrink-0">
+        <Icon className="w-4 h-4 text-primary" />
       </div>
-      <span className="text-[10px] font-black tracking-widest uppercase text-slate-500">{title}</span>
+      <span className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">{title}</span>
     </div>
   )
 }
@@ -74,8 +74,8 @@ function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: 
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-        {label} {required && <span className="text-red-500">*</span>}
+      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+        {label} {required && <span className="text-destructive">*</span>}
       </Label>
       {children}
     </div>
@@ -186,7 +186,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
               Inserir na fila de espera
             </SheetTitle>
             {etapa === "busca" && (
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-0.5">
                 Localize o paciente cadastrado na Base.
               </p>
             )}
@@ -202,12 +202,12 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
 
           {/* ── ETAPA 0: BUSCA ─────────────────────────────────────────────── */}
           {etapa === "busca" && (
-            <div className="flex-1 flex flex-col bg-slate-50 items-center justify-center px-10 gap-8">
+            <div className="flex-1 flex flex-col bg-background items-center justify-center px-10 gap-8">
               <div className="flex flex-col items-center gap-3 text-center">
-                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center shadow-inner">
-                  <Search className="w-7 h-7 text-blue-600" />
+                <div className="w-16 h-16 rounded-none bg-muted flex items-center justify-center shadow-inner">
+                  <Search className="w-7 h-7 text-primary" />
                 </div>
-                <p className="text-slate-600 text-sm max-w-sm">
+                <p className="text-muted-foreground text-sm max-w-sm">
                   Informe o <strong>CNS</strong> ou <strong>CPF</strong> para pesquisar na Base de Pacientes do CER II.
                 </p>
               </div>
@@ -223,7 +223,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                     }}
                     onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
                     placeholder="CNS OU CPF..."
-                    className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider"
+                    className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider"
                     autoFocus
                   />
                   <Button type="button" onClick={handleBuscar}
@@ -234,28 +234,28 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                 </div>
 
                 {statusBusca === "encontrado" && pacienteEncontrado && (
-                  <div className="p-4 rounded-xl border border-green-200 bg-green-50 animate-in fade-in duration-300">
+                  <div className="p-4 rounded-none border border-alert-success-text/20 bg-alert-success-bg animate-in fade-in duration-300">
                     <div className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-alert-success-text shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-green-800">{pacienteEncontrado.nome_completo}</p>
-                        <p className="text-xs text-green-700 mt-1">CNS: {pacienteEncontrado.cns}</p>
-                        <p className="text-xs text-green-700">Idade: {new Date().getFullYear() - new Date(pacienteEncontrado.data_nascimento).getFullYear()} anos</p>
+                        <p className="text-sm font-semibold text-alert-success-text">{pacienteEncontrado.nome_completo}</p>
+                        <p className="text-xs text-alert-success-text/80 mt-1">CNS: {pacienteEncontrado.cns}</p>
+                        <p className="text-xs text-alert-success-text/80">Idade: {new Date().getFullYear() - new Date(pacienteEncontrado.data_nascimento).getFullYear()} anos</p>
                       </div>
                     </div>
                   </div>
                 )}
                 {statusBusca === "nao_encontrado" && (
-                  <div className="p-4 rounded-xl border border-amber-200 bg-amber-50 flex flex-col items-center text-center gap-3 animate-in fade-in zoom-in-95 duration-300">
-                    <AlertCircle className="w-6 h-6 text-amber-500" />
+                  <div className="p-4 rounded-none border border-alert-warning-text/20 bg-alert-warning-bg flex flex-col items-center text-center gap-3 animate-in fade-in zoom-in-95 duration-300">
+                    <AlertCircle className="w-6 h-6 text-alert-warning-text" />
                     <div>
-                      <p className="text-sm font-medium text-amber-800">Paciente não localizado</p>
-                      <p className="text-xs text-amber-700 mt-1">
+                      <p className="text-sm font-medium text-alert-warning-text">Paciente não localizado</p>
+                      <p className="text-xs text-alert-warning-text/80 mt-1">
                         Você precisa realizar o cadastro completo deste paciente antes de inseri-lo na fila.
                       </p>
                     </div>
                     <Link href="/pacientes">
-                      <Button type="button" variant="outline" size="sm" className="mt-2 border-amber-300 text-amber-800 hover:bg-amber-100">
+                      <Button type="button" variant="outline" size="sm" className="mt-2 border-alert-warning-text/30 text-alert-warning-text hover:bg-alert-warning-text/10">
                         Ir para Base de Pacientes <ArrowRight className="w-3 h-3 ml-2" />
                       </Button>
                     </Link>
@@ -276,29 +276,29 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
 
           {/* ── ETAPA 1: FILA DE ESPERA FORMULÁRIO ───────────────────────── */}
           {etapa === "formulario" && pacienteEncontrado && (
-            <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden bg-slate-50">
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden bg-background">
 
               <div className="flex-1 overflow-y-auto px-7 py-6 space-y-6">
                 
                 {/* Paciente Encontrado */}
-                <div className="bg-white p-4 rounded-none border border-slate-200 shadow-sm flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-none bg-slate-100 flex items-center justify-center shrink-0">
-                    <User className="w-6 h-6 text-slate-500" />
+                <div className="bg-card p-4 rounded-none border border-border shadow-sm flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-none bg-muted flex items-center justify-center shrink-0">
+                    <User className="w-6 h-6 text-muted-foreground" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 leading-tight uppercase text-xs">{pacienteEncontrado.nome_completo}</h3>
-                    <p className="text-[10px] font-bold text-slate-400 mt-0.5 tracking-tight">CNS: {pacienteEncontrado.cns}</p>
+                    <h3 className="font-bold text-foreground leading-tight uppercase text-xs">{pacienteEncontrado.nome_completo}</h3>
+                    <p className="text-[10px] font-bold text-muted-foreground mt-0.5 tracking-tight">CNS: {pacienteEncontrado.cns}</p>
                   </div>
                 </div>
 
                 {/* FILA */}
-                <section className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
+                <section className="bg-card p-6 rounded-none border border-border shadow-sm">
                   <SectionHeader icon={Stethoscope} title="Parâmetros de inserção na fila" />
                   <div className="space-y-4">
 
                       <Field label="Especialidade / Terapia" required>
                         <Select value={especialidadeId} onValueChange={(v) => setEspecialidadeId(v as string)}>
-                          <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold bg-white text-xs uppercase tracking-wider">
+                          <SelectTrigger className="w-full h-12 rounded-none border-border font-bold bg-card text-xs uppercase tracking-wider">
                             <SelectValue placeholder="SELECIONE A ESPECIALIDADE..." />
                           </SelectTrigger>
                         <SelectContent>
@@ -312,7 +312,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                     <div className="grid grid-cols-2 gap-4">
                       <Field label="Nível de Prioridade" required>
                         <Select value={prioridade} onValueChange={(v) => setPrioridade(v as string)}>
-                          <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold bg-white text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="w-full h-12 rounded-none border-border font-bold bg-card text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
                           <SelectContent className="rounded-none border-none shadow-2xl">
                             <SelectItem value="Rotina" className="font-bold uppercase text-[11px]">Rotina</SelectItem>
                             <SelectItem value="Urgencia Clinica" className="font-bold uppercase text-[11px]">Urgência Clínica</SelectItem>
@@ -322,7 +322,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                       </Field>
                       <Field label="Frequência Recomendada" required>
                         <Select value={frequencia} onValueChange={(v) => setFrequencia(v as string)}>
-                          <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold bg-white text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="w-full h-12 rounded-none border-border font-bold bg-card text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
                           <SelectContent className="rounded-none border-none shadow-2xl">
                             <SelectItem value="A definir" className="font-bold uppercase text-[11px]">A definir</SelectItem>
                             <SelectItem value="Semanal" className="font-bold uppercase text-[11px]">Semanal</SelectItem>
@@ -340,7 +340,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                             value={numProcesso}
                             onChange={(e) => setNumProcesso(e.target.value)}
                             placeholder="0001234-12.2024.8.05.0000"
-                            className="rounded-none border-red-300 h-12 font-bold focus-visible:ring-red-400 bg-red-50/50 uppercase text-xs"
+                            className="rounded-none border-destructive/30 h-12 font-bold focus-visible:ring-destructive/40 bg-alert-danger-bg uppercase text-xs"
                             required
                           />
                         </Field>
@@ -352,7 +352,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                         value={origemEncaminhamento}
                         onChange={(e) => setOrigemEncaminhamento(e.target.value)}
                         placeholder="EX: UBS CENTRO, HOSPITAL REGIONAL..."
-                        className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs"
+                        className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs"
                       />
                     </Field>
 
@@ -360,7 +360,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                 </section>
 
                 {submitError && (
-                  <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <div className="flex items-start gap-2 rounded-none border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                     <X className="w-4 h-4 shrink-0 mt-0.5" />
                     {submitError}
                   </div>
@@ -369,8 +369,8 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
               </div>
 
               {/* FOOTER */}
-              <div className="shrink-0 border-t bg-slate-50 px-7 py-5 flex gap-3">
-                <Button type="button" variant="outline" className="flex-1 h-14 rounded-none border-slate-200 font-bold uppercase tracking-widest text-slate-500"
+              <div className="shrink-0 border-t bg-card px-7 py-5 flex gap-3">
+                <Button type="button" variant="outline" className="flex-1 h-14 rounded-none border-border font-bold uppercase tracking-widest text-muted-foreground"
                   onClick={() => handleOpen(false)} disabled={isPending}>
                   CANCELAR
                 </Button>

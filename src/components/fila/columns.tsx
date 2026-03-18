@@ -59,7 +59,7 @@ export const columns: ColumnDef<PacienteFila>[] = [
       const map: Record<string, string> = {
         "Aguardando": "bg-alert-warning-bg text-alert-warning-text border-none",
         "Em Atendimento": "bg-alert-success-bg text-alert-success-text border-none",
-        "Desistencia": "bg-slate-100 text-slate-500 border-none",
+        "Desistencia": "bg-muted text-muted-foreground border-none",
         "Alta": "bg-alert-shared-bg text-alert-shared-text border-none",
         "Em Risco": "bg-alert-danger-bg text-alert-danger-text border-none",
       }
@@ -77,7 +77,7 @@ export const columns: ColumnDef<PacienteFila>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="flex h-8 w-8 items-center justify-center rounded-none border-[0.5px] border-[#C8D9EE] bg-[#FFFFFF] text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-none border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none"
             title="Opções do paciente"
             onClick={(e) => e.stopPropagation()}
           >
