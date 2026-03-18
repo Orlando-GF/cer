@@ -24,8 +24,8 @@ const tabsListVariants = cva(
       variant: {
         default: "p-1 bg-muted/40 border border-border/50 rounded-none",
         line: "gap-4 bg-transparent",
-        segmented: "p-1 bg-muted/40 border border-border/50 rounded-none gap-1",
-        agenda: "p-1 bg-[#E8F1FB] border border-[#C8D9EE]/30 rounded-none gap-1",
+        segmented: "p-1 bg-slate-200/50 border border-slate-200 rounded-none gap-1",
+        agenda: "p-1 bg-primary-50 border border-primary-100/30 rounded-none gap-1",
         // Nova variante: barra de navegação com ícone + label empilhados
         nav: "gap-0 bg-background border-b border-border w-full h-auto",
       },
@@ -81,12 +81,12 @@ function TabsTrigger({ className, children, icon, ...props }: TabsTriggerProps) 
         "group-data-[variant=default]/tabs-list:rounded-none",
 
         "group-data-[variant=segmented]/tabs-list:flex-1",
-        "group-data-[variant=segmented]/tabs-list:data-[state=active]:bg-card group-data-[variant=segmented]/tabs-list:data-[selected]:bg-card group-data-[variant=segmented]/tabs-list:aria-[selected=true]:bg-card",
+        "group-data-[variant=segmented]/tabs-list:data-[state=active]:bg-white group-data-[variant=segmented]/tabs-list:data-[selected]:bg-white group-data-[variant=segmented]/tabs-list:aria-[selected=true]:bg-white",
         "group-data-[variant=segmented]/tabs-list:data-[state=active]:text-primary group-data-[variant=segmented]/tabs-list:data-[selected]:text-primary group-data-[variant=segmented]/tabs-list:aria-[selected=true]:text-primary",
-        "group-data-[variant=segmented]/tabs-list:data-[state=active]:shadow-sm group-data-[variant=segmented]/tabs-list:data-[selected]:shadow-sm group-data-[variant=segmented]/tabs-list:aria-[selected=true]:shadow-sm",
+        "group-data-[variant=segmented]/tabs-list:data-[state=active]:shadow-md group-data-[variant=segmented]/tabs-list:data-[selected]:shadow-md group-data-[variant=segmented]/tabs-list:aria-[selected=true]:shadow-md",
         "group-data-[variant=segmented]/tabs-list:data-[state=active]:border group-data-[variant=segmented]/tabs-list:data-[selected]:border group-data-[variant=segmented]/tabs-list:aria-[selected=true]:border",
-        "group-data-[variant=segmented]/tabs-list:data-[state=active]:border-border group-data-[variant=segmented]/tabs-list:data-[selected]:border-border group-data-[variant=segmented]/tabs-list:aria-[selected=true]:border-border",
-        "group-data-[variant=segmented]/tabs-list:data-[state=active]:font-medium group-data-[variant=segmented]/tabs-list:data-[selected]:font-medium group-data-[variant=segmented]/tabs-list:aria-[selected=true]:font-medium",
+        "group-data-[variant=segmented]/tabs-list:data-[state=active]:border-slate-200 group-data-[variant=segmented]/tabs-list:data-[selected]:border-slate-200 group-data-[variant=segmented]/tabs-list:aria-[selected=true]:border-slate-200",
+        "group-data-[variant=segmented]/tabs-list:data-[state=active]:font-bold group-data-[variant=segmented]/tabs-list:data-[selected]:font-bold group-data-[variant=segmented]/tabs-list:aria-[selected=true]:font-bold",
         "group-data-[variant=segmented]/tabs-list:rounded-none",
 
         // agenda: fundo primary-50, ativa branca com borda, inativa com cor específica

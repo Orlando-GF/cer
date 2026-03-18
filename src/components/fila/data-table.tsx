@@ -237,7 +237,7 @@ export function DataTable<TData, TValue>({
           size="sm"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
-          className="bg-white border-[0.5px] border-[#C8D9EE] text-[#0F2D52] rounded-[6px] px-[14px] py-[6px] h-auto hover:bg-[#E8F1FB] hover:text-[#0F2D52] disabled:text-[#C8D9EE] disabled:opacity-100 disabled:bg-white"
+          className="bg-white border-[0.5px] border-[#C8D9EE] text-[#0F2D52] rounded-none px-[14px] py-[6px] h-auto hover:bg-[#E8F1FB] hover:text-[#0F2D52] disabled:text-[#C8D9EE] disabled:opacity-100 disabled:bg-white"
         >
           Anterior
         </Button>
@@ -246,7 +246,7 @@ export function DataTable<TData, TValue>({
           size="sm"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
-          className="bg-white border-[0.5px] border-[#C8D9EE] text-[#0F2D52] rounded-[6px] px-[14px] py-[6px] h-auto hover:bg-[#E8F1FB] hover:text-[#0F2D52] disabled:text-[#C8D9EE] disabled:opacity-100 disabled:bg-white"
+          className="bg-white border-[0.5px] border-[#C8D9EE] text-[#0F2D52] rounded-none px-[14px] py-[6px] h-auto hover:bg-[#E8F1FB] hover:text-[#0F2D52] disabled:text-[#C8D9EE] disabled:opacity-100 disabled:bg-white"
         >
           Próxima
         </Button>

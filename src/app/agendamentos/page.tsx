@@ -1,15 +1,17 @@
 import React, { Suspense } from "react"
 import { validarAcessoRota } from "@/lib/access-control"
 import { AgendaContent } from "@/components/agenda/agenda-content"
-import { buscarProfissionais } from "@/actions"
+import { buscarProfissionais, buscarEspecialidades } from "@/actions"
 
 export default async function AgendamentosPage(): Promise<React.ReactNode> {
-  const [perfil, resProf] = await Promise.all([
+  const [perfil, resProf, resEsp] = await Promise.all([
     validarAcessoRota("/agendamentos"),
-    buscarProfissionais()
+    buscarProfissionais(),
+    buscarEspecialidades()
   ])
 
   const profissionais = resProf.success && resProf.data ? resProf.data : []
+  const especialidades = resEsp.success && resEsp.data ? resEsp.data : []
 
   return (
     <div className="p-6 space-y-8 max-w-full overflow-hidden">
@@ -21,7 +23,11 @@ export default async function AgendamentosPage(): Promise<React.ReactNode> {
       </div>
 
       <Suspense fallback={<div className="h-96 w-full animate-pulse bg-slate-100 rounded-lg" />}>
-        <AgendaContent perfil={perfil} profissionaisIniciais={profissionais} />
+        <AgendaContent 
+          perfil={perfil} 
+          profissionaisIniciais={profissionais} 
+          especialidadesIniciais={especialidades}
+        />
       </Suspense>
     </div>
   )

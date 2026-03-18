@@ -21,9 +21,9 @@ import {
   X,
   Stethoscope,
   Truck,
-  Tag,
 } from "lucide-react"
-import { cadastrarPaciente, atualizarPaciente, type ActionResponse } from "@/actions"
+import { cadastrarPaciente, atualizarPaciente } from "@/actions"
+import { type ActionResponse } from "@/types"
 import { useRouter } from "next/navigation"
 import { formatarNomeClinico, buscarEnderecoPorCep } from "@/lib/utils/string-utils"
 
@@ -98,7 +98,7 @@ function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: 
       <div className="flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 shrink-0">
         <Icon className="w-4 h-4 text-blue-600" />
       </div>
-      <span className="text-xs font-semibold tracking-widest text-slate-500">{title}</span>
+      <span className="text-[10px] font-black tracking-widest uppercase text-slate-500">{title}</span>
     </div>
   )
 }
@@ -118,7 +118,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-slate-700">
+      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
       {children}
@@ -138,21 +138,36 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   
-  const [dados, setDados] = useState<PacienteFormData>(initialData || {
-    cidade: "Barreiras",
-    uf: "BA",
-    sexo: "M",
-    pactuado: false,
-    municipio_pactuado: "",
-    necessita_transporte: false,
-    tags_acessibilidade: [],
-    id_legado_vba: "",
-    status_cadastro: "Ativo"
+  const [dados, setDados] = useState<PacienteFormData>(() => {
+    const base = initialData || {
+      cidade: "Barreiras",
+      uf: "BA",
+      sexo: "M",
+      pactuado: false,
+      municipio_pactuado: "",
+      necessita_transporte: false,
+      tags_acessibilidade: [],
+      id_legado_vba: "",
+      status_cadastro: "Ativo"
+    }
+
+    if (!initialData) return base
+
+    return {
+      ...initialData,
+      cpf: initialData.cpf ? maskCPF(initialData.cpf) : "",
+      cns: initialData.cns ? maskCNS(initialData.cns) : "",
+      endereco_cep: initialData.endereco_cep ? maskCEP(initialData.endereco_cep) : "",
+      telefone_principal: initialData.telefone_principal ? maskPhone(initialData.telefone_principal) : "",
+      telefone_secundario: initialData.telefone_secundario ? maskPhone(initialData.telefone_secundario) : "",
+      telefone_responsavel: initialData.telefone_responsavel ? maskPhone(initialData.telefone_responsavel) : "",
+    }
   })
 
-  // Aplica máscaras nos dados iniciais se existirem
+  // Sincroniza se initialData mudar (ex: troca de paciente com sheet aberto)
   useEffect(() => {
     if (initialData) {
+      // eslint-disable-next-line react-compiler/react-compiler, react-hooks/exhaustive-deps
       setDados({
         ...initialData,
         cpf: initialData.cpf ? maskCPF(initialData.cpf) : "",
@@ -189,7 +204,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const setField = useCallback((field: keyof PacienteFormData) => 
-    (v: any) => setDados((d) => ({ ...d, [field]: v })), 
+    (v: string | number | boolean | string[] | undefined | null) => setDados((d) => ({ ...d, [field]: v })), 
   [])
 
   function validateField(name: string, value: string) {
@@ -248,8 +263,9 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
               <Input
                 value={dados.nome_completo || ""}
                 onChange={(e) => setField("nome_completo")(formatarNomeClinico(e.target.value))}
-                placeholder="Nome como consta no documento"
+                placeholder="NOME COMO CONSTA NO DOCUMENTO"
                 required
+                className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider"
               />
             </Field>
 
@@ -260,26 +276,27 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   value={dados.data_nascimento || ""}
                   onChange={(e) => setField("data_nascimento")(e.target.value)}
                   required
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider"
                 />
               </Field>
               <Field label="Sexo" required>
                 <Select value={dados.sexo} onValueChange={(v) => setField("sexo")(v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="M">Masculino</SelectItem>
-                    <SelectItem value="F">Feminino</SelectItem>
-                    <SelectItem value="Outro">Outro</SelectItem>
+                  <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold bg-white text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-none border-none shadow-2xl">
+                    <SelectItem value="M" className="font-bold uppercase text-[11px]">Masculino</SelectItem>
+                    <SelectItem value="F" className="font-bold uppercase text-[11px]">Feminino</SelectItem>
+                    <SelectItem value="Outro" className="font-bold uppercase text-[11px]">Outro</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
               <Field label="Status do Cadastro" required>
                 <Select value={dados.status_cadastro} onValueChange={(v) => setField("status_cadastro")(v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Ativo">Ativo</SelectItem>
-                    <SelectItem value="Inativo">Inativo</SelectItem>
-                    <SelectItem value="Obito">Óbito</SelectItem>
-                    <SelectItem value="Alta">Alta</SelectItem>
+                  <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold bg-white text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-none border-none shadow-2xl">
+                    <SelectItem value="Ativo" className="font-bold uppercase text-[11px]">Ativo</SelectItem>
+                    <SelectItem value="Inativo" className="font-bold uppercase text-[11px]">Inativo</SelectItem>
+                    <SelectItem value="Obito" className="font-bold uppercase text-[11px]">Óbito</SelectItem>
+                    <SelectItem value="Alta" className="font-bold uppercase text-[11px]">Alta</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
@@ -292,7 +309,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   onChange={(e) => setField("cns")(maskCNS(e.target.value))}
                   onBlur={(e) => validateField("cns", e.target.value)}
                   placeholder="000.0000.0000.0000"
-                  className="font-mono tracking-wider tabular-nums"
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
                   maxLength={19}
                 />
               </Field>
@@ -302,7 +319,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   onChange={(e) => setField("cpf")(maskCPF(e.target.value))}
                   onBlur={(e) => validateField("cpf", e.target.value)}
                   placeholder="000.000.000-00"
-                  className="font-mono tracking-wider tabular-nums"
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
                   maxLength={14}
                 />
               </Field>
@@ -310,8 +327,8 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                 <Input
                   value={dados.id_legado_vba || ""}
                   onChange={(e) => setField("id_legado_vba")(e.target.value)}
-                  placeholder="Ex: 1234"
-                  className="font-mono"
+                  placeholder="EX: 1234"
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest font-mono"
                 />
               </Field>
             </div>
@@ -321,23 +338,25 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                 <Input
                   value={dados.nome_mae || ""}
                   onChange={(e) => setField("nome_mae")(formatarNomeClinico(e.target.value))}
-                  placeholder="Essencial para buscas no SUS"
+                  placeholder="ESSENCIAL PARA BUSCAS NO SUS"
                   required
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider"
                 />
               </Field>
               <Field label="Nome do pai">
                 <Input
                   value={dados.nome_pai || ""}
                   onChange={(e) => setField("nome_pai")(formatarNomeClinico(e.target.value))}
-                  placeholder="Opcional"
+                  placeholder="OPCIONAL"
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider"
                 />
               </Field>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-center justify-between rounded-none border border-slate-200 bg-white p-4">
               <div>
-                <p className="text-sm font-medium text-slate-800">Vínculo Municipal</p>
-                <p className="text-xs text-slate-500 mt-0.5">O paciente é de município pactuado?</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Vínculo Municipal</p>
+                <p className="text-[10px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">O paciente é de município pactuado?</p>
               </div>
               <Switch checked={dados.pactuado} onCheckedChange={(v) => setField("pactuado")(v)} />
             </div>
@@ -346,22 +365,13 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
               <div className="animate-in fade-in slide-in-from-top-2 duration-200">
                 <Field label="Município de Origem (Pactuado)" required>
                   <Select value={dados.municipio_pactuado || ""} onValueChange={(v) => setField("municipio_pactuado")(v)}>
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="Selecione o município" />
+                    <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold bg-white text-xs uppercase tracking-wider">
+                      <SelectValue placeholder="SELECIONE O MUNICÍPIO" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Angical">Angical</SelectItem>
-                      <SelectItem value="Baianópoliss">Baianópolis</SelectItem>
-                      <SelectItem value="Catolândia">Catolândia</SelectItem>
-                      <SelectItem value="Cristópolis">Cristópolis</SelectItem>
-                      <SelectItem value="Formosa do Rio Preto">Formosa do Rio Preto</SelectItem>
-                      <SelectItem value="Luís Eduardo Magalhães">Luís Eduardo Magalhães</SelectItem>
-                      <SelectItem value="Mansidão">Mansidão</SelectItem>
-                      <SelectItem value="Riachão das Neves">Riachão das Neves</SelectItem>
-                      <SelectItem value="Santa Rita de Cássia">Santa Rita de Cássia</SelectItem>
-                      <SelectItem value="São Desidério">São Desidério</SelectItem>
-                      <SelectItem value="Wanderley">Wanderley</SelectItem>
-                      <SelectItem value="Outro">Outro município pactuado</SelectItem>
+                    <SelectContent className="rounded-none border-none shadow-2xl">
+                      {["Angical", "Baianópolis", "Catolândia", "Cristópolis", "Formosa do Rio Preto", "Luís Eduardo Magalhães", "Mansidão", "Riachão das Neves", "Santa Rita de Cássia", "São Desidério", "Wanderley", "Outro"].map(m => (
+                        <SelectItem key={m} value={m} className="font-bold uppercase text-[11px]">{m}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </Field>
@@ -381,27 +391,28 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   onChange={(e) => setField("endereco_cep")(maskCEP(e.target.value))}
                   onBlur={(e) => validateField("endereco_cep", e.target.value)}
                   placeholder="00000-000"
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
                   maxLength={9}
                 />
               </Field>
               <Field label="Bairro">
-                <Input value={dados.bairro || ""} onChange={(e) => setField("bairro")(e.target.value)} placeholder="Nome do bairro" />
+                <Input value={dados.bairro || ""} onChange={(e) => setField("bairro")(e.target.value)} placeholder="NOME DO BAIRRO" className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
               </Field>
             </div>
             <div className="grid grid-cols-[1fr_100px] gap-4">
               <Field label="Logradouro">
-                <Input value={dados.logradouro || ""} onChange={(e) => setField("logradouro")(e.target.value)} placeholder="Rua ou Avenida" />
+                <Input value={dados.logradouro || ""} onChange={(e) => setField("logradouro")(e.target.value)} placeholder="RUA OU AVENIDA" className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
               </Field>
               <Field label="Nº">
-                <Input value={dados.numero || ""} onChange={(e) => setField("numero")(e.target.value)} placeholder="S/N" />
+                <Input value={dados.numero || ""} onChange={(e) => setField("numero")(e.target.value)} placeholder="S/N" className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
               </Field>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Cidade">
-                <Input value={dados.cidade || ""} onChange={(e) => setField("cidade")(e.target.value)} />
+                <Input value={dados.cidade || ""} onChange={(e) => setField("cidade")(e.target.value)} className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
               </Field>
               <Field label="UF">
-                <Input value={dados.uf || ""} onChange={(e) => setField("uf")(e.target.value)} maxLength={2} className="uppercase" />
+                <Input value={dados.uf || ""} onChange={(e) => setField("uf")(e.target.value)} maxLength={2} className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
               </Field>
             </div>
           </div>
@@ -416,7 +427,8 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                 <Input
                   value={dados.telefone_principal || ""}
                   onChange={(e) => setField("telefone_principal")(maskPhone(e.target.value))}
-                  placeholder="(77) 99999-9999"
+                  placeholder="(00) 00000-0000"
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
                   maxLength={15}
                 />
               </Field>
@@ -424,20 +436,22 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                 <Input
                   value={dados.telefone_secundario || ""}
                   onChange={(e) => setField("telefone_secundario")(maskPhone(e.target.value))}
-                  placeholder="(77) 99999-9999"
+                  placeholder="(00) 00000-0000"
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
                   maxLength={15}
                 />
               </Field>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Nome do responsável">
-                <Input value={dados.nome_responsavel || ""} onChange={(e) => setField("nome_responsavel")(formatarNomeClinico(e.target.value))} />
+                <Input value={dados.nome_responsavel || ""} onChange={(e) => setField("nome_responsavel")(formatarNomeClinico(e.target.value))} className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
               </Field>
               <Field label="Telefone do Responsável">
                 <Input
                   value={dados.telefone_responsavel || ""}
                   onChange={(e) => setField("telefone_responsavel")(maskPhone(e.target.value))}
-                  placeholder="(77) 99999-9999"
+                  placeholder="(00) 00000-0000"
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
                 />
               </Field>
             </div>
@@ -453,26 +467,28 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                 <Input 
                   value={dados.cid_principal || ""} 
                   onChange={(e) => setField("cid_principal")(e.target.value.toUpperCase())} 
-                  placeholder="Ex: F84.0"
+                  placeholder="EX: F84.0"
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest"
                 />
               </Field>
               <Field label="CID Secundário">
                 <Input 
                   value={dados.cid_secundario || ""} 
                   onChange={(e) => setField("cid_secundario")(e.target.value.toUpperCase())} 
-                  placeholder="Opcional"
+                  placeholder="OPCIONAL"
+                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest"
                 />
               </Field>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-center justify-between rounded-none border border-slate-200 bg-white p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Truck className="w-4 h-4 text-blue-700" />
+                <div className="p-2 bg-blue-50 rounded-none">
+                  <Truck className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-800">Necessita de Transporte?</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Ativa a visualização para motoristas</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Necessita de Transporte?</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">Ativa a visualização para motoristas</p>
                 </div>
               </div>
               <Switch 
@@ -482,13 +498,13 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
             </div>
 
             <Field label="Tags de Acessibilidade / Observações de Risco">
-              <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-white min-h-[80px]">
+              <div className="flex flex-wrap gap-2 p-3 border rounded-none bg-white min-h-[80px]">
                 {["Cadeirante", "Acamado", "Risco Agitação", "Deficiência Visual", "Deficiência Auditiva", "Uso de Maca"].map(tag => (
                   <Button
                     key={tag}
                     type="button"
                     variant={dados.tags_acessibilidade?.includes(tag) ? "default" : "outline"}
-                    className="h-7 text-xs px-2 py-0"
+                    className="h-8 rounded-none border-slate-200 font-bold uppercase tracking-widest text-[10px] px-2"
                     onClick={() => {
                       const current = dados.tags_acessibilidade || []
                       if (current.includes(tag)) {
@@ -514,13 +530,17 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
         )}
       </div>
 
-      <div className="shrink-0 border-t bg-white px-7 py-4 flex gap-3">
-        <Button type="button" variant="outline" className="flex-1" onClick={onCancel} disabled={isPending}>
-          Cancelar
+      {/* FOOTER */}
+      <div className="shrink-0 border-t bg-slate-50 px-7 py-5 flex gap-3">
+        <Button type="button" variant="outline" className="flex-1 h-14 rounded-none border-slate-200 font-bold uppercase tracking-widest text-slate-500" onClick={onCancel} disabled={isPending}>
+          CANCELAR
         </Button>
-        <Button type="submit" className="flex-1 gap-2" disabled={isPending}>
-          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-          {dados.id ? "Salvar Alterações" : "Cadastrar Paciente"}
+        <Button type="submit" className="flex-1 h-14 rounded-none bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-widest shadow-lg shadow-primary/20 gap-2" disabled={isPending}>
+          {isPending ? (
+            <><Loader2 className="h-4 w-4 animate-spin" />SALVANDO...</>
+          ) : (
+            <>{dados.id ? "SALVAR ALTERAÇÕES" : "CADASTRAR PACIENTE"}<CheckCircle2 className="h-4 w-4" /></>
+          )}
         </Button>
       </div>
     </form>

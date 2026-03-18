@@ -5,10 +5,12 @@ export interface Profissional {
   nome_completo: string
   registro_conselho?: string
   cbo?: string
-  perfil_acesso: string
+  perfil_acesso: PerfilAcesso
   especialidades_permitidas?: string[]
   ativo?: boolean
 }
+
+export type PerfilAcesso = "Medico_Terapeuta" | "Enfermagem" | "Recepcao" | "Administracao"
 
 export interface Paciente {
   id: string
@@ -27,8 +29,17 @@ export interface Paciente {
   cid_secundario?: string | null
   necessita_transporte: boolean
   tags_acessibilidade: string[]
-  telefone_principal?: string | null
+  data_ultimo_laudo?: string | null
+  telefone_principal: string | null
+  telefone_secundario?: string | null
+  nome_responsavel?: string | null
+  telefone_responsavel?: string | null
   status_cadastro?: string
+  // Endereço e Logística
+  endereco_cep?: string | null
+  logradouro?: string | null
+  numero?: string | null
+  bairro?: string | null
   criado_em?: string
 }
 
@@ -36,8 +47,13 @@ export interface Especialidade {
   id: string
   nome_especialidade: string
   descricao?: string | null
+  equipe_responsavel?: string | null
+  linha_reabilitacao?: string | null
+  tipo_atendimento?: TipoAtendimento | null
   ativo?: boolean
 }
+
+export type TipoAtendimento = "Consulta Medica" | "Terapia Continua" | "Dispensacao_OPM" | "Avaliacao_Diagnostica"
 
 export interface GradeHoraria {
   id: string
@@ -70,6 +86,7 @@ export interface VagaFixa {
   status_vaga: "Ativa" | "Suspensa" | "Encerrada"
   data_inicio_contrato: string
   data_fim_contrato?: string | null
+  criado_em?: string
   // Joins
   pacientes?: Paciente
   profissionais?: Profissional
@@ -94,6 +111,8 @@ export interface AgendamentoHistorico {
   evolucao_clinica?: string | null
   conduta?: string | null
   tipo_vaga?: string | null
+  vaga_fixa_id?: string | null
+  criado_em?: string
   // Joins
   pacientes?: Paciente
   profissionais?: Profissional
@@ -132,6 +151,7 @@ export interface AgendaSession {
   data_hora_inicio: Date
   data_hora_fim: Date
   status: "Agendado" | "Presente" | "Falta Justificada" | "Falta Nao Justificada" | "Cancelado" | "Projetado"
+
   tipo_vaga: string
   vaga_fixa_id?: string
   conflito_intensivo?: boolean
@@ -143,4 +163,16 @@ export interface AgendaSession {
   paciente_bairro?: string
   paciente_cidade?: string
   tags_acessibilidade?: string[]
+}
+
+export interface VagaFixaComJoins extends Omit<VagaFixa, 'pacientes' | 'profissionais' | 'linhas_cuidado_especialidades'> {
+  pacientes: Pick<Paciente, 'id' | 'nome_completo' | 'data_nascimento' | 'cns' | 'criado_em' | 'data_ultimo_laudo' | 'logradouro' | 'numero' | 'bairro' | 'cidade' | 'tags_acessibilidade' | 'necessita_transporte'>
+  profissionais: Pick<Profissional, 'id' | 'nome_completo'>
+  linhas_cuidado_especialidades: Pick<Especialidade, 'id' | 'nome_especialidade'>
+}
+
+export interface AgendamentoHistoricoComJoins extends Omit<AgendamentoHistorico, 'pacientes' | 'profissionais' | 'linhas_cuidado_especialidades'> {
+  pacientes: Pick<Paciente, 'id' | 'nome_completo' | 'data_nascimento' | 'cns' | 'criado_em' | 'data_ultimo_laudo' | 'logradouro' | 'numero' | 'bairro' | 'cidade' | 'tags_acessibilidade' | 'necessita_transporte'>
+  profissionais: Pick<Profissional, 'id' | 'nome_completo'>
+  linhas_cuidado_especialidades: Pick<Especialidade, 'id' | 'nome_especialidade'>
 }

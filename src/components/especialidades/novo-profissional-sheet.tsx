@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select"
 import { UserPlus, Loader2, Check } from "lucide-react"
 import { cadastrarProfissional, buscarEspecialidades } from "@/actions"
+import { type PerfilAcesso } from "@/types"
 import { formatarNomeClinico } from "@/lib/utils/string-utils"
 
 // Componente de Campo Reutilizável (Padrão PacienteForm)
@@ -36,8 +37,8 @@ function Field({
   children: React.ReactNode
 }) {
   return (
-    <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-slate-700">
+    <div className="space-y-2">
+      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
       {children}
@@ -55,7 +56,7 @@ export function NovoProfissionalSheet() {
     nome_completo: "",
     registro_conselho: "",
     cbo: "",
-    perfil_acesso: "Medico_Terapeuta" as const,
+    perfil_acesso: "Medico_Terapeuta" as PerfilAcesso,
     especialidades_permitidas: [] as string[],
     ativo: true,
   })
@@ -117,7 +118,7 @@ export function NovoProfissionalSheet() {
         <UserPlus className="h-4 w-4" />
         Novo Profissional
       </SheetTrigger>
-      <SheetContent className="sm:max-w-md overflow-y-auto">
+      <SheetContent className="overflow-y-auto">
         <SheetHeader className="mb-6">
           <SheetTitle>Cadastrar Novo Profissional</SheetTitle>
           <SheetDescription>
@@ -125,28 +126,31 @@ export function NovoProfissionalSheet() {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-5 py-4">
+        <div className="px-7 py-6 space-y-6">
           <Field label="Nome completo" required error={errors.nome_completo}>
             <Input 
-              placeholder="Ex: Dr. Paulo Silva" 
+              placeholder="EX: DR. PAULO SILVA" 
               value={dados.nome_completo}
               onChange={(e) => setDados({...dados, nome_completo: formatarNomeClinico(e.target.value)})}
+              className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-slate-50 uppercase text-xs"
             />
           </Field>
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Registro (CRM/CRP)">
               <Input 
-                placeholder="Ex: CRM-BA 12345" 
+                placeholder="EX: CRM-BA 12345" 
                 value={dados.registro_conselho}
                 onChange={(e) => setDados({...dados, registro_conselho: e.target.value})}
+                className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-slate-50 uppercase text-xs"
               />
             </Field>
             <Field label="CBO">
               <Input 
-                placeholder="Ex: 225125" 
+                placeholder="EX: 225125" 
                 value={dados.cbo}
                 onChange={(e) => setDados({...dados, cbo: e.target.value})}
+                className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-slate-50 uppercase text-xs"
               />
             </Field>
           </div>
@@ -154,25 +158,25 @@ export function NovoProfissionalSheet() {
           <Field label="Perfil de Acesso">
             <Select 
               value={dados.perfil_acesso} 
-              onValueChange={(v: any) => setDados({...dados, perfil_acesso: v})}
+              onValueChange={(v) => setDados({...dados, perfil_acesso: v as PerfilAcesso})}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o perfil" />
+              <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold focus:ring-primary bg-white uppercase text-xs tracking-wider">
+                <SelectValue placeholder="SELECIONE O PERFIL" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Medico_Terapeuta">Médico / Terapeuta</SelectItem>
-                <SelectItem value="Enfermagem">Enfermagem / Acolhimento</SelectItem>
-                <SelectItem value="Recepcao">Recepção</SelectItem>
-                <SelectItem value="Administracao">Administração</SelectItem>
+              <SelectContent className="rounded-none border-none shadow-2xl">
+                <SelectItem value="Medico_Terapeuta" className="font-bold uppercase text-[11px]">Médico / Terapeuta</SelectItem>
+                <SelectItem value="Enfermagem" className="font-bold uppercase text-[11px]">Enfermagem / Acolhimento</SelectItem>
+                <SelectItem value="Recepcao" className="font-bold uppercase text-[11px]">Recepção</SelectItem>
+                <SelectItem value="Administracao" className="font-bold uppercase text-[11px]">Administração</SelectItem>
               </SelectContent>
             </Select>
           </Field>
 
           <div className="space-y-3">
-            <Label className="text-sm font-medium text-slate-700 text-sm font-medium text-slate-700">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
               Especialidades Permitidas
             </Label>
-            <div className="grid grid-cols-1 gap-2 p-3 border rounded-lg bg-slate-50 max-h-48 overflow-y-auto">
+            <div className="grid grid-cols-1 gap-2 p-3 border border-slate-200 rounded-none bg-slate-50 max-h-48 overflow-y-auto">
               {especialidades.map((esp) => (
                 <div 
                   key={esp.id}
@@ -203,23 +207,23 @@ export function NovoProfissionalSheet() {
           <div className="pt-8 flex gap-3">
             <Button 
               variant="outline" 
-              className="flex-1"
+              className="flex-1 h-14 rounded-none border-slate-200 font-bold uppercase tracking-widest text-slate-500"
               onClick={() => setOpen(false)}
             >
-              Cancelar
+              CANCELAR
             </Button>
             <Button 
-              className="flex-1 shadow-sm"
+              className="flex-1 h-14 rounded-none bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-widest shadow-lg shadow-primary/20"
               disabled={isPending}
               onClick={handleSubmit}
             >
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
+                  SALVANDO...
                 </>
               ) : (
-                "Cadastrar Profissional"
+                "CADASTRAR PROFISSIONAL"
               )}
             </Button>
           </div>

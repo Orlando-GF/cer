@@ -1,5 +1,5 @@
 import { addDays, isSameDay, parseISO, startOfDay, format } from "date-fns"
-import type { AgendaSession } from "@/types"
+import type { AgendaSession, VagaFixaComJoins, AgendamentoHistoricoComJoins } from "@/types"
 
 /**
  * Motor Dinâmico de Projeção de Agenda
@@ -7,8 +7,8 @@ import type { AgendaSession } from "@/types"
  * mesclando com o histórico de materializações reais do banco.
  */
 export function projectAgendaSessions(
-  vagasFixas: any[], // TODO: Tipar conforme joins do Supabase
-  historico: any[], 
+  vagasFixas: VagaFixaComJoins[],
+  historico: AgendamentoHistoricoComJoins[], 
   startDate: Date, 
   endDate: Date
 ): AgendaSession[] {
@@ -41,24 +41,24 @@ export function projectAgendaSessions(
       if (materializacao) {
         sessions.push({
           id: materializacao.id,
-          paciente_id: materializacao.pacientes.id,
-          paciente_nome: materializacao.pacientes.nome_completo,
-          profissional_id: materializacao.profissionais.id,
-          profissional_nome: materializacao.profissionais.nome_completo,
-          especialidade_id: materializacao.linhas_cuidado_especialidades.id,
-          especialidade_nome: materializacao.linhas_cuidado_especialidades.nome_especialidade,
+          paciente_id: materializacao.pacientes!.id,
+          paciente_nome: materializacao.pacientes!.nome_completo,
+          profissional_id: materializacao.profissionais!.id,
+          profissional_nome: materializacao.profissionais!.nome_completo,
+          especialidade_id: materializacao.linhas_cuidado_especialidades!.id,
+          especialidade_nome: materializacao.linhas_cuidado_especialidades!.nome_especialidade,
           data_hora_inicio: parseISO(materializacao.data_hora_inicio),
           data_hora_fim: parseISO(materializacao.data_hora_fim),
-          status: materializacao.status_comparecimento,
-          tipo_vaga: materializacao.tipo_vaga,
+          status: materializacao.status_comparecimento as AgendaSession["status"],
+          tipo_vaga: materializacao.tipo_vaga || "Regular",
           vaga_fixa_id: regra.id,
-          laudo_vencido: checkLaudoVencido(materializacao.pacientes.data_ultimo_laudo),
+          laudo_vencido: checkLaudoVencido(materializacao.pacientes!.data_ultimo_laudo || null),
           criado_em: materializacao.criado_em,
-          paciente_logradouro: materializacao.pacientes.logradouro,
-          paciente_numero: materializacao.pacientes.numero,
-          paciente_bairro: materializacao.pacientes.bairro,
-          paciente_cidade: materializacao.pacientes.cidade,
-          tags_acessibilidade: materializacao.pacientes.tags_acessibilidade
+          paciente_logradouro: materializacao.pacientes!.logradouro || undefined,
+          paciente_numero: materializacao.pacientes!.numero || undefined,
+          paciente_bairro: materializacao.pacientes!.bairro || undefined,
+          paciente_cidade: materializacao.pacientes!.cidade || undefined,
+          tags_acessibilidade: materializacao.pacientes!.tags_acessibilidade
         })
       } else {
         // Sessão Projetada (Virtual)
@@ -73,23 +73,23 @@ export function projectAgendaSessions(
 
         sessions.push({
           id: `proj_${regra.id}_${format(current, 'yyyyMMdd')}`,
-          paciente_id: regra.pacientes.id,
-          paciente_nome: regra.pacientes.nome_completo,
-          profissional_id: regra.profissionais.id,
-          profissional_nome: regra.profissionais.nome_completo,
-          especialidade_id: regra.linhas_cuidado_especialidades.id,
-          especialidade_nome: regra.linhas_cuidado_especialidades.nome_especialidade,
+          paciente_id: regra.pacientes!.id,
+          paciente_nome: regra.pacientes!.nome_completo,
+          profissional_id: regra.profissionais!.id,
+          profissional_nome: regra.profissionais!.nome_completo,
+          especialidade_id: regra.linhas_cuidado_especialidades!.id,
+          especialidade_nome: regra.linhas_cuidado_especialidades!.nome_especialidade,
           data_hora_inicio: dStart,
           data_hora_fim: dEnd,
           status: "Projetado",
           tipo_vaga: "Regular",
           vaga_fixa_id: regra.id,
-          laudo_vencido: checkLaudoVencido(regra.pacientes.data_ultimo_laudo),
-          paciente_logradouro: regra.pacientes.logradouro,
-          paciente_numero: regra.pacientes.numero,
-          paciente_bairro: regra.pacientes.bairro,
-          paciente_cidade: regra.pacientes.cidade,
-          tags_acessibilidade: regra.pacientes.tags_acessibilidade
+          laudo_vencido: checkLaudoVencido(regra.pacientes!.data_ultimo_laudo || null),
+          paciente_logradouro: regra.pacientes!.logradouro || undefined,
+          paciente_numero: regra.pacientes!.numero || undefined,
+          paciente_bairro: regra.pacientes!.bairro || undefined,
+          paciente_cidade: regra.pacientes!.cidade || undefined,
+          tags_acessibilidade: regra.pacientes!.tags_acessibilidade
         })
       }
     }
@@ -102,23 +102,23 @@ export function projectAgendaSessions(
   for (const a of avulsos) {
     sessions.push({
       id: a.id,
-      paciente_id: a.pacientes.id,
-      paciente_nome: a.pacientes.nome_completo,
-      profissional_id: a.profissionais.id,
-      profissional_nome: a.profissionais.nome_completo,
-      especialidade_id: a.linhas_cuidado_especialidades.id,
-      especialidade_nome: a.linhas_cuidado_especialidades.nome_especialidade,
+      paciente_id: a.pacientes!.id,
+      paciente_nome: a.pacientes!.nome_completo,
+      profissional_id: a.profissionais!.id,
+      profissional_nome: a.profissionais!.nome_completo,
+      especialidade_id: a.linhas_cuidado_especialidades!.id,
+      especialidade_nome: a.linhas_cuidado_especialidades!.nome_especialidade,
       data_hora_inicio: parseISO(a.data_hora_inicio),
       data_hora_fim: parseISO(a.data_hora_fim),
-      status: a.status_comparecimento,
-      tipo_vaga: a.tipo_vaga,
-      laudo_vencido: checkLaudoVencido(a.pacientes.criado_em),
+      status: a.status_comparecimento as AgendaSession["status"],
+      tipo_vaga: a.tipo_vaga || "Regular",
+      laudo_vencido: checkLaudoVencido(a.pacientes!.data_ultimo_laudo || null),
       criado_em: a.criado_em,
-      paciente_logradouro: a.pacientes.logradouro,
-      paciente_numero: a.pacientes.numero,
-      paciente_bairro: a.pacientes.bairro,
-      paciente_cidade: a.pacientes.cidade,
-      tags_acessibilidade: a.pacientes.tags_acessibilidade
+      paciente_logradouro: a.pacientes!.logradouro || undefined,
+      paciente_numero: a.pacientes!.numero || undefined,
+      paciente_bairro: a.pacientes!.bairro || undefined,
+      paciente_cidade: a.pacientes!.cidade || undefined,
+      tags_acessibilidade: a.pacientes!.tags_acessibilidade
     })
   }
 

@@ -4,6 +4,8 @@ import "./globals.css";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { CommandMenu } from "@/components/command-menu";
+import { getMeuPerfil } from "@/actions";
+import { Toaster } from "sonner";
 
 const nunitoSans = Nunito_Sans({
   variable: "--font-sans",
@@ -16,16 +18,19 @@ export const metadata: Metadata = {
   description: "Sistema especializado em gestão de prontuários, filas de espera e absenteísmo para o Centro Especializado em Reabilitação.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const perfil = await getMeuPerfil();
+
   return (
     <html lang="pt-BR">
       <body className={`${nunitoSans.variable} antialiased`}>
+        <Toaster position="top-right" richColors closeButton />
         <SidebarProvider>
-          <AppSidebar />
+          <AppSidebar perfil={perfil} />
           <SidebarInset>
             <header className="flex h-12 items-center gap-2 border-b border-border bg-card px-4">
               <SidebarTrigger className="text-muted-foreground hover:text-foreground" />

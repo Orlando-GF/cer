@@ -4,6 +4,8 @@ import { useState, useTransition, useEffect, useMemo } from "react"
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,6 +14,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { registrarFaltaPaciente, buscarHistoricoFaltas } from "@/actions"
+
 
 export type PacienteFila = {
   id: string
@@ -22,6 +25,13 @@ export type PacienteFila = {
   especialidade: string
   dataEntrada: string
   faltas: number
+}
+
+interface FaltaHistorico {
+  id: string
+  data_falta: string
+  justificada: boolean
+  observacao?: string
 }
 
 /*
@@ -58,7 +68,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
   const [observacao, setObservacao] = useState("")
   const [isPending, startTransition] = useTransition()
 
-  const [historicoFaltas, setHistoricoFaltas] = useState<any[]>([])
+  const [historicoFaltas, setHistoricoFaltas] = useState<FaltaHistorico[]>([])
   const [isLoadingHistorico, setIsLoadingHistorico] = useState(false)
 
   // Busca histórico de faltas ao abrir o paciente
@@ -68,7 +78,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
       buscarHistoricoFaltas(paciente.id)
         .then((res) => {
           if (res?.success && res?.data) {
-            setHistoricoFaltas(res.data)
+            setHistoricoFaltas(res.data as FaltaHistorico[])
           } else {
             setHistoricoFaltas([])
           }
@@ -132,31 +142,33 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
     <Sheet open={open} onOpenChange={fecharOuCancelar}>
       <SheetContent
         side="right"
-        className="w-full sm:w-[620px] sm:max-w-[620px] p-0 overflow-hidden flex flex-col"
+        className="p-0 overflow-hidden flex flex-col"
       >
-        {/* HEADER com fundo colorido sutil */}
-        <div className="px-7 py-6 border-b bg-slate-50 shrink-0">
-          <div className="flex items-start justify-between gap-4">
+        {/* HEADER */}
+        <SheetHeader className="mb-0 border-b border-white/10 shrink-0">
+          <div className="flex items-start justify-between gap-4 w-full">
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-semibold text-slate-900 truncate">{paciente.nome}</h2>
-              <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-1">
-                <Hash className="w-3.5 h-3.5" />
-                CNS: <span className="font-mono">{paciente.cns}</span>
+              <SheetTitle className="flex items-center gap-2">
+                <Hash className="w-4 h-4 text-white/70" />
+                {paciente.nome}
+              </SheetTitle>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">
+                CNS: <span className="font-mono text-white/90">{paciente.cns}</span>
               </p>
             </div>
             <div className="flex flex-col gap-1.5 items-end shrink-0">
-              <Badge className={`${prio.color} border-none text-xs`}>{prio.label}</Badge>
-              <Badge className={`${stat.color} border-none text-xs`}>{stat.label}</Badge>
+              <Badge className={`${prio.color} border-none text-[9px] font-bold uppercase tracking-wider rounded-none px-2`}>{prio.label}</Badge>
+              <Badge className={`${stat.color} border-none text-[9px] font-bold uppercase tracking-wider rounded-none px-2`}>{stat.label}</Badge>
             </div>
           </div>
-        </div>
+        </SheetHeader>
 
         {/* BODY rolável */}
         <div className="flex-1 overflow-y-auto px-7 py-6 space-y-6">
 
           {/* Info da fila */}
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
               Situação na fila
             </h3>
             <div className="grid grid-cols-3 gap-4">
@@ -188,7 +200,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
 
           {/* Data de entrada */}
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
               Histórico
             </h3>
             <div className="flex items-center gap-3 p-4 rounded-none border border-slate-100 bg-white">
@@ -225,7 +237,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
 
           {/* Histórico de Faltas - Secão Nova */}
           <section className="pt-4 border-t border-slate-100">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
               <History className="w-4 h-4" />
               Últimas faltas registradas
             </h3>

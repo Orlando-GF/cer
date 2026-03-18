@@ -88,27 +88,27 @@ export function NovoPacienteSheet() {
       </Button>
 
       <Sheet open={open} onOpenChange={handleOpen}>
-        <SheetContent side="right" className="w-full sm:w-[820px] sm:max-w-[820px] p-0 overflow-hidden flex flex-col">
+        <SheetContent side="right" className="p-0 overflow-hidden flex flex-col">
 
           {/* HEADER */}
-          <SheetHeader className="px-7 py-5 border-b bg-white shrink-0">
-            <SheetTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-600" />
-              Cadastro Base de Paciente
+          <SheetHeader className="mb-0 border-b border-white/10 shrink-0">
+            <SheetTitle className="flex items-center gap-2">
+              <User className="w-4 h-4 text-white/70" />
+              CADASTRO BASE DE PACIENTE
             </SheetTitle>
             {etapa === "busca" && (
-              <p className="text-sm text-slate-500 mt-0.5">
-                Informe o <strong>CNS</strong> ou <strong>CPF</strong> para começar.
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">
+                Informe o CNS OU CPF para começar.
               </p>
             )}
             {etapa === "formulario" && (
               <div className="flex items-center gap-2 mt-1">
                 <button type="button" onClick={() => setEtapa("busca")}
-                  className="text-xs text-blue-600 hover:underline">
+                  className="text-[10px] font-bold uppercase tracking-widest text-white/80 hover:text-white transition-all">
                   ← Voltar à busca
                 </button>
-                <span className="text-slate-300">|</span>
-                <span className="text-xs text-slate-500">
+                <span className="text-white/20">|</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">
                   Preencha os dados obrigatórios para salvar.
                 </span>
               </div>
@@ -137,13 +137,13 @@ export function NovoPacienteSheet() {
                       setStatusBusca("idle")
                     }}
                     onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
-                    placeholder="CNS ou CPF"
-                    className="text-base h-11 tracking-wider font-mono"
+                    placeholder="CNS OU CPF"
+                    className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider"
                     autoFocus
                   />
                   <Button type="button" onClick={handleBuscar}
                     disabled={buscando || !identificador.trim()}
-                    className="h-11 px-5 shrink-0">
+                    className="h-12 px-6 rounded-none bg-primary font-bold uppercase tracking-widest shadow-md">
                     {buscando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                   </Button>
                 </div>
@@ -165,11 +165,11 @@ export function NovoPacienteSheet() {
               <div className="w-full max-w-md flex flex-col gap-2">
                 <Button type="button" onClick={handleAvancar}
                   disabled={!identificador.trim()}
-                  className="w-full h-11 gap-2">
+                  className="w-full h-14 rounded-none text-sm bg-clinico-900 border-none hover:bg-black gap-2 shadow-lg uppercase font-bold tracking-widest">
                   {statusBusca === "encontrado" ? "Confirmar e avançar" : "Preencher manualmente"}
                   <ChevronRight className="w-4 h-4" />
                 </Button>
-                <Button type="button" variant="ghost" className="w-full" onClick={() => handleOpen(false)}>
+                <Button type="button" variant="ghost" className="w-full h-12 rounded-none font-bold uppercase tracking-widest text-slate-400" onClick={() => handleOpen(false)}>
                   Cancelar
                 </Button>
               </div>

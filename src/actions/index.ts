@@ -20,9 +20,9 @@ import {
   type GradeHoraria,
   type ActionResponse,
   type FaltaRegistro,
-  type VagaFixa,
+  type VagaFixaComJoins,
   type AlertaAbsenteismo,
-  type AgendamentoHistorico
+  type AgendamentoHistoricoComJoins
 } from "@/types"
 
 export async function buscarPacientes(): Promise<ActionResponse<Paciente[]>> {
@@ -391,7 +391,7 @@ export async function buscarAgendaData(
   profissionalId: string,
   startDate: string,
   endDate: string,
-): Promise<ActionResponse<{ vagas: VagaFixa[]; hist: AgendamentoHistorico[] }>> {
+): Promise<ActionResponse<{ vagas: VagaFixaComJoins[]; hist: AgendamentoHistoricoComJoins[] }>> {
   const supabase = await createClient()
 
   const { data: vagas, error: errVagas } = await supabase
@@ -431,7 +431,7 @@ export async function buscarAgendaData(
 export async function buscarAgendaLogistica(
   startDate: string,
   endDate: string,
-): Promise<ActionResponse<{ vagas: VagaFixa[]; hist: AgendamentoHistorico[] }>> {
+): Promise<ActionResponse<{ vagas: VagaFixaComJoins[]; hist: AgendamentoHistoricoComJoins[] }>> {
   const supabase = await createClient()
 
   const { data: vagas, error: errVagas } = await supabase
@@ -607,7 +607,7 @@ export async function getMeuPerfil(): Promise<string | null> {
 export async function buscarAgendaCoordenação(
   startDate: string,
   endDate: string,
-): Promise<ActionResponse<{ vagas: VagaFixa[]; hist: AgendamentoHistorico[] }>> {
+): Promise<ActionResponse<{ vagas: VagaFixaComJoins[]; hist: AgendamentoHistoricoComJoins[] }>> {
   const supabase = await createClient()
 
   const { data: vagas, error: errVagas } = await supabase
@@ -729,3 +729,56 @@ export async function processarDesligamentoPorAbandono(
 
   return { success: true }
 }
+
+export async function buscarVagasFixas(
+  profissionalId: string
+): Promise<ActionResponse<VagaFixaComJoins[]>> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('vagas_fixas')
+    .select(`
+      *,
+      pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+      profissionais (id, nome_completo),
+      linhas_cuidado_especialidades (id, nome_especialidade)
+    `)
+    .eq('profissional_id', profissionalId)
+    .eq('status_vaga', 'Ativa')
+
+  if (error) {
+    return {
+      success: false,
+      error: `Erro ao buscar vagas fixas: ${error.message}`,
+    }
+  }
+
+  return { success: true, data: data as VagaFixaComJoins[] }
+}
+
+export async function encerrarVagaFixa(
+  vagaId: string
+): Promise<ActionResponse> {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('vagas_fixas')
+    .update({ 
+      status_vaga: 'Encerrada',
+      data_fim_contrato: new Date().toISOString()
+    })
+    .eq('id', vagaId)
+
+  if (error) {
+    return {
+      success: false,
+      error: `Erro ao encerrar vaga: ${error.message}`,
+    }
+  }
+
+  revalidatePath('/configuracoes')
+  revalidatePath('/agenda')
+  return { success: true }
+}
+
+

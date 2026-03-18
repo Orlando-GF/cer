@@ -1,9 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { getMeuPerfil } from "@/actions"
 import {
   Sidebar,
   SidebarContent,
@@ -78,19 +76,8 @@ const navItems = [
   },
 ]
 
-export function AppSidebar() {
+export function AppSidebar({ perfil }: { perfil: string | null }) {
   const pathname = usePathname()
-  const [perfil, setPerfil] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function load() {
-      const p = await getMeuPerfil()
-      setPerfil(p)
-      setLoading(false)
-    }
-    load()
-  }, [])
 
   const filteredGroups = navItems.filter(group => {
     // Se o perfil for nulo (usuário logado sem registro em profissionais),
@@ -118,14 +105,7 @@ export function AppSidebar() {
       <SidebarSeparator />
 
       <SidebarContent className="px-2 py-2">
-        {loading ? (
-          <div className="p-4 space-y-4">
-             <div className="h-4 w-24 bg-sidebar-foreground/10 rounded animate-pulse" />
-             <div className="h-8 w-full bg-sidebar-foreground/5 rounded animate-pulse" />
-             <div className="h-4 w-24 bg-sidebar-foreground/10 rounded animate-pulse" />
-             <div className="h-8 w-full bg-sidebar-foreground/5 rounded animate-pulse" />
-          </div>
-        ) : filteredGroups.map((group) => (
+        {filteredGroups.map((group) => (
           <SidebarGroup key={group.group}>
             <SidebarGroupLabel className="text-[10px] tracking-[0.15em] uppercase text-sidebar-foreground/40 font-bold mb-1">
               {group.group}

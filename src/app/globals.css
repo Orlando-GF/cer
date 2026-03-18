@@ -51,7 +51,7 @@
   --border: var(--color-border);
   --input: var(--color-border);
   --ring: var(--color-primary);
-  --radius: 0.5rem;
+  --radius: 0px;
 
   /* Mapeamento Estrito - Sidebar (Seção 4.4) */
   --sidebar-background: var(--color-primary-900);
@@ -66,6 +66,10 @@
 }
 
 @theme inline {
+  --radius: 0px;
+  --border-radius-lg: 0px;
+  --border-radius-md: 0px;
+  --border-radius-sm: 0px;
   --font-sans: 'Nunito Sans', sans-serif;
 
   --color-background: var(--color-background);
@@ -105,6 +109,7 @@
   ::before,
   ::after {
     border-color: var(--color-border);
+    border-radius: 0px !important;
   }
 
   body {

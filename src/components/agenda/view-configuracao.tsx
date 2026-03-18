@@ -1,13 +1,18 @@
 "use client"
 
-import { useState, useEffect, useTransition } from "react"
+import { useState, useTransition } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { buscarProfissionais, buscarEspecialidades, salvarVagaFixa } from "@/actions"
-import { Plus, Trash2, Calendar, Clock } from "lucide-react"
+import { salvarVagaFixa, buscarVagasFixas, encerrarVagaFixa } from "@/actions"
+import { Plus, Calendar, Loader2 } from "lucide-react"
+import { type Profissional, type Especialidade, type VagaFixaComJoins } from "@/types"
+import { toast } from "sonner"
+import { PacienteSelector } from "@/components/pacientes/paciente-selector"
+import { VagasAtivasList } from "./vagas-ativas-list"
+import { useEffect, useCallback } from "react"
 
 const DIAS_SEMANA = [
   { value: "0", label: "Domingo" },
@@ -19,9 +24,14 @@ const DIAS_SEMANA = [
   { value: "6", label: "Sábado" },
 ]
 
-export function ViewConfiguracao() {
-  const [profissionais, setProfissionais] = useState<any[]>([])
-  const [especialidades, setEspecialidades] = useState<any[]>([])
+interface ViewConfiguracaoProps {
+  profissionaisIniciais: Profissional[]
+  especialidadesIniciais: Especialidade[]
+}
+
+export function ViewConfiguracao({ profissionaisIniciais, especialidadesIniciais }: ViewConfiguracaoProps) {
+  const [profissionais] = useState<Profissional[]>(profissionaisIniciais)
+  const [especialidades] = useState<Especialidade[]>(especialidadesIniciais)
   const [isPending, startTransition] = useTransition()
   
   // Form State
@@ -32,18 +42,31 @@ export function ViewConfiguracao() {
   const [horaInicio, setHoraInicio] = useState("08:00")
   const [horaFim, setHoraFim] = useState("09:00")
 
-  useEffect(() => {
-    async function loadData() {
-      const [resP, resE] = await Promise.all([buscarProfissionais(), buscarEspecialidades()])
-      if (resP.success && resP.data) setProfissionais(resP.data)
-      if (resE.success && resE.data) setEspecialidades(resE.data)
+  // Vagas State
+  const [vagasAtivas, setVagasAtivas] = useState<VagaFixaComJoins[]>([])
+  const [loadingVagas, setLoadingVagas] = useState(false)
+
+  const loadVagas = useCallback(async (pId: string) => {
+    setLoadingVagas(true)
+    const res = await buscarVagasFixas(pId)
+    if (res.success && res.data) {
+      setVagasAtivas(res.data)
     }
-    loadData()
+    setLoadingVagas(false)
   }, [])
+
+  useEffect(() => {
+    if (profissionalId) {
+      loadVagas(profissionalId)
+    } else {
+      setVagasAtivas([])
+    }
+  }, [profissionalId, loadVagas])
+
 
   const handleSave = async () => {
     if (!pacienteId || !profissionalId || !especialidadeId || !diaSemana) {
-      alert("Preencha todos os campos obrigatórios.")
+      toast.error("Preencha todos os campos obrigatórios.")
       return
     }
 
@@ -56,110 +79,132 @@ export function ViewConfiguracao() {
         horario_inicio: horaInicio,
         horario_fim: horaFim,
         data_inicio_contrato: new Date().toISOString().split("T")[0],
+        status_vaga: 'Ativa'
       })
 
       if (res.success) {
-        alert("Vaga fixa cadastrada com sucesso!")
-        // Limpar form
+        toast.success("Vaga fixa cadastrada com sucesso!")
         setPacienteId("")
+        loadVagas(profissionalId)
       } else {
-        alert("Erro ao salvar: " + res.error)
+        toast.error("Erro ao salvar: " + res.error)
       }
     })
   }
 
+  const handleRemoveVaga = async (id: string) => {
+    if (!confirm("Tem certeza que deseja encerrar esta vaga fixa?")) return
+    
+    const res = await encerrarVagaFixa(id)
+    if (res.success) {
+      toast.success("Vaga encerrada com sucesso!")
+      loadVagas(profissionalId)
+    } else {
+      toast.error("Erro ao encerrar vaga: " + res.error)
+    }
+  }
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <Card className="lg:col-span-1 border-none shadow-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5 text-blue-600" />
-            Nova vaga fixa
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <Card className="lg:col-span-1 border-none shadow-none rounded-none bg-white">
+        <CardHeader className="bg-clinico-900 text-white rounded-none mb-6">
+          <CardTitle className="flex items-center gap-2 font-bold uppercase tracking-widest text-sm">
+            <Plus className="h-4 w-4 text-clinico-300" />
+            Nova Vaga Fixa
           </CardTitle>
-          <CardDescription>Configure a recorrência para um paciente.</CardDescription>
+          <CardDescription className="text-slate-400 text-[10px] uppercase font-bold tracking-widest">Configuração de recorrência</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label>Paciente</Label>
-            <Input 
-              placeholder="UUID do Paciente (temporariamente)" 
-              value={pacienteId} 
-              onChange={e => setPacienteId(e.target.value)} 
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Paciente</Label>
+            <PacienteSelector 
+              value={pacienteId}
+              onSelect={setPacienteId}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Profissional</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Profissional Responsável</Label>
             <Select onValueChange={(val) => val && setProfissionalId(val)} value={profissionalId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o profissional" />
+              <SelectTrigger className="rounded-none border-slate-200 h-12 font-bold focus:ring-primary bg-slate-50">
+                <SelectValue placeholder="SELECIONE O PROFISSIONAL" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-none border-none shadow-2xl">
                 {profissionais.map(p => (
-                  <SelectItem key={p.id} value={p.id}>{p.nome_completo}</SelectItem>
+                  <SelectItem key={p.id} value={p.id} className="font-bold uppercase text-[11px]">{p.nome_completo}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Especialidade</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Especialidade</Label>
             <Select onValueChange={(val) => val && setEspecialidadeId(val)} value={especialidadeId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a especialidade" />
+              <SelectTrigger className="rounded-none border-slate-200 h-12 font-bold focus:ring-primary bg-slate-50">
+                <SelectValue placeholder="SELECIONE A ESPECIALIDADE" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-none border-none shadow-2xl">
                 {especialidades.map(e => (
-                  <SelectItem key={e.id} value={e.id}>{e.nome_especialidade}</SelectItem>
+                  <SelectItem key={e.id} value={e.id} className="font-bold uppercase text-[11px]">{e.nome_especialidade}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-6">
             <div className="space-y-2">
-              <Label>Dia da Semana</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Dia da Semana</Label>
               <Select onValueChange={(val) => val && setDiaSemana(val)} value={diaSemana}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Dia" />
+                <SelectTrigger className="rounded-none border-slate-200 h-12 font-bold focus:ring-primary bg-slate-50">
+                  <SelectValue placeholder="DIA DA SEMANA" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-none border-none shadow-2xl">
                   {DIAS_SEMANA.map(d => (
-                    <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                    <SelectItem key={d.value} value={d.value} className="font-bold uppercase text-[11px]">{d.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Horário</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Janela de Horário</Label>
               <div className="flex items-center gap-2">
-                <Input type="time" value={horaInicio} onChange={e => setHoraInicio(e.target.value)} className="p-1" />
-                <span>-</span>
-                <Input type="time" value={horaFim} onChange={e => setHoraFim(e.target.value)} className="p-1" />
+                <Input type="time" value={horaInicio} onChange={e => setHoraInicio(e.target.value)} className="rounded-none border-slate-200 h-12 font-bold bg-slate-50" />
+                <span className="text-slate-300 font-bold">às</span>
+                <Input type="time" value={horaFim} onChange={e => setHoraFim(e.target.value)} className="rounded-none border-slate-200 h-12 font-bold bg-slate-50" />
               </div>
             </div>
           </div>
 
           <Button 
-            className="w-full mt-4" 
+            className="w-full h-14 mt-4 rounded-none bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-widest shadow-lg shadow-primary/20" 
             onClick={handleSave}
             disabled={isPending}
           >
-            {isPending ? "Salvando..." : "Confirmar vaga fixa"}
+            {isPending ? "PROCESSANDO..." : "VINCULAR AGENDA FIXA"}
           </Button>
+
         </CardContent>
       </Card>
 
-      <Card className="lg:col-span-2 border-none shadow-sm">
-        <CardHeader>
-          <CardTitle>Vagas ativas</CardTitle>
-          <CardDescription>Lista de contratos de recorrência vigentes.</CardDescription>
+      <Card className="lg:col-span-2 border-none shadow-none rounded-none bg-white">
+        <CardHeader className="border-b border-slate-100 px-0 pb-6 mx-6">
+          <CardTitle className="text-slate-900 font-bold uppercase tracking-widest text-sm">Vagas Ativas na Unidade</CardTitle>
+          <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Contratos de recorrência vigentes</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="text-center py-12 text-slate-500">
-            <Calendar className="h-12 w-12 mx-auto mb-4 opacity-20" />
-            <p>Selecione um profissional para ver suas vagas fixas.</p>
-          </div>
+        <CardContent className="p-0">
+          {loadingVagas ? (
+            <div className="flex flex-col items-center justify-center py-24 text-slate-300">
+              <Loader2 className="h-10 w-10 animate-spin mb-4" />
+              <p className="font-bold uppercase text-[10px] tracking-widest">Carregando vagas...</p>
+            </div>
+          ) : profissionalId ? (
+            <VagasAtivasList vagas={vagasAtivas} onRemove={handleRemoveVaga} />
+          ) : (
+            <div className="text-center py-24 text-slate-300">
+              <Calendar className="h-16 w-16 mx-auto mb-6 opacity-10" />
+              <p className="font-bold uppercase text-[10px] tracking-[0.2em]">Selecione um profissional para carregar os dados</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

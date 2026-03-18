@@ -10,14 +10,15 @@ import { ViewCoordenacao } from "@/components/agenda/view-coordenacao"
 import { ViewConfiguracao } from "@/components/agenda/view-configuracao"
 
 // 3. Tipos
-import type { Profissional } from "@/types"
+import type { Profissional, Especialidade } from "@/types"
 
 interface AgendaContentProps {
   perfil: string | null
   profissionaisIniciais: Profissional[]
+  especialidadesIniciais: Especialidade[]
 }
 
-export function AgendaContent({ perfil, profissionaisIniciais }: AgendaContentProps): React.ReactNode {
+export function AgendaContent({ perfil, profissionaisIniciais, especialidadesIniciais }: AgendaContentProps): React.ReactNode {
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -88,7 +89,12 @@ export function AgendaContent({ perfil, profissionaisIniciais }: AgendaContentPr
       </TabsContent>
       
       <TabsContent value="configuracao" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-        {activeTab === "configuracao" && <ViewConfiguracao />}
+        {activeTab === "configuracao" && (
+          <ViewConfiguracao 
+            profissionaisIniciais={profissionaisIniciais} 
+            especialidadesIniciais={especialidadesIniciais} 
+          />
+        )}
       </TabsContent>
     </Tabs>
   )

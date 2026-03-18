@@ -93,27 +93,27 @@ início da função e retorne cedo.
 ```ts
 // ✅ Correto
 const processarFalta = async (agendamentoId: string) => {
-  if (!agendamentoId) return { error: "ID obrigatório" };
+  if (!agendamentoId) return { error: 'ID obrigatório' }
 
-  const agendamento = await buscarAgendamento(agendamentoId);
-  if (!agendamento) return { error: "Agendamento não encontrado" };
+  const agendamento = await buscarAgendamento(agendamentoId)
+  if (!agendamento) return { error: 'Agendamento não encontrado' }
 
-  if (agendamento.status === "Cancelado") return { error: "Já cancelado" };
+  if (agendamento.status === 'Cancelado') return { error: 'Já cancelado' }
 
   // lógica principal aqui, sem aninhamento
-};
+}
 
 // ❌ Proibido
 const processarFalta = async (agendamentoId: string) => {
   if (agendamentoId) {
-    const agendamento = await buscarAgendamento(agendamentoId);
+    const agendamento = await buscarAgendamento(agendamentoId)
     if (agendamento) {
-      if (agendamento.status !== "Cancelado") {
+      if (agendamento.status !== 'Cancelado') {
         // lógica principal enterrada em 3 níveis
       }
     }
   }
-};
+}
 ```
 
 ### 3.5 Comentários Estratégicos
@@ -123,12 +123,12 @@ Não comente **o quê** — comente **o porquê** das regras de negócio.
 ```ts
 // ❌ Proibido — óbvio
 // soma o total de faltas
-const totalFaltas = faltas.length;
+const totalFaltas = faltas.length
 
 // ✅ Correto — explica a regra de negócio
 // 3 faltas injustificadas consecutivas disparam alerta de desligamento,
 // conforme protocolo de absenteísmo do CER (regra SUS)
-const deveAlertarDesligamento = faltasConsecutivas >= 3;
+const deveAlertarDesligamento = faltasConsecutivas >= 3
 ```
 
 ### 3.6 Separação de Preocupações (SoC)
@@ -149,16 +149,16 @@ types/        → tipos TypeScript e schemas Zod
 Todo formulário e toda Server Action **devem** validar o payload com Zod.
 
 ```ts
-import { z } from "zod";
+import { z } from 'zod'
 
 const CriarAgendamentoSchema = z.object({
   pacienteId: z.string().uuid(),
   profissionalId: z.string().uuid(),
   dataHoraInicio: z.coerce.date(),
   especialidadeId: z.string().uuid(),
-});
+})
 
-type CriarAgendamentoInput = z.infer<typeof CriarAgendamentoSchema>;
+type CriarAgendamentoInput = z.infer<typeof CriarAgendamentoSchema>
 ```
 
 ### 3.8 Nomenclatura Semântica (Clean Code)
@@ -189,10 +189,10 @@ const config = {
   semi: false,
   singleQuote: true,
   tabWidth: 2,
-  trailingComma: "all",
+  trailingComma: 'all',
   printWidth: 80,
-  plugins: ["prettier-plugin-tailwindcss"],
-};
+  plugins: ['prettier-plugin-tailwindcss'],
+}
 ```
 
 Espaçamento lógico obrigatório entre blocos:
@@ -202,15 +202,15 @@ Espaçamento lógico obrigatório entre blocos:
 
 ```ts
 // 1. Externos (node_modules)
-import { z } from "zod";
-import { createClient } from "@supabase/supabase-js";
+import { z } from 'zod'
+import { createClient } from '@supabase/supabase-js'
 
 // 2. Internos (do projeto)
-import { PatientCard } from "@/components/patient-card";
-import { buscarPaciente } from "@/lib/pacientes";
+import { PatientCard } from '@/components/patient-card'
+import { buscarPaciente } from '@/lib/pacientes'
 
 // 3. Tipos
-import type { Patient } from "@/types/patient";
+import type { Patient } from '@/types/patient'
 ```
 
 ### 3.12 Integração Supabase via MCP (Idempotência)
@@ -233,13 +233,13 @@ Ao criar ou alterar a base de dados via Supabase MCP, a IA **deve**:
 - Importação via `next/font/google`:
 
 ```ts
-import { Nunito_Sans } from "next/font/google";
+import { Nunito_Sans } from 'next/font/google'
 
 export const nunitoSans = Nunito_Sans({
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  variable: "--font-sans",
-});
+  subsets: ['latin'],
+  weight: ['400', '600'],
+  variable: '--font-sans',
+})
 ```
 
 - Aplicação no `layout.tsx`:
@@ -304,7 +304,7 @@ semânticas definidas aqui.
 #### Configuração no `globals.css`
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   /* Primária */
@@ -334,7 +334,7 @@ semânticas definidas aqui.
 }
 
 @theme inline {
-  --font-sans: "Nunito Sans", sans-serif;
+  --font-sans: 'Nunito Sans', sans-serif;
 
   --color-background: var(--color-background);
   --color-foreground: var(--color-foreground);
@@ -899,3 +899,187 @@ dia e turno.
 - Profissionais & Acessos (criação de usuários e permissões)
 - Especialidades (CRUD das Linhas de Cuidado)
 - Grades Horárias (definição dos dias e horários por profissional)
+
+---
+
+## 12. Auditoria de Código (Estado Real — src analisado)
+
+> Análise do código-fonte real em `/src`. Serve como mapa de dívida técnica e
+> estado atual de implementação para guiar o desenvolvimento incremental.
+
+### 12.1 O que está bem implementado ✅
+
+- **`globals.css`:** Paleta, tokens CSS e scrollbar 100% alinhados com o design
+  system. Compatibilidade shadcn com variáveis mapeadas corretamente.
+- **`layout.tsx`:** Nunito Sans via `next/font/google` correto. Header fixo com
+  SidebarTrigger e `CommandMenu`.
+- **`types/index.ts`:** Interfaces TypeScript bem definidas para todas as
+  entidades principais. `AgendaSession` com campos de logística já presentes.
+- **`actions/index.ts`:** Server Actions com padrão `ActionResponse<T>`,
+  validação Zod, guard clauses e `revalidatePath`. Log de auditoria em
+  `registrarSessaoHistorico`. Tratamento de erro `23505` (conflito único).
+- **`lib/agenda-utils.ts`:** Motor dinâmico implementado corretamente —
+  projeção on-the-fly, merge com histórico, detecção de `conflito_intensivo`,
+  suporte a vaga avulsa. Regra de laudo vencido (180 dias) aplicada.
+- **`lib/validations/schema.ts`:** Schemas Zod robustos com enums, transforms
+  (formatarNomeClinico, digitsOnly), campo `data_ultimo_laudo` no paciente.
+- **`lib/access-control.ts`:** RBAC por rota com `validarAcessoRota`. Redireciona
+  para `/login` se sem perfil.
+- **`components/ui/tabs.tsx`:** Variante `agenda` implementada (bg `#E8F1FB`,
+  ativa branca com borda `#C8D9EE`). Seletores ultra-resilientes (data-state +
+  data-selected + aria-selected). Animação Framer Motion para variante `line`.
+- **`components/ui/button.tsx`:** Base UI com todas as variantes. `rounded-none`
+  por padrão (Sharp Design). Escala de tamanhos completa.
+- **`components/app-sidebar.tsx`:** RBAC na UI por grupo, skeleton de loading,
+  logo C2, grupos ATENDIMENTO/CLÍNICO/LOGÍSTICA/GESTÃO/CONFIGURAÇÕES.
+- **`agendamentos/page.tsx`:** Server Component correto — busca profissionais no
+  server e passa como props iniciais ao componente client.
+- **`fila/data-table.tsx`:** Filtros todos via URL (`searchParams`). Sem
+  `useState` para filtros. Combinação de Tabs + Select + Switch + Input.
+- **`view-profissional.tsx` e `view-recepcao.tsx`:** `useMemo` para data
+  estabilizada via URL. `setUrlParams` helper para sync URL.
+
+### 12.2 Dívidas Técnicas e Problemas Encontrados ⚠️
+
+#### CRÍTICO — Viola regras do projeto
+
+1. **`any` em `agenda-utils.ts` (linhas 12-14):**
+
+   ```ts
+   // ❌ Atual
+   vagasFixas: any[],
+   historico: any[],
+   ```
+
+   Criar types `VagaFixaComJoins` e `AgendamentoHistoricoComJoins` em
+   `types/index.ts` e usar nos parâmetros.
+
+2. **`useEffect` para buscar dados em `app-sidebar.tsx`:**
+
+   ```ts
+   // ❌ Viola regra 3.3
+   useEffect(() => {
+     getMeuPerfil().then(setPerfil)
+   }, [])
+   ```
+
+   O Sidebar deve receber `perfil` como prop do `layout.tsx` (Server Component).
+   Elimina o flash de loading e o `useEffect` proibido.
+
+3. **`useEffect` para buscar dados em `view-configuracao.tsx`:**
+
+   ```ts
+   // ❌ Viola regra 3.3
+   useEffect(() => {
+     loadData()
+   }, [])
+   ```
+
+   Profissionais e especialidades devem ser buscados no Server Component da
+   página e passados como props.
+
+4. **`(sessao as any)` em `view-profissional.tsx` (linha ~195):**
+
+   ```ts
+   // ❌ any proibido
+   {(sessao as any).tags_acessibilidade?.map(...)}
+   ```
+
+   `tags_acessibilidade` já existe em `AgendaSession` — remover o cast.
+
+5. **`alert()` nativo em múltiplos componentes:**
+   `view-profissional.tsx`, `view-recepcao.tsx`, `view-configuracao.tsx` usam
+   `alert()`. Substituir por toasts (`sonner` ou componente Toast do shadcn).
+
+#### MÉDIO — Inconsistências e melhorias necessárias
+
+6. **Enum `StatusComparecimento` inconsistente:**
+   - `schema.ts` define: `"Falta Injustificada"` (com J)
+   - `types/index.ts` define: `"Falta Nao Justificada"` (sem acento)
+   - `view-recepcao.tsx` passa: `"Falta Nao Justificada"`
+     Padronizar para `"Falta Nao Justificada"` em todos os lugares.
+
+7. **`page.tsx` (Painel Geral) usa classes hardcoded:**
+
+   ```tsx
+   // ❌ Usa slate-* ao invés de variáveis do design system
+   className = 'bg-white border rounded-xl ...'
+   ```
+
+   Substituir `bg-white` → `bg-card`, `border` → `border-border`,
+   `rounded-xl` → `rounded-none` (Sharp Design), `text-slate-900` →
+   `text-foreground`, `text-slate-500` → `text-muted`.
+
+8. **`view-coordenacao.tsx` e `view-logistica.tsx` usam classes `slate-*`
+   hardcoded** em vez das variáveis CSS do design system.
+
+9. **`app-sidebar.tsx` — `getMeuPerfil()` é Server Action chamada no cliente:**
+   Server Actions devem ser chamadas em Server Components ou via formulários.
+   Solução: buscar perfil no `layout.tsx` e passar via props/context.
+
+10. **`view-configuracao.tsx` — campo Paciente aceita apenas UUID manual:**
+    ```tsx
+    <Input placeholder="UUID do Paciente (temporariamente)" />
+    ```
+    Pendência conhecida mas deve ser rastreada — implementar busca/autocomplete
+    de paciente por nome/CNS.
+
+#### BAIXO — Polimento e consistência
+
+11. **`text-[20px]` hardcoded** em `view-profissional.tsx` e `view-recepcao.tsx`
+    para nome do paciente. Usar `text-base` ou `text-lg` do Tailwind.
+
+12. **`rounded-xl` vs `rounded-none`:** Alguns cards no Painel Geral e no
+    view-profissional usam `rounded-xl`. O design system define `rounded-none`
+    (Sharp Design). Padronizar.
+
+13. **`bg-gradient-to-br from-blue-600 to-blue-800`** no card "Resumo do Dia"
+    em `view-profissional.tsx`. Usar `bg-primary` + `bg-primary-800` do design
+    system.
+
+14. **Cores semânticas de status na `view-coordenacao.tsx`** usam `emerald-50`,
+    `red-50`, `blue-50` hardcoded. Usar variáveis `--color-alert-*` do design
+    system.
+
+### 12.3 Funcionalidades Pendentes de Implementação 🔲
+
+| Módulo                                                          | Status                                                  | Prioridade |
+| --------------------------------------------------------------- | ------------------------------------------------------- | ---------- |
+| **Prontuário do Paciente** — aba com histórico clínico completo | `paciente-sheet-master.tsx` existe mas está incompleto  | ALTA       |
+| **Busca de Paciente por Nome/CNS** em `ViewConfiguracao`        | Campo UUID temporário                                   | ALTA       |
+| **Toast/Notification system**                                   | `alert()` nativo em 3 componentes                       | ALTA       |
+| **Página `/meus-atendimentos`**                                 | Página existe mas sem conteúdo real                     | ALTA       |
+| **Página `/meus-pacientes`**                                    | Página existe mas sem conteúdo real                     | ALTA       |
+| **Página `/absenteismo`**                                       | `buscarAlertasAbsenteismo` action existe ✅             | MÉDIA      |
+| **Página `/judiciais`**                                         | Estrutura de dados existe (fila_espera) ✅              | MÉDIA      |
+| **Página `/relatorios`**                                        | Exportação BPA — complexidade alta                      | BAIXA      |
+| **Página `/logistica`** (rota direta)                           | `ViewLogistica` já existe ✅                            | BAIXA      |
+| **`ViewConfiguracao` — listar vagas ativas**                    | Placeholder "Selecione profissional"                    | MÉDIA      |
+| **Auth + Login**                                                | `redirect('/login')` referenciado mas página não existe | ALTA       |
+| **Sidebar como Server Component**                               | Refactor para eliminar useEffect                        | MÉDIA      |
+
+### 12.4 Decisões de Arquitetura Já Tomadas (Não Reverter)
+
+- **Motor dinâmico em `lib/agenda-utils.ts`:** Projeção client-side de sessões
+  a partir de `vagas_fixas`. Nunca gerar registros físicos futuros.
+- **`agendamentos_historico` como materialização:** Só gravar ao registrar
+  presença/falta/evolução, nunca antecipado.
+- **Filtros via URL (`searchParams`):** Todos os DataTables usam URL para
+  estado de filtros e paginação. Não regredir para `useState`.
+- **Profissionais carregados no Server Component da página** e passados como
+  `profissionaisIniciais` props para componentes client. Evitar fetch client-side.
+- **`validarAcessoRota()` em cada page.tsx** como guard de RBAC server-side.
+- **Base UI (`@base-ui/react`)** para primitivas (Tabs, Button) — não shadcn
+  para esses componentes. shadcn usado apenas para Card, Table, etc.
+
+### 12.5 Padrão de Próxima Feature (Template para IA)
+
+Ao implementar uma nova feature, seguir esta sequência:
+
+1. **Schema Zod** em `lib/validations/schema.ts`
+2. **Tipos TypeScript** em `types/index.ts`
+3. **Server Actions** em `actions/index.ts` (com `revalidatePath`)
+4. **Server Component** da página em `app/[rota]/page.tsx` (busca dados, passa props)
+5. **Componente Client** em `components/[modulo]/` (recebe props, UI interativa)
+6. **Nunca** usar `useEffect` para buscar dados
+7. **Nunca** usar `useState` para filtros — usar URL

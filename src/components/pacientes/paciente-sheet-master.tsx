@@ -34,17 +34,17 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:w-[820px] sm:max-w-[820px] p-0 flex flex-col bg-slate-50 overflow-hidden text-slate-900">
-        <SheetHeader className="px-6 py-5 border-b bg-white flex flex-row items-center justify-between shrink-0">
+      <SheetContent side="right" className="p-0 flex flex-col bg-slate-50 overflow-hidden text-slate-900">
+        <SheetHeader className="mb-0 border-b border-white/10 flex flex-row items-center justify-between shrink-0">
           <div>
-            <SheetTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-600" />
-              {isEditing ? "Editar Cadastro" : "Prontuário Único"}
+            <SheetTitle className="flex items-center gap-2">
+              <User className="w-5 h-5 text-white/70" />
+              {isEditing ? "EDITAR CADASTRO" : "PRONTUÁRIO ÚNICO"}
             </SheetTitle>
             {!isEditing && (
-              <p className="text-sm text-slate-500 mt-1 flex items-center gap-2">
-                CNS: <strong className="font-mono text-slate-700">{paciente.cns}</strong>
-                <Button variant="ghost" size="icon" className="h-5 w-5 rounded-full" onClick={() => navigator.clipboard.writeText(paciente.cns)}>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1 flex items-center gap-2">
+                CNS: <strong className="font-mono text-white/90">{paciente.cns}</strong>
+                <Button variant="ghost" size="icon" className="h-5 w-5 rounded-full text-white/50 hover:text-white hover:bg-white/10" onClick={() => navigator.clipboard.writeText(paciente.cns)}>
                   <Copy className="h-3 w-3" />
                 </Button>
               </p>
@@ -52,7 +52,7 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
             {isEditing && (
               <button 
                 onClick={() => setIsEditing(false)}
-                className="text-xs text-blue-600 hover:underline mt-1"
+                className="text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white mt-1 transition-all"
               >
                 ← Voltar para Visualização
               </button>
@@ -63,10 +63,10 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
             <Button 
                 variant="outline" 
                 size="sm" 
-                className="gap-2 text-blue-600 border-blue-100 hover:bg-blue-50"
+                className="rounded-none border-white/20 bg-white/10 text-white hover:bg-white/20 font-bold uppercase tracking-widest text-[10px]"
                 onClick={() => setIsEditing(true)}
             >
-              <Edit className="w-4 h-4" />
+              <Edit className="w-4 h-4 mr-2" />
               Editar Cadastro
             </Button>
           )}
@@ -138,7 +138,7 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
               </div>
 
               {/* SEÇÃO DE HISTÓRICO (PROMPT PARA FUTURO) */}
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm border-dashed flex flex-col items-center justify-center text-center py-12">
+              <div className="bg-white p-6 rounded-none border border-slate-200 shadow-sm border-dashed flex flex-col items-center justify-center text-center py-12">
                 <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-3">
                    <History className="w-6 h-6 text-slate-300" />
                 </div>
