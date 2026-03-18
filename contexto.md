@@ -213,29 +213,40 @@ const nunitoSans = Nunito_Sans({
 
 ### 4.2 Paleta de Cores
 
-Proibido usar classes Tailwind genéricas (`blue-600`, `slate-800`, `white`).
-Usar **sempre** as variáveis CSS semânticas abaixo.
+Proibido usar classes Tailwind genéricas (`blue-600`, `slate-800`, `white`,
+`black`). Usar **sempre** as variáveis CSS semânticas abaixo.
 
 #### Primária — Azul Clínico
 
-| Token CSS             | Hex       | Uso principal                                    |
-| --------------------- | --------- | ------------------------------------------------ |
-| `--color-primary-50`  | `#E8F1FB` | Fundos suaves, container de tabs, hover de linha |
-| `--color-primary-100` | `#C8D9EE` | Bordas, divisores, skeleton shimmer              |
-| `--color-primary-300` | `#5A9BD4` | Ícones ativos, item de menu ativo na sidebar     |
-| `--color-primary`     | `#1A5FA8` | Botão primário, links, focus ring                |
-| `--color-primary-800` | `#0F3D72` | Hover do botão primário                          |
-| `--color-primary-900` | `#0F2D52` | Fundo da sidebar, texto de títulos               |
+| Token CSS             | Hex       | Uso — **exclusivo e não intercambiável**                                                                                                          |
+| --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--color-primary-50`  | `#E8F1FB` | Hover de linhas, container de tabs, fundos suaves, skeleton base                                                                                  |
+| `--color-primary-100` | `#C8D9EE` | Bordas, divisores, skeleton shimmer                                                                                                               |
+| `--color-primary-300` | `#5A9BD4` | Ícones ativos, item ativo na sidebar                                                                                                              |
+| `--color-primary`     | `#1A5FA8` | Botão primário, links, focus ring, label de ação principal                                                                                        |
+| `--color-primary-800` | `#0F3D72` | Hover do botão primário **somente**                                                                                                               |
+| `--color-primary-900` | `#0F2D52` | **APENAS** fundo da sidebar e header de Sheets/Slide-overs. Proibido usar como fundo em Cards, Buttons ou qualquer elemento do conteúdo principal |
+
+> ⚠️ **Regra crítica sobre `primary-900`:** É a cor mais escura da paleta —
+> idêntica ao fundo da sidebar. Usá-la fora dos contextos acima causa a
+> sensação de "azul estranho mais escuro que o sidebar" relatada. Toda vez que
+> sentir vontade de usar `bg-foreground`, `bg-clinico-900`, `bg-black` ou
+> `bg-primary-900` fora de um Sheet header ou sidebar, **use `bg-primary`
+> (`#1A5FA8`) como alternativa de destaque escuro**.
 
 #### Neutros — Interface
 
-| Token CSS            | Hex       | Uso                                        |
-| -------------------- | --------- | ------------------------------------------ |
-| `--color-background` | `#F0F5FB` | Fundo geral da página                      |
-| `--color-card`       | `#FFFFFF` | Fundo de cartões, inputs, tab ativa        |
-| `--color-foreground` | `#0F2D52` | Texto principal                            |
-| `--color-muted`      | `#5A7FA8` | Texto secundário, subtítulos, placeholders |
-| `--color-border`     | `#C8D9EE` | Bordas de inputs e cartões                 |
+| Token CSS            | Hex       | Uso                                                  |
+| -------------------- | --------- | ---------------------------------------------------- |
+| `--color-background` | `#F0F5FB` | Fundo geral da página                                |
+| `--color-card`       | `#FFFFFF` | Fundo de cartões, inputs, tab ativa, corpo de Sheets |
+| `--color-foreground` | `#0F2D52` | **Texto** principal — nunca usar como fundo          |
+| `--color-muted`      | `#5A7FA8` | Texto secundário, subtítulos, placeholders           |
+| `--color-border`     | `#C8D9EE` | Bordas de inputs e cartões                           |
+
+> ⚠️ **`--color-foreground` é token de texto, não de fundo.** `bg-foreground`
+> produz o mesmo azul escuro do sidebar, causando confusão visual. Proibido
+> usar `bg-foreground` em qualquer componente.
 
 #### Alertas Semânticos (SUS)
 
@@ -250,76 +261,150 @@ Usar **sempre** as variáveis CSS semânticas abaixo.
 
 #### Sidebar
 
-| Elemento                       | Valor                             |
-| ------------------------------ | --------------------------------- |
-| Fundo                          | `--color-primary-900` (`#0F2D52`) |
-| Texto dos itens                | `#FFFFFF` 70% opacidade           |
-| Item ativo                     | `--color-primary-300` (`#5A9BD4`) |
-| Labels de seção (ATENDIMENTO…) | `#FFFFFF` 40% opacidade           |
-| Separadores                    | `#FFFFFF` 10% opacidade           |
+| Elemento                       | Valor                                                      |
+| ------------------------------ | ---------------------------------------------------------- |
+| Fundo                          | `bg-sidebar` → `--color-primary-900` (`#0F2D52`)           |
+| Texto dos itens                | `text-sidebar-foreground` → `#FFFFFF` 70% opacidade        |
+| Item ativo                     | `text-sidebar-primary` → `--color-primary-300` (`#5A9BD4`) |
+| Labels de seção (ATENDIMENTO…) | `text-sidebar-foreground/40`                               |
+| Separadores                    | `border-sidebar-border` → `#FFFFFF` 10% opacidade          |
+| Hover item                     | `hover:bg-sidebar-accent` → `--color-primary-800`          |
 
-#### Botões
+#### Botões — Regras de Hover e Cursor
 
-| Variante             | Fundo                     | Texto                       | Hover fundo           |
-| -------------------- | ------------------------- | --------------------------- | --------------------- |
-| `default` (primário) | `--color-primary`         | `#FFFFFF`                   | `--color-primary-800` |
-| `outline`            | `--color-card`            | `--color-foreground`        | `--color-primary-50`  |
-| `ghost`              | transparente              | `--color-foreground`        | `--color-primary-50`  |
-| `destructive`        | `--color-alert-danger-bg` | `--color-alert-danger-text` | —                     |
+**Todo botão obrigatoriamente tem `cursor-pointer`** — já embutido no
+primitivo Base UI Button. Se usar `<div>` ou `<span>` clicáveis, adicionar
+`cursor-pointer` manualmente.
+
+| Variante             | Fundo normal        | Hover fundo               | Hover texto             | Cursor                          |
+| -------------------- | ------------------- | ------------------------- | ----------------------- | ------------------------------- |
+| `default` (primário) | `bg-primary`        | `hover:bg-primary/90`     | —                       | `cursor-pointer`                |
+| `outline`            | `bg-background`     | `hover:bg-muted`          | `hover:text-foreground` | `cursor-pointer`                |
+| `ghost`              | transparente        | `hover:bg-muted`          | `hover:text-foreground` | `cursor-pointer`                |
+| `destructive`        | `bg-destructive/10` | `hover:bg-destructive/20` | —                       | `cursor-pointer`                |
+| `disabled`           | —                   | sem hover                 | —                       | `cursor-not-allowed opacity-70` |
+
+> `bg-muted` = `var(--color-primary-50)` = `#E8F1FB`. Este é o hover padrão
+> para elementos interativos no conteúdo principal.
+
+#### Elementos Interativos — Cursor e Hover Unificados
+
+**Regra global:** qualquer elemento clicável que não seja um `<button>` nativo
+deve declarar explicitamente `cursor-pointer` e um estado de hover visível.
+
+| Elemento                                 | Cursor           | Hover background                          |
+| ---------------------------------------- | ---------------- | ----------------------------------------- |
+| `TableRow` clicável (com `onClick`)      | `cursor-pointer` | `hover:bg-muted` (`--color-primary-50`)   |
+| `TableRow` não clicável (só leitura)     | padrão           | `hover:bg-muted` (feedback sutil)         |
+| Card clicável                            | `cursor-pointer` | `hover:border-primary/20 hover:shadow-sm` |
+| Item de lista clicável (`<div onClick>`) | `cursor-pointer` | `hover:bg-muted`                          |
+| Link de texto                            | `cursor-pointer` | `hover:text-primary`                      |
+| Ícone de ação (ghost icon button)        | `cursor-pointer` | `hover:bg-muted`                          |
+| Label associado a checkbox/switch        | `cursor-pointer` | —                                         |
+| Item do Select/Dropdown                  | `cursor-pointer` | `focus:bg-primary-50`                     |
 
 #### Tabs (variante `agenda`)
 
-| Elemento             | Valor                                                                 |
-| -------------------- | --------------------------------------------------------------------- |
-| Container (TabsList) | `--color-primary-50` com borda `--color-primary-100`                  |
-| Tab inativa          | texto `--color-muted`                                                 |
-| Tab ativa            | fundo `--color-card`, texto `--color-primary`, borda `--color-border` |
+| Elemento             | Valor                                          |
+| -------------------- | ---------------------------------------------- |
+| Container (TabsList) | `bg-primary-50` com borda `border-primary-100` |
+| Tab inativa          | `text-muted` — nunca `text-foreground`         |
+| Tab inativa hover    | `hover:text-foreground`                        |
+| Tab ativa            | `bg-card text-primary border border-border`    |
 
 #### Inputs e Formulários
 
-| Estado | Fundo                     | Borda                       |
-| ------ | ------------------------- | --------------------------- |
-| Normal | `--color-card`            | `--color-border`            |
-| Focus  | `--color-card`            | `--color-primary` (ring)    |
-| Erro   | `--color-alert-danger-bg` | `--color-alert-danger-text` |
+| Estado   | Fundo                    | Borda                      | Cursor                 |
+| -------- | ------------------------ | -------------------------- | ---------------------- |
+| Normal   | `bg-card`                | `border-border`            | `cursor-text` (padrão) |
+| Focus    | `bg-background`          | `border-ring` (ring)       | `cursor-text`          |
+| Disabled | `bg-muted/50 opacity-50` | —                          | `cursor-not-allowed`   |
+| Erro     | `bg-alert-danger-bg`     | `border-alert-danger-text` | `cursor-text`          |
 
 #### Tabelas
 
-| Elemento       | Valor                                                  |
-| -------------- | ------------------------------------------------------ |
-| Header         | fundo `--color-primary-50`, texto `--color-foreground` |
-| Linha hover    | `--color-primary-50`                                   |
-| Borda inferior | `--color-border`                                       |
+| Elemento             | Valor                                                                      |
+| -------------------- | -------------------------------------------------------------------------- |
+| Header (`TableHead`) | `bg-primary-50` via classe na `TableHeader`, `text-foreground font-medium` |
+| Linha com `onClick`  | `cursor-pointer hover:bg-muted transition-colors`                          |
+| Linha sem `onClick`  | `hover:bg-muted/50 transition-colors`                                      |
+| Borda inferior       | `border-border`                                                            |
+
+> **Padrão canônico de hover em linhas:** `hover:bg-muted` (não `muted/30`,
+> não `muted/40`, não `muted/50` — usar `bg-muted` puro que equivale a
+> `primary-50`). A inconsistência entre `muted/30`, `muted/40`, `muted/50`
+> encontrada no código deve ser normalizada para `hover:bg-muted`.
 
 #### Badges de Status
 
-| Status                    | Fundo                      | Texto                        |
-| ------------------------- | -------------------------- | ---------------------------- |
-| AGUARDANDO                | `--color-alert-warning-bg` | `--color-alert-warning-text` |
-| EM ATENDIMENTO / PRESENTE | `--color-alert-success-bg` | `--color-alert-success-text` |
-| FALTA / LAUDO VENCIDO     | `--color-alert-danger-bg`  | `--color-alert-danger-text`  |
-| COMPARTILHADO             | `--color-alert-shared-bg`  | `--color-alert-shared-text`  |
+| Status                    | Fundo                 | Texto                     |
+| ------------------------- | --------------------- | ------------------------- |
+| AGUARDANDO                | `bg-alert-warning-bg` | `text-alert-warning-text` |
+| EM ATENDIMENTO / PRESENTE | `bg-alert-success-bg` | `text-alert-success-text` |
+| FALTA / LAUDO VENCIDO     | `bg-alert-danger-bg`  | `text-alert-danger-text`  |
+| COMPARTILHADO             | `bg-alert-shared-bg`  | `text-alert-shared-text`  |
+| PROJETADO / NEUTRO        | `bg-muted`            | `text-muted-foreground`   |
 
-#### Outros componentes
+#### Sheet / Slide-over — Padrão de Cores
 
-| Componente         | Elemento     | Valor                                                |
-| ------------------ | ------------ | ---------------------------------------------------- |
-| Dropdown/Select    | Painel fundo | `--color-card`                                       |
-| Dropdown/Select    | Item hover   | `--color-primary-50`                                 |
-| Dropdown/Select    | Sombra       | `0 4px 16px rgba(15,45,82,0.08)`                     |
-| Slide-over (Sheet) | Overlay      | `rgba(15,45,82,0.4)`                                 |
-| Slide-over (Sheet) | Header fundo | `--color-primary-50`                                 |
-| Tooltip            | Fundo        | `--color-primary-900` / texto `#FFFFFF`              |
-| Toast sucesso      | —            | `--color-alert-success-*` + borda esq. `4px solid`   |
-| Toast erro         | —            | `--color-alert-danger-*` + borda esq. `4px solid`    |
-| Skeleton           | Base         | `--color-primary-50` / shimmer `--color-primary-100` |
-| Switch ativo       | Track        | `--color-primary`                                    |
-| Checkbox marcado   | Fundo        | `--color-primary`                                    |
-| Paginação ativa    | Fundo        | `--color-primary` / texto `#FFFFFF`                  |
+| Elemento                            | Valor                                              | Racional                                                                                         |
+| ----------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Overlay (fundo escurecido)          | `bg-[#0F2D52]/40`                                  | Já definido em `sheet.tsx`                                                                       |
+| Corpo do SheetContent               | `bg-card` (`#FFFFFF`)                              | Padrão shadcn                                                                                    |
+| **Header do Sheet** (`SheetHeader`) | **`bg-clinico-900`** (`#0F2D52`)                   | Padrão definido em `ui/sheet.tsx` — é a única exceção permitida de `primary-900` fora da sidebar |
+| Texto no header                     | `text-white`                                       | Sobre fundo escuro                                                                               |
+| Subtítulos no header                | `text-white/60`                                    | Sobre fundo escuro                                                                               |
+| Ícones no header                    | `text-white/70`                                    | Sobre fundo escuro                                                                               |
+| Botão fechar no header              | `text-white/50 hover:text-white hover:bg-white/10` | Sobre fundo escuro                                                                               |
+| Corpo (abaixo do header)            | `bg-background` ou `bg-card`                       | Fundo claro da interface                                                                         |
+| Botão primário no footer            | `bg-primary hover:bg-primary/90 text-white`        | Padrão do sistema                                                                                |
+| Botão secundário no footer          | `variant="outline"`                                | Padrão do sistema                                                                                |
 
-### 4.4 Scrollbar Global
+> **Por que `primary-900` no header do Sheet é correto:** É a única área
+> "de destaque visual escuro" intencional fora da sidebar — indica ao usuário
+> que entrou num painel modal dedicado. O problema relatado ocorre quando
+> **outros** componentes usam `bg-foreground`, `bg-clinico-900` ou `bg-black`
+> como variante de botão ou card — isso sim cria o "azul estranho" no conteúdo.
 
-Aplicado no `globals.css` dentro de `@layer base`:
+#### Dropdown / Select
+
+| Elemento           | Valor                                     |
+| ------------------ | ----------------------------------------- |
+| Painel fundo       | `bg-card`                                 |
+| Borda do painel    | `border-[0.5px] border-border`            |
+| Sombra             | `shadow-[0_4px_16px_rgba(15,45,82,0.08)]` |
+| Item hover / focus | `focus:bg-primary-50 focus:text-primary`  |
+| Item selecionado   | `bg-primary-50 text-primary`              |
+| Cursor nos itens   | `cursor-pointer`                          |
+
+#### Outros Componentes
+
+| Componente        | Elemento | Valor                                                                                  |
+| ----------------- | -------- | -------------------------------------------------------------------------------------- |
+| Tooltip           | Fundo    | `bg-primary-900` / `text-white`                                                        |
+| Toast sucesso     | —        | `bg-alert-success-bg text-alert-success-text` + `border-l-4 border-alert-success-text` |
+| Toast erro        | —        | `bg-alert-danger-bg text-alert-danger-text` + `border-l-4 border-alert-danger-text`    |
+| Skeleton          | Base     | `bg-primary-50` / shimmer `bg-primary-100`                                             |
+| Switch ativo      | Track    | `bg-primary`                                                                           |
+| Checkbox marcado  | Fundo    | `bg-primary`                                                                           |
+| Paginação ativa   | Fundo    | `bg-primary text-white`                                                                |
+| Paginação inativa | Fundo    | `bg-card border-border text-muted-foreground hover:bg-muted`                           |
+
+### 4.4 Regras de Interação — Resumo Executivo
+
+Estas regras devem ser aplicadas em **todo** elemento gerado, sem exceção:
+
+```
+1. cursor-pointer  → Todo elemento clicável que não seja <button> nativo
+2. hover:bg-muted  → Hover padrão de linhas de tabela e itens de lista
+3. transition-colors → Toda transição de cor (sem exception)
+4. disabled → cursor-not-allowed + opacity-70 (nunca opacity-50 em botões)
+5. PROIBIDO bg-foreground como fundo de qualquer elemento
+6. PROIBIDO bg-black, bg-clinico-900, bg-primary-900 fora de: sidebar e SheetHeader
+7. hover de botão primário → hover:bg-primary/90 (não hover:bg-primary-800)
+```
+
+### 4.5 Scrollbar Global
 
 ```css
 ::-webkit-scrollbar {
@@ -343,11 +428,11 @@ Aplicado no `globals.css` dentro de `@layer base`:
 }
 ```
 
-### 4.5 Sharp Design
+### 4.6 Sharp Design
 
-Todos os componentes usam `border-radius: 0` (`rounded-none`) por padrão —
-cantos retos, visual institucional/clínico. Exceções explícitas: avatares
-(`rounded-full`), tooltips (`rounded-md`), toasts (`rounded-lg`).
+Todos os componentes usam `rounded-none` por padrão — cantos retos, visual
+institucional/clínico. Exceções explícitas: avatares (`rounded-full`),
+tooltips (`rounded-md`), toasts (`rounded-lg`).
 
 ---
 
@@ -782,60 +867,62 @@ export const StatusComparecimentoEnum = z.enum([
 
 ## 13. Auditoria do Código Atual
 
-> Análise do código-fonte real em `/src`, realizada em 17/03/2026.
+> Análise do código-fonte real em `/src`. Última revisão: **18/03/2026**.
 
-### 13.1 Implementado e Correto ✅
+### 13.1 Melhorias Implementadas Nesta Iteração ✅
 
-- `globals.css` — paleta, tokens CSS, scrollbar, compatibilidade shadcn
-- `layout.tsx` — Nunito Sans, header fixo, CommandMenu
-- `types/index.ts` — interfaces completas para entidades principais
-- `actions/index.ts` — padrão `ActionResponse<T>`, Zod, guard clauses, revalidatePath, log de auditoria
-- `lib/agenda-utils.ts` — motor dinâmico: projeção, merge com histórico, `conflito_intensivo`, laudo vencido
-- `lib/validations/schema.ts` — schemas Zod com transforms e enums
-- `lib/access-control.ts` — RBAC por rota, redirect se sem perfil
-- `components/ui/tabs.tsx` — variante `agenda` correta, seletores resilientes
-- `components/ui/button.tsx` — Base UI, todas as variantes, `rounded-none`
-- `components/app-sidebar.tsx` — RBAC na UI, skeleton de loading, grupos corretos
-- `agendamentos/page.tsx` — Server Component, profissionais carregados server-side
-- DataTables — filtros via URL, sem `useState` para estado de filtros
+Comparando com a análise anterior, as seguintes dívidas técnicas foram resolvidas:
 
-### 13.2 Dívidas Técnicas ⚠️
+| Item                        | O que foi corrigido                                                                                                                       |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **`app-sidebar.tsx`**       | `useEffect` + `getMeuPerfil()` removidos. Perfil agora buscado no `layout.tsx` (Server Component) e passado como prop `{ perfil }`. ✅    |
+| **`layout.tsx`**            | `getMeuPerfil()` chamado server-side. `Toaster` do `sonner` instalado e configurado. ✅                                                   |
+| **`lib/agenda-utils.ts`**   | `any[]` eliminado. Usa `VagaFixaComJoins[]` e `AgendamentoHistoricoComJoins[]`. ✅                                                        |
+| **`types/index.ts`**        | `VagaFixaComJoins` e `AgendamentoHistoricoComJoins` criados com `Pick<>` corretos. ✅                                                     |
+| **`alert()` nativo**        | Substituído por `toast.success()` / `toast.error()` do `sonner` em todos os componentes. ✅                                               |
+| **`view-configuracao.tsx`** | Profissionais e especialidades recebidos como `profissionaisIniciais` / `especialidadesIniciais` props. `useEffect` de fetch removido. ✅ |
+| **`view-configuracao.tsx`** | Busca de paciente por UUID manual substituída pelo `PacienteSelector` (combobox com busca). ✅                                            |
+| **`app/page.tsx`**          | Classes hardcoded removidas — usa `bg-card`, `border-border`, `rounded-none`, `text-foreground`, tokens CSS semânticos. ✅                |
+| **`absenteismo/page.tsx`**  | Página implementada como Server Component + `AbsenteismoClient` para ações. ✅                                                            |
+| **`VagasAtivasList`**       | Novo componente para listar vagas fixas ativas por profissional. ✅                                                                       |
 
-**CRÍTICO — Viola regras do projeto:**
+### 13.2 Dívidas Técnicas Remanescentes ⚠️
 
-| #   | Arquivo                                   | Problema                                                                 | Solução                                                                       |
-| --- | ----------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| 1   | `lib/agenda-utils.ts` linha 12            | `vagasFixas: any[]`, `historico: any[]`                                  | Criar `VagaFixaComJoins` e `AgendamentoHistoricoComJoins` em `types/index.ts` |
-| 2   | `components/app-sidebar.tsx`              | `useEffect` para `getMeuPerfil()` — viola regra 3.2                      | Buscar perfil no `layout.tsx` (Server Component) e passar como prop           |
-| 3   | `components/agenda/view-configuracao.tsx` | `useEffect` para carregar profissionais/especialidades                   | Receber como props do Server Component                                        |
-| 4   | `components/agenda/view-profissional.tsx` | `(sessao as any).tags_acessibilidade`                                    | `tags_acessibilidade` já existe em `AgendaSession` — remover cast             |
-| 5   | Múltiplos componentes                     | `alert()` nativo em view-profissional, view-recepcao, view-configuracao  | Implementar `sonner` ou Toast do shadcn                                       |
-| 6   | `schema.ts` vs `types/index.ts`           | Enum inconsistente: `'Falta Injustificada'` vs `'Falta Nao Justificada'` | Padronizar para `'Falta Nao Justificada'` em todos os arquivos                |
+**CRÍTICO — Ainda viola regras do projeto:**
+
+| #   | Arquivo                                                          | Problema                                                                                                                                     | Solução                                                                                                                                                |
+| --- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | `lib/validations/schema.ts` linha 14                             | `StatusComparecimentoEnum` ainda usa `"Falta Injustificada"` — diverge do `types/index.ts` que usa `"Falta Nao Justificada"`                 | Corrigir schema para `"Falta Nao Justificada"` e verificar se há registros no banco com o valor antigo                                                 |
+| 2   | `app/fila/page.tsx` linha 45                                     | `row: any` no mapeamento do resultado do Supabase                                                                                            | Criar interface `FilaEsperaRow` com os campos do select ou usar o tipo inferido do Supabase                                                            |
+| 3   | `components/pacientes/paciente-selector.tsx`                     | `useEffect` para buscar todos os pacientes ao montar o componente — viola regra 3.2 e tem problema de performance (carrega 8.000+ registros) | Implementar busca debounced por texto via Server Action, não carregar tudo upfront                                                                     |
+| 4   | `components/especialidades/novo-profissional-sheet.tsx` linha 67 | `useEffect` para buscar especialidades quando o Sheet abre                                                                                   | Passar especialidades como prop do Server Component pai                                                                                                |
+| 5   | `components/fila/paciente-sheet.tsx` linha 76                    | `useEffect` para buscar histórico de faltas quando o Sheet abre                                                                              | Aceitável como exceção — é lazy load de dados secundários disparado por interação do usuário, não fetch inicial. Documentar com comentário explicativo |
 
 **MÉDIO — Inconsistências de design:**
 
-| #   | Problema                                                             | Solução                                                     |
-| --- | -------------------------------------------------------------------- | ----------------------------------------------------------- |
-| 7   | `app/page.tsx` usa `bg-white`, `rounded-xl`, `text-slate-900`        | Substituir por `bg-card`, `rounded-none`, `text-foreground` |
-| 8   | `view-coordenacao.tsx` e `view-logistica.tsx` usam classes `slate-*` | Usar variáveis CSS do design system                         |
-| 9   | `text-[20px]` hardcoded em view-profissional e view-recepcao         | Usar `text-lg`                                              |
-| 10  | Card "Resumo do Dia" usa `from-blue-600 to-blue-800`                 | Usar `bg-primary`                                           |
+| #   | Arquivo                                      | Problema                                                                                          | Solução                                                                                                                         |
+| --- | -------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 6   | `components/pacientes/paciente-form.tsx`     | Usa extensivamente `slate-200`, `slate-500`, `blue-50`, `blue-600`, `bg-white` em ~30 ocorrências | Substituir por variáveis do design system: `border-border`, `text-muted-foreground`, `bg-primary-50`, `text-primary`, `bg-card` |
+| 7   | `components/pacientes/paciente-selector.tsx` | Usa `border-slate-200`, `bg-slate-50`, `text-slate-400`, `text-slate-900`                         | Substituir por tokens semânticos                                                                                                |
+
+**BAIXO — Observações:**
+
+| #   | Observação                                                                                                                                                                                                                                              |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 8   | `view-configuracao.tsx` ainda usa `useEffect` para recarregar vagas ao trocar de profissional (`loadVagas` via `useCallback`). Este é um caso legítimo de reação a estado local (não é fetch inicial), portanto aceitável.                              |
+| 9   | `paciente-form.tsx` usa dois `useEffect` — um para popular o formulário com `initialData` (legítimo, reação a prop) e outro para buscar CEP via API externa com debounce (legítimo, reação a input do usuário). Ambos são exceções válidas à regra 3.2. |
+| 10  | `command-menu.tsx` usa `useEffect` para listener de teclado `Cmd+K` — legítimo, não é fetch de dados.                                                                                                                                                   |
 
 ### 13.3 Funcionalidades Pendentes 🔲
 
-| Prioridade | Módulo                                                | Observação                                              |
-| ---------- | ----------------------------------------------------- | ------------------------------------------------------- |
-| 🔴 ALTA    | Página `/login`                                       | `redirect('/login')` referenciado mas página não existe |
-| 🔴 ALTA    | Toast/Notification system                             | Substituir `alert()` nativo em 3 componentes            |
-| 🔴 ALTA    | Busca de paciente por nome/CNS em `ViewConfiguracao`  | Campo UUID temporário                                   |
-| 🔴 ALTA    | `paciente-sheet-master.tsx` — prontuário completo     | Arquivo existe, conteúdo incompleto                     |
-| 🟡 MÉDIA   | Refactor `AppSidebar` para receber `perfil` como prop | Eliminar `useEffect` proibido                           |
-| 🟡 MÉDIA   | Página `/meus-atendimentos`                           | Página existe, sem conteúdo real                        |
-| 🟡 MÉDIA   | Página `/meus-pacientes`                              | Página existe, sem conteúdo real                        |
-| 🟡 MÉDIA   | Página `/absenteismo`                                 | Action `buscarAlertasAbsenteismo` pronta ✅             |
-| 🟡 MÉDIA   | `ViewConfiguracao` — listar vagas ativas              | Placeholder atual                                       |
-| 🟢 BAIXA   | Página `/judiciais`                                   | Estrutura de dados disponível                           |
-| 🟢 BAIXA   | Página `/relatorios` e exportação BPA                 | Alta complexidade                                       |
+| Prioridade | Módulo                                            | Observação                                                                      |
+| ---------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
+| 🔴 ALTA    | Página `/login`                                   | `redirect('/login')` referenciado em `access-control.ts` mas a rota não existe  |
+| 🔴 ALTA    | `PacienteSelector` — busca debounced              | Atualmente carrega 8.000+ pacientes de uma vez. Crítico para performance        |
+| 🔴 ALTA    | `paciente-sheet-master.tsx` — prontuário completo | Arquivo existe, conteúdo incompleto — aba de histórico clínico, evoluções, etc. |
+| 🟡 MÉDIA   | Páginas `/meus-atendimentos` e `/meus-pacientes`  | Implementadas com `EmBreve` — estrutura de dados disponível                     |
+| 🟡 MÉDIA   | Página `/judiciais`                               | `fila_espera` com `numero_processo_judicial` disponível                         |
+| 🟢 BAIXA   | Página `/relatorios` e exportação BPA             | Alta complexidade, pós-MVP                                                      |
 
 ---
 

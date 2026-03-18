@@ -22,10 +22,10 @@ const tabsListVariants = cva(
   {
     variants: {
       variant: {
-        default: "p-1 bg-muted/40 border border-border/50 rounded-none",
+        default: "p-1 bg-primary-50 border border-primary-100 rounded-none",
         line: "gap-4 bg-transparent",
-        segmented: "p-1 bg-slate-200/50 border border-slate-200 rounded-none gap-1",
-        agenda: "p-1 bg-primary-50 border border-primary-100/30 rounded-none gap-1",
+        segmented: "p-1 bg-muted/50 border border-border rounded-none gap-1",
+        agenda: "p-1 bg-primary-50 border border-primary-100 rounded-none gap-1",
         // Nova variante: barra de navegação com ícone + label empilhados
         nav: "gap-0 bg-background border-b border-border w-full h-auto",
       },
@@ -91,11 +91,11 @@ function TabsTrigger({ className, children, icon, ...props }: TabsTriggerProps) 
 
         // agenda: fundo primary-50, ativa branca com borda, inativa com cor específica
         "group-data-[variant=agenda]/tabs-list:flex-1",
-        "group-data-[variant=agenda]/tabs-list:text-[#5A7FA8]",
-        "group-data-[variant=agenda]/tabs-list:data-[state=active]:bg-[#FFFFFF] group-data-[variant=agenda]/tabs-list:data-[selected]:bg-[#FFFFFF] group-data-[variant=agenda]/tabs-list:aria-[selected=true]:bg-[#FFFFFF]",
+        "group-data-[variant=agenda]/tabs-list:text-muted",
+        "group-data-[variant=agenda]/tabs-list:data-[state=active]:bg-card group-data-[variant=agenda]/tabs-list:data-[selected]:bg-card group-data-[variant=agenda]/tabs-list:aria-[selected=true]:bg-card",
         "group-data-[variant=agenda]/tabs-list:data-[state=active]:text-primary group-data-[variant=agenda]/tabs-list:data-[selected]:text-primary group-data-[variant=agenda]/tabs-list:aria-[selected=true]:text-primary",
         "group-data-[variant=agenda]/tabs-list:data-[state=active]:border group-data-[variant=agenda]/tabs-list:data-[selected]:border group-data-[variant=agenda]/tabs-list:aria-[selected=true]:border",
-        "group-data-[variant=agenda]/tabs-list:data-[state=active]:border-[#C8D9EE] group-data-[variant=agenda]/tabs-list:data-[selected]:border-[#C8D9EE] group-data-[variant=agenda]/tabs-list:aria-[selected=true]:border-[#C8D9EE]",
+        "group-data-[variant=agenda]/tabs-list:data-[state=active]:border-border group-data-[variant=agenda]/tabs-list:data-[selected]:border-border group-data-[variant=agenda]/tabs-list:aria-[selected=true]:border-border",
         "group-data-[variant=agenda]/tabs-list:shadow-none",
         "group-data-[variant=agenda]/tabs-list:rounded-none",
 

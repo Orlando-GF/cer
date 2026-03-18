@@ -94,11 +94,11 @@ function maskCEP(value: string): string {
 
 function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
   return (
-    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
-      <div className="flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 shrink-0">
-        <Icon className="w-4 h-4 text-blue-600" />
+    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border">
+      <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary/10 shrink-0">
+        <Icon className="w-4 h-4 text-primary" />
       </div>
-      <span className="text-[10px] font-black tracking-widest uppercase text-slate-500">{title}</span>
+      <span className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">{title}</span>
     </div>
   )
 }
@@ -118,12 +118,12 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
       {children}
       {error && <p className="text-xs text-red-600">{error}</p>}
-      {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
+      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   )
 }
@@ -167,7 +167,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
   // Sincroniza se initialData mudar (ex: troca de paciente com sheet aberto)
   useEffect(() => {
     if (initialData) {
-      // eslint-disable-next-line react-compiler/react-compiler, react-hooks/exhaustive-deps
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDados({
         ...initialData,
         cpf: initialData.cpf ? maskCPF(initialData.cpf) : "",
@@ -265,7 +265,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                 onChange={(e) => setField("nome_completo")(formatarNomeClinico(e.target.value))}
                 placeholder="NOME COMO CONSTA NO DOCUMENTO"
                 required
-                className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider"
+                className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider"
               />
             </Field>
 
@@ -276,12 +276,12 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   value={dados.data_nascimento || ""}
                   onChange={(e) => setField("data_nascimento")(e.target.value)}
                   required
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider"
                 />
               </Field>
               <Field label="Sexo" required>
                 <Select value={dados.sexo} onValueChange={(v) => setField("sexo")(v)}>
-                  <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold bg-white text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-full h-12 rounded-none border-border font-bold bg-card text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
                   <SelectContent className="rounded-none border-none shadow-2xl">
                     <SelectItem value="M" className="font-bold uppercase text-[11px]">Masculino</SelectItem>
                     <SelectItem value="F" className="font-bold uppercase text-[11px]">Feminino</SelectItem>
@@ -291,7 +291,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
               </Field>
               <Field label="Status do Cadastro" required>
                 <Select value={dados.status_cadastro} onValueChange={(v) => setField("status_cadastro")(v)}>
-                  <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold bg-white text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-full h-12 rounded-none border-border font-bold bg-card text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
                   <SelectContent className="rounded-none border-none shadow-2xl">
                     <SelectItem value="Ativo" className="font-bold uppercase text-[11px]">Ativo</SelectItem>
                     <SelectItem value="Inativo" className="font-bold uppercase text-[11px]">Inativo</SelectItem>
@@ -309,7 +309,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   onChange={(e) => setField("cns")(maskCNS(e.target.value))}
                   onBlur={(e) => validateField("cns", e.target.value)}
                   placeholder="000.0000.0000.0000"
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-widest tabular-nums"
                   maxLength={19}
                 />
               </Field>
@@ -319,7 +319,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   onChange={(e) => setField("cpf")(maskCPF(e.target.value))}
                   onBlur={(e) => validateField("cpf", e.target.value)}
                   placeholder="000.000.000-00"
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-widest tabular-nums"
                   maxLength={14}
                 />
               </Field>
@@ -328,7 +328,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   value={dados.id_legado_vba || ""}
                   onChange={(e) => setField("id_legado_vba")(e.target.value)}
                   placeholder="EX: 1234"
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest font-mono"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-widest font-mono"
                 />
               </Field>
             </div>
@@ -340,7 +340,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   onChange={(e) => setField("nome_mae")(formatarNomeClinico(e.target.value))}
                   placeholder="ESSENCIAL PARA BUSCAS NO SUS"
                   required
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider"
                 />
               </Field>
               <Field label="Nome do pai">
@@ -348,15 +348,15 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   value={dados.nome_pai || ""}
                   onChange={(e) => setField("nome_pai")(formatarNomeClinico(e.target.value))}
                   placeholder="OPCIONAL"
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider"
                 />
               </Field>
             </div>
 
-            <div className="flex items-center justify-between rounded-none border border-slate-200 bg-white p-4">
+            <div className="flex items-center justify-between rounded-none border border-border bg-card p-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Vínculo Municipal</p>
-                <p className="text-[10px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">O paciente é de município pactuado?</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Vínculo Municipal</p>
+                <p className="text-[10px] text-muted-foreground/70 mt-0.5 font-bold uppercase tracking-tight">O paciente é de município pactuado?</p>
               </div>
               <Switch checked={dados.pactuado} onCheckedChange={(v) => setField("pactuado")(v)} />
             </div>
@@ -365,7 +365,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
               <div className="animate-in fade-in slide-in-from-top-2 duration-200">
                 <Field label="Município de Origem (Pactuado)" required>
                   <Select value={dados.municipio_pactuado || ""} onValueChange={(v) => setField("municipio_pactuado")(v)}>
-                    <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold bg-white text-xs uppercase tracking-wider">
+                    <SelectTrigger className="w-full h-12 rounded-none border-border font-bold bg-card text-xs uppercase tracking-wider">
                       <SelectValue placeholder="SELECIONE O MUNICÍPIO" />
                     </SelectTrigger>
                     <SelectContent className="rounded-none border-none shadow-2xl">
@@ -391,28 +391,28 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   onChange={(e) => setField("endereco_cep")(maskCEP(e.target.value))}
                   onBlur={(e) => validateField("endereco_cep", e.target.value)}
                   placeholder="00000-000"
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-widest tabular-nums"
                   maxLength={9}
                 />
               </Field>
               <Field label="Bairro">
-                <Input value={dados.bairro || ""} onChange={(e) => setField("bairro")(e.target.value)} placeholder="NOME DO BAIRRO" className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
+                <Input value={dados.bairro || ""} onChange={(e) => setField("bairro")(e.target.value)} placeholder="NOME DO BAIRRO" className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider" />
               </Field>
             </div>
             <div className="grid grid-cols-[1fr_100px] gap-4">
               <Field label="Logradouro">
-                <Input value={dados.logradouro || ""} onChange={(e) => setField("logradouro")(e.target.value)} placeholder="RUA OU AVENIDA" className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
+                <Input value={dados.logradouro || ""} onChange={(e) => setField("logradouro")(e.target.value)} placeholder="RUA OU AVENIDA" className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider" />
               </Field>
               <Field label="Nº">
-                <Input value={dados.numero || ""} onChange={(e) => setField("numero")(e.target.value)} placeholder="S/N" className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
+                <Input value={dados.numero || ""} onChange={(e) => setField("numero")(e.target.value)} placeholder="S/N" className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider" />
               </Field>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Cidade">
-                <Input value={dados.cidade || ""} onChange={(e) => setField("cidade")(e.target.value)} className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
+                <Input value={dados.cidade || ""} onChange={(e) => setField("cidade")(e.target.value)} className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider" />
               </Field>
               <Field label="UF">
-                <Input value={dados.uf || ""} onChange={(e) => setField("uf")(e.target.value)} maxLength={2} className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
+                <Input value={dados.uf || ""} onChange={(e) => setField("uf")(e.target.value)} maxLength={2} className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider" />
               </Field>
             </div>
           </div>
@@ -428,7 +428,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   value={dados.telefone_principal || ""}
                   onChange={(e) => setField("telefone_principal")(maskPhone(e.target.value))}
                   placeholder="(00) 00000-0000"
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-widest tabular-nums"
                   maxLength={15}
                 />
               </Field>
@@ -437,21 +437,21 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   value={dados.telefone_secundario || ""}
                   onChange={(e) => setField("telefone_secundario")(maskPhone(e.target.value))}
                   placeholder="(00) 00000-0000"
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-widest tabular-nums"
                   maxLength={15}
                 />
               </Field>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Nome do responsável">
-                <Input value={dados.nome_responsavel || ""} onChange={(e) => setField("nome_responsavel")(formatarNomeClinico(e.target.value))} className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-wider" />
+                <Input value={dados.nome_responsavel || ""} onChange={(e) => setField("nome_responsavel")(formatarNomeClinico(e.target.value))} className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider" />
               </Field>
               <Field label="Telefone do Responsável">
                 <Input
                   value={dados.telefone_responsavel || ""}
                   onChange={(e) => setField("telefone_responsavel")(maskPhone(e.target.value))}
                   placeholder="(00) 00000-0000"
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest tabular-nums"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-widest tabular-nums"
                 />
               </Field>
             </div>
@@ -468,7 +468,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   value={dados.cid_principal || ""} 
                   onChange={(e) => setField("cid_principal")(e.target.value.toUpperCase())} 
                   placeholder="EX: F84.0"
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-widest"
                 />
               </Field>
               <Field label="CID Secundário">
@@ -476,19 +476,19 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   value={dados.cid_secundario || ""} 
                   onChange={(e) => setField("cid_secundario")(e.target.value.toUpperCase())} 
                   placeholder="OPCIONAL"
-                  className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-white uppercase text-xs tracking-widest"
+                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-widest"
                 />
               </Field>
             </div>
 
-            <div className="flex items-center justify-between rounded-none border border-slate-200 bg-white p-4">
+            <div className="flex items-center justify-between rounded-none border border-border bg-card p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-none">
-                  <Truck className="w-4 h-4 text-blue-600" />
+                <div className="p-2 bg-primary/10 rounded-none">
+                  <Truck className="w-4 h-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Necessita de Transporte?</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">Ativa a visualização para motoristas</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Necessita de Transporte?</p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-0.5 font-bold uppercase tracking-tight">Ativa a visualização para motoristas</p>
                 </div>
               </div>
               <Switch 
@@ -498,13 +498,13 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
             </div>
 
             <Field label="Tags de Acessibilidade / Observações de Risco">
-              <div className="flex flex-wrap gap-2 p-3 border rounded-none bg-white min-h-[80px]">
+              <div className="flex flex-wrap gap-2 p-3 border rounded-none bg-card min-h-[80px]">
                 {["Cadeirante", "Acamado", "Risco Agitação", "Deficiência Visual", "Deficiência Auditiva", "Uso de Maca"].map(tag => (
                   <Button
                     key={tag}
                     type="button"
                     variant={dados.tags_acessibilidade?.includes(tag) ? "default" : "outline"}
-                    className="h-8 rounded-none border-slate-200 font-bold uppercase tracking-widest text-[10px] px-2"
+                    className="h-8 rounded-none border-border font-bold uppercase tracking-widest text-[10px] px-2"
                     onClick={() => {
                       const current = dados.tags_acessibilidade || []
                       if (current.includes(tag)) {
@@ -531,8 +531,8 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
       </div>
 
       {/* FOOTER */}
-      <div className="shrink-0 border-t bg-slate-50 px-7 py-5 flex gap-3">
-        <Button type="button" variant="outline" className="flex-1 h-14 rounded-none border-slate-200 font-bold uppercase tracking-widest text-slate-500" onClick={onCancel} disabled={isPending}>
+      <div className="shrink-0 border-t bg-background px-7 py-5 flex gap-3">
+        <Button type="button" variant="outline" className="flex-1 h-14 rounded-none border-border font-bold uppercase tracking-widest text-muted-foreground" onClick={onCancel} disabled={isPending}>
           CANCELAR
         </Button>
         <Button type="submit" className="flex-1 h-14 rounded-none bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-widest shadow-lg shadow-primary/20 gap-2" disabled={isPending}>

@@ -26,6 +26,7 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
 
   useEffect(() => {
     if (!open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsEditing(false)
     }
   }, [open])

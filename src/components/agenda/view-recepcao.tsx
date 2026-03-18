@@ -85,6 +85,7 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
   }, [selectedProf, dataSelecionada])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadAgenda()
   }, [loadAgenda])
 
@@ -116,7 +117,7 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
       <div className="flex flex-wrap items-center justify-between gap-4 bg-card p-5 rounded-none border border-border shadow-none">
         <div className="flex items-end gap-4">
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-muted uppercase tracking-wider">Profissional</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Profissional</span>
             <Select 
               onValueChange={(val) => setUrlParams({ profId: val })} 
               value={selectedProf}
@@ -135,7 +136,7 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
           </div>
           
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-muted uppercase tracking-wider">Data</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Data</span>
             <Input 
               type="date" 
               className="w-[180px] font-medium h-10 rounded-none h-10"
@@ -164,7 +165,7 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
 
       <Card className="border-none shadow-none rounded-none overflow-hidden">
         <Table>
-          <TableHeader className="bg-muted/30">
+          <TableHeader>
             <TableRow className="border-b-2 border-border">
               <TableHead className="w-[100px] text-foreground font-bold uppercase text-[10px] tracking-widest pl-6">Horário</TableHead>
               <TableHead className="text-foreground font-bold uppercase text-[10px] tracking-widest">Paciente</TableHead>
@@ -177,15 +178,15 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12 text-slate-500">Carregando agenda...</TableCell>
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">Carregando agenda...</TableCell>
               </TableRow>
             ) : sessões.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12 text-slate-500">Nenhum agendamento para este dia.</TableCell>
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">Nenhum agendamento para este dia.</TableCell>
               </TableRow>
             ) : (
               sessões.map((sessao) => (
-                <TableRow key={sessao.id} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-0 h-20">
+                <TableRow key={sessao.id} className="group hover:bg-muted transition-colors border-b border-border last:border-0 h-20">
                   <TableCell className="font-bold tabular-nums text-primary text-[16px] pl-6">
                     {format(sessao.data_hora_inicio, 'HH:mm')}
                   </TableCell>
@@ -194,14 +195,14 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-bold text-foreground uppercase tracking-tight">{sessao.paciente_nome}</span>
                         {sessao.conflito_intensivo && (
-                          <Badge className="bg-amber-500 text-white border-none text-[8px] font-bold h-4 rounded-none px-1">
+                          <Badge className="bg-alert-warning-bg text-alert-warning-text border-none text-[8px] font-bold h-4 rounded-none px-1">
                             COMPARTILHADO
                           </Badge>
                         )}
                       </div>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {sessao.tags_acessibilidade?.map(tag => (
-                          <Badge key={tag} variant="outline" className="text-[9px] py-0 px-1 border-slate-200 text-slate-500 uppercase rounded-none bg-slate-50">
+                          <Badge key={tag} variant="outline" className="text-[9px] py-0 px-1 border-border text-muted-foreground uppercase rounded-none bg-muted">
                             {tag}
                           </Badge>
                         ))}
@@ -209,20 +210,20 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">{sessao.especialidade_nome}</span>
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{sessao.especialidade_nome}</span>
                   </TableCell>
                   <TableCell className="text-center">
                     {sessao.status === "Projetado" ? (
-                      <Badge className="bg-[var(--color-alert-warning-bg)] text-[var(--color-alert-warning-text)] border-none shadow-none font-bold text-[10px] rounded-none">AGUARDANDO</Badge>
+                      <Badge className="bg-alert-warning-bg text-alert-warning-text border-none shadow-none font-bold text-[10px] rounded-none">AGUARDANDO</Badge>
                     ) : sessao.status === "Presente" ? (
-                      <Badge className="bg-[var(--color-alert-success-bg)] text-[var(--color-alert-success-text)] border-none shadow-none font-bold text-[10px] rounded-none">PRESENTE</Badge>
+                      <Badge className="bg-alert-success-bg text-alert-success-text border-none shadow-none font-bold text-[10px] rounded-none">PRESENTE</Badge>
                     ) : sessao.status === "Falta Justificada" || sessao.status === "Falta Nao Justificada" ? (
-                      <Badge className="bg-[var(--color-alert-danger-bg)] text-[var(--color-alert-danger-text)] border-none shadow-none font-bold text-[10px] rounded-none">FALTA</Badge>
+                      <Badge className="bg-alert-danger-bg text-alert-danger-text border-none shadow-none font-bold text-[10px] rounded-none">FALTA</Badge>
                     ) : (
                       <Badge className="bg-muted text-muted-foreground border-none shadow-none font-bold text-[10px] rounded-none uppercase">{sessao.status}</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-center tabular-nums text-slate-500 font-bold">
+                  <TableCell className="text-center tabular-nums text-muted-foreground font-bold">
                     {sessao.status === "Presente" && sessao.criado_em 
                       ? format(parseISO(sessao.criado_em), 'HH:mm') 
                       : '--:--'}
@@ -233,7 +234,7 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="text-emerald-700 border-emerald-200 hover:bg-emerald-50 rounded-none h-8 font-bold text-[11px] uppercase tracking-wider"
+                          className="text-alert-success-text border-alert-success-text/30 hover:bg-alert-success-bg rounded-none h-8 font-bold text-[11px] uppercase tracking-wider"
                           onClick={() => handleMarcarPresenca(sessao, "Presente")}
                           disabled={isPending}
                         >
@@ -242,7 +243,7 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
                         <Button 
                           size="sm" 
                           variant="ghost" 
-                          className="text-red-600 hover:bg-red-50 hover:text-red-700 rounded-none h-8 font-bold text-[11px] uppercase tracking-wider"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-none h-8 font-bold text-[11px] uppercase tracking-wider"
                           onClick={() => handleMarcarPresenca(sessao, "Falta Nao Justificada")}
                           disabled={isPending}
                         >

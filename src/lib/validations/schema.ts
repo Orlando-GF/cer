@@ -11,7 +11,7 @@ export const PerfilAcessoEnum = z.enum(["Recepcao", "Enfermagem", "Medico_Terape
 export const StatusVagaEnum = z.enum(["Ativa", "Suspensa", "Encerrada"])
 export const StatusCadastroEnum = z.enum(["Ativo", "Inativo", "Obito", "Alta"])
 export const TipoAtendimentoEnum = z.enum(["Consulta Medica", "Terapia Continua", "Dispensacao_OPM", "Avaliacao_Diagnostica"])
-export const StatusComparecimentoEnum = z.enum(["Agendado", "Presente", "Falta Injustificada", "Falta Justificada", "Cancelado"])
+export const StatusComparecimentoEnum = z.enum(["Agendado", "Presente", "Falta Nao Justificada", "Falta Justificada", "Cancelado"])
 export const CondutaEvolucaoEnum = z.enum([
   "Retorno", 
   "Alta por Melhoria", 

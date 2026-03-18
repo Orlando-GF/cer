@@ -57,24 +57,24 @@ export function NovaEspecialidadeSheet() {
         
         <form onSubmit={onSubmit} className="px-7 py-6 space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="nome" className="text-[10px] font-black uppercase tracking-widest text-slate-500">Nome da Especialidade</Label>
-            <Input id="nome" name="nome" placeholder="EX: FISIOTERAPIA ADULTO" required className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-slate-50 uppercase text-xs" />
+            <Label htmlFor="nome" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nome da Especialidade</Label>
+            <Input id="nome" name="nome" placeholder="EX: FISIOTERAPIA ADULTO" required className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="equipe" className="text-[10px] font-black uppercase tracking-widest text-slate-500">Equipe Responsável</Label>
-            <Input id="equipe" name="equipe" placeholder="EX: EQUIPE DE REABILITAÇÃO FÍSICA" className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-slate-50 uppercase text-xs" />
+            <Label htmlFor="equipe" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Equipe Responsável</Label>
+            <Input id="equipe" name="equipe" placeholder="EX: EQUIPE DE REABILITAÇÃO FÍSICA" className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="linha" className="text-[10px] font-black uppercase tracking-widest text-slate-500">Linha de Reabilitação</Label>
-            <Input id="linha" name="linha" placeholder="EX: INTELECTUAL / AUTISMO" className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-slate-50 uppercase text-xs" />
+            <Label htmlFor="linha" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Linha de Reabilitação</Label>
+            <Input id="linha" name="linha" placeholder="EX: INTELECTUAL / AUTISMO" className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tipo" className="text-[10px] font-black uppercase tracking-widest text-slate-500">Tipo de Atendimento</Label>
+            <Label htmlFor="tipo" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Tipo de Atendimento</Label>
             <Select name="tipo" defaultValue="Terapia Continua">
-              <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold focus:ring-primary bg-white uppercase text-xs tracking-wider">
+              <SelectTrigger className="w-full h-12 rounded-none border-border font-bold focus:ring-primary bg-card uppercase text-xs tracking-wider">
                 <SelectValue placeholder="SELECIONE O TIPO" />
               </SelectTrigger>
               <SelectContent className="rounded-none border-none shadow-2xl">

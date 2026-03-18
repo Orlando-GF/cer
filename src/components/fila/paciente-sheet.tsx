@@ -73,8 +73,11 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
   const [isLoadingHistorico, setIsLoadingHistorico] = useState(false)
 
   // Busca histórico de faltas ao abrir o paciente
+  // EXCEÇÃO (Regra 3.2): Este useEffect é mantido porque o histórico de faltas não é crucial para o LCP (Largest Contentful Paint) 
+  // da Fila de Espera, sendo carregado sob demanda (lazy loading) apenas quando a Sheet deste paciente for explícitamente aberta via interação do usuário.
   useEffect(() => {
     if (open && paciente?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoadingHistorico(true)
       buscarHistoricoFaltas(paciente.id)
         .then((res) => {

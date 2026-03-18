@@ -85,6 +85,7 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
   }, [selectedProf, dataSelecionada])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     updateAgenda()
   }, [updateAgenda])
 
@@ -124,10 +125,10 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-none border shadow-none">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-card p-5 rounded-none border border-border shadow-none">
         <div className="flex items-end gap-4">
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">Canal de Atendimento</span>
+            <span className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">Canal de Atendimento</span>
             <Select 
               onValueChange={(val) => setUrlParams({ profId: val })} 
               value={selectedProf}
@@ -146,10 +147,10 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
           </div>
           
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">Data</span>
+            <span className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">Data</span>
             <Input 
               type="date" 
-              className="w-[180px] font-medium h-10 rounded-none h-10"
+              className="w-[180px] font-medium h-10 rounded-none"
               value={format(dataSelecionada, 'yyyy-MM-dd')}
               onChange={(e) => setUrlParams({ date: e.target.value })}
             />
@@ -157,7 +158,7 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
         </div>
 
         <div className="flex gap-2">
-          <Badge className="bg-blue-50 text-blue-700 border-none px-3 py-1 rounded-none font-bold text-[10px] uppercase tracking-widest">
+          <Badge className="bg-primary/10 text-primary border-transparent px-3 py-1 rounded-none font-bold text-[10px] uppercase tracking-widest">
             Minha Agenda
           </Badge>
         </div>
@@ -165,56 +166,56 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3">
-          <Card className="border-none shadow-none rounded-none overflow-hidden bg-white">
+          <Card className="border-none shadow-none rounded-none overflow-hidden bg-card">
             <Table>
-              <TableHeader className="bg-slate-50/50">
-                <TableRow className="border-b-2 border-slate-100">
-                  <TableHead className="w-[100px] text-slate-900 font-bold uppercase text-[10px] tracking-widest pl-6">Hora</TableHead>
-                  <TableHead className="text-slate-900 font-bold uppercase text-[10px] tracking-widest">Paciente</TableHead>
-                  <TableHead className="text-slate-900 font-bold uppercase text-[10px] tracking-widest">Alertas</TableHead>
-                  <TableHead className="text-right text-slate-900 font-bold uppercase text-[10px] tracking-widest pr-6">Ação</TableHead>
+              <TableHeader>
+                <TableRow className="border-b-2 border-border">
+                  <TableHead className="w-[100px] text-foreground font-bold uppercase text-[10px] tracking-widest pl-6">Hora</TableHead>
+                  <TableHead className="text-foreground font-bold uppercase text-[10px] tracking-widest">Paciente</TableHead>
+                  <TableHead className="text-foreground font-bold uppercase text-[10px] tracking-widest">Alertas</TableHead>
+                  <TableHead className="text-right text-foreground font-bold uppercase text-[10px] tracking-widest pr-6">Ação</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={4} className="text-center py-12 text-slate-500">Carregando...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground">Carregando...</TableCell></TableRow>
                 ) : sessões.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center py-12 text-slate-500">Nenhum atendimento agendado para hoje.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground">Nenhum atendimento agendado para hoje.</TableCell></TableRow>
                 ) : (
                   sessões.map((sessao) => (
-                    <TableRow key={sessao.id} className="hover:bg-slate-50/50 cursor-pointer border-b border-slate-100 last:border-0 h-24" onClick={() => handleOpenEvolucao(sessao)}>
+                    <TableRow key={sessao.id} className="hover:bg-muted cursor-pointer transition-colors border-b border-border last:border-0 h-24" onClick={() => handleOpenEvolucao(sessao)}>
                       <TableCell className="font-bold tabular-nums text-primary text-[18px] pl-6">
                         {format(sessao.data_hora_inicio, 'HH:mm')}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="flex flex-col">
-                            <span className="text-[20px] font-bold text-slate-900 uppercase tracking-tight">{sessao.paciente_nome}</span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{sessao.especialidade_nome}</span>
+                            <span className="text-[20px] font-bold text-foreground uppercase tracking-tight">{sessao.paciente_nome}</span>
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">{sessao.especialidade_nome}</span>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-2">
                           {sessao.laudo_vencido && (
-                            <Badge className="bg-red-600 text-white border-none text-[8px] font-bold rounded-none px-1 tracking-tighter">
+                            <Badge className="bg-alert-danger-bg text-alert-danger-text border-alert-danger-text/20 text-[8px] font-bold rounded-none px-1 tracking-tighter">
                               LAUDO VENCIDO
                             </Badge>
                           )}
                           {sessao.status !== "Projetado" && sessao.status !== "Agendado" && (
-                            <Badge className="bg-emerald-100 text-emerald-800 border-none text-[8px] font-bold rounded-none px-1">
+                            <Badge className="bg-alert-success-bg text-alert-success-text border-transparent text-[8px] font-bold rounded-none px-1">
                               CONCLUÍDO
                             </Badge>
                           )}
                           {sessao.tags_acessibilidade?.map(tag => (
-                            <Badge key={tag} variant="outline" className="text-[9px] py-0 px-1 border-slate-200 text-slate-500 uppercase rounded-none bg-slate-50">
+                            <Badge key={tag} variant="outline" className="text-[9px] py-0 px-1 border-border text-muted-foreground uppercase rounded-none bg-muted">
                               {tag}
                             </Badge>
                           ))}
                         </div>
                       </TableCell>
                       <TableCell className="text-right pr-6">
-                        <Button size="sm" variant="ghost" className="text-primary hover:bg-slate-50 rounded-none font-bold text-[11px] uppercase tracking-widest h-9">
+                        <Button size="sm" variant="ghost" className="text-primary hover:bg-muted transition-colors rounded-none font-bold text-[11px] uppercase tracking-widest h-9">
                           <FileText className="h-4 w-4 mr-2" />
                           Atender
                         </Button>
@@ -228,36 +229,38 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-          <Card className="bg-slate-900 border-none text-white shadow-none rounded-none overflow-hidden">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                <History className="h-3 w-3" />
+          <Card className="border-border shadow-none rounded-none bg-card">
+            <CardHeader className="bg-primary-50 border-b border-border p-5">
+              <CardTitle className="text-[11px] font-bold uppercase tracking-widest text-foreground flex items-center gap-2">
+                <History className="h-4 w-4 text-primary" />
                 Resumo do Dia
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold tabular-nums text-blue-500">
+            <CardContent className="p-6">
+              <div className="text-3xl font-bold tabular-nums text-primary">
                 {sessões.filter(s => s.status === "Presente").length} / {sessões.length}
               </div>
-              <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mt-1">Concluídos</p>
+              <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-1">Concluídos</p>
             </CardContent>
           </Card>
           
-          <Card className="border-none shadow-none rounded-none bg-white">
-            <CardHeader className="pb-2 px-0">
-              <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                <AlertCircle className="h-3 w-3" />
+          <Card className="border-border shadow-none rounded-none bg-card">
+            <CardHeader className="bg-primary-50 border-b border-border p-5">
+              <CardTitle className="text-[11px] font-bold uppercase tracking-widest text-foreground flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-primary" />
                 Pendências de Laudo
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-0 space-y-2">
+            <CardContent className="p-0">
               {sessões.filter(s => s.laudo_vencido).map(s => (
-                <div key={s.id} className="text-[11px] p-3 bg-red-50 border-l-4 border-red-600 text-red-900 font-bold uppercase">
+                <div key={s.id} className="text-[11px] p-4 bg-alert-danger-bg border-b border-border text-alert-danger-text font-bold uppercase">
                   {s.paciente_nome}
                 </div>
               ))}
               {sessões.filter(s => s.laudo_vencido).length === 0 && (
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center py-6 bg-slate-50">Tudo em dia</p>
+                <div className="flex justify-center p-8">
+                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest text-center">Tudo em dia</p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -283,21 +286,21 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
             </div>
           </SheetHeader>
 
-          <div className="flex-1 overflow-y-auto p-8 space-y-10 bg-slate-50">
+          <div className="flex-1 overflow-y-auto p-8 space-y-10 bg-background">
             <div className="space-y-4">
-              <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Descrição do Desenvolvimento</Label>
+              <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block">Descrição do Desenvolvimento</Label>
               <Textarea 
                 placeholder="Descreva aqui o desenvolvimento da sessão, condutas técnicas aplicadas e observações significativas sobre o paciente..."
-                className="min-h-[350px] border-none shadow-none focus-visible:ring-0 text-lg bg-white p-6 rounded-none leading-relaxed"
+                className="min-h-[350px] border border-border shadow-none focus-visible:ring-0 text-lg bg-card p-6 rounded-none leading-relaxed"
                 value={evolucao}
                 onChange={e => setEvolucao(e.target.value)}
               />
             </div>
 
             <div className="space-y-4">
-              <Label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Conduta e Desfecho</Label>
+              <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block">Conduta e Desfecho</Label>
               <Select onValueChange={(val) => val && setConduta(val)} value={conduta}>
-                <SelectTrigger className="w-full bg-white border-slate-200 h-14 rounded-none text-base font-bold uppercase tracking-tight">
+                <SelectTrigger className="w-full bg-card border-border h-14 rounded-none text-base font-bold uppercase tracking-tight">
                   <SelectValue placeholder="SELECIONE A CONDUTA TÉCNICA" />
                 </SelectTrigger>
                 <SelectContent className="rounded-none border-none shadow-2xl">
@@ -312,10 +315,10 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
           </div>
 
           {/* FOOTER */}
-          <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-between gap-4">
-            <Button variant="ghost" onClick={() => setSelectedSessao(null)} className="flex-1 h-14 rounded-none font-bold uppercase tracking-widest text-slate-400">DESCARTAR</Button>
+          <div className="p-8 bg-background border-t border-border flex justify-between gap-4">
+            <Button variant="ghost" onClick={() => setSelectedSessao(null)} className="flex-1 h-14 rounded-none font-bold uppercase tracking-widest text-muted-foreground">DESCARTAR</Button>
             <Button 
-              className="flex-1 h-14 rounded-none font-bold uppercase tracking-widest gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20" 
+              className="flex-1 h-14 rounded-none font-bold uppercase tracking-widest gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20" 
               onClick={handleSalvarEvolucao}
               disabled={isPending || !evolucao}
             >

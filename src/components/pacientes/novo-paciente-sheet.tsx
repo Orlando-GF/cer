@@ -165,7 +165,7 @@ export function NovoPacienteSheet() {
               <div className="w-full max-w-md flex flex-col gap-2">
                 <Button type="button" onClick={handleAvancar}
                   disabled={!identificador.trim()}
-                  className="w-full h-14 rounded-none text-sm bg-foreground text-background border-none hover:bg-foreground/90 gap-2 shadow-lg uppercase font-bold tracking-widest">
+                  className="w-full h-14 rounded-none text-sm bg-primary text-primary-foreground border-none hover:bg-primary/90 gap-2 shadow-lg uppercase font-bold tracking-widest">
                   {statusBusca === "encontrado" ? "Confirmar e avançar" : "Preencher manualmente"}
                   <ChevronRight className="w-4 h-4" />
                 </Button>

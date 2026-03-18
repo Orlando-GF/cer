@@ -96,7 +96,7 @@ export function DataTable<TData, TValue>({
             placeholder="Buscar por Nome ou Prontuário (CNS)..."
             value={searchTerm}
             onChange={(event) => setUrlParams({ q: event.target.value })}
-            className="pl-9 h-10 w-full bg-muted/40 border-transparent focus-visible:bg-card transition-colors"
+            className="pl-9 h-10 w-full bg-card border-transparent focus-visible:bg-card transition-colors"
           />
         </div>
       </div>
@@ -105,7 +105,7 @@ export function DataTable<TData, TValue>({
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-muted/30">
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id} className="text-muted-foreground font-semibold uppercase text-[10px] tracking-widest">
@@ -127,7 +127,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="cursor-pointer hover:bg-muted/40 transition-colors"
+                  className="cursor-pointer hover:bg-muted transition-colors"
                   onClick={() => handleRowClick(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (

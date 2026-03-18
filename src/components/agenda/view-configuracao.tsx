@@ -57,6 +57,7 @@ export function ViewConfiguracao({ profissionaisIniciais, especialidadesIniciais
 
   useEffect(() => {
     if (profissionalId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadVagas(profissionalId)
     } else {
       setVagasAtivas([])
@@ -106,17 +107,17 @@ export function ViewConfiguracao({ profissionaisIniciais, especialidadesIniciais
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <Card className="lg:col-span-1 border-none shadow-none rounded-none bg-white">
-        <CardHeader className="bg-clinico-900 text-white rounded-none mb-6">
-          <CardTitle className="flex items-center gap-2 font-bold uppercase tracking-widest text-sm">
-            <Plus className="h-4 w-4 text-clinico-300" />
+      <Card className="lg:col-span-1 border-border shadow-none rounded-none bg-card">
+        <CardHeader className="border-b border-border px-0 pb-6 mx-6">
+          <CardTitle className="flex items-center gap-2 font-bold uppercase tracking-widest text-sm text-foreground">
+            <Plus className="h-4 w-4 text-primary" />
             Nova Vaga Fixa
           </CardTitle>
-          <CardDescription className="text-slate-400 text-[10px] uppercase font-bold tracking-widest">Configuração de recorrência</CardDescription>
+          <CardDescription className="text-muted-foreground text-[10px] uppercase font-bold tracking-widest">Configuração de recorrência</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Paciente</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Paciente</Label>
             <PacienteSelector 
               value={pacienteId}
               onSelect={setPacienteId}
@@ -124,9 +125,9 @@ export function ViewConfiguracao({ profissionaisIniciais, especialidadesIniciais
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Profissional Responsável</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Profissional Responsável</Label>
             <Select onValueChange={(val) => val && setProfissionalId(val)} value={profissionalId}>
-              <SelectTrigger className="rounded-none border-slate-200 h-12 font-bold focus:ring-primary bg-slate-50">
+              <SelectTrigger className="rounded-none border-border h-12 font-bold focus:ring-primary bg-background">
                 <SelectValue placeholder="SELECIONE O PROFISSIONAL" />
               </SelectTrigger>
               <SelectContent className="rounded-none border-none shadow-2xl">
@@ -138,9 +139,9 @@ export function ViewConfiguracao({ profissionaisIniciais, especialidadesIniciais
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Especialidade</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Especialidade</Label>
             <Select onValueChange={(val) => val && setEspecialidadeId(val)} value={especialidadeId}>
-              <SelectTrigger className="rounded-none border-slate-200 h-12 font-bold focus:ring-primary bg-slate-50">
+              <SelectTrigger className="rounded-none border-border h-12 font-bold focus:ring-primary bg-background">
                 <SelectValue placeholder="SELECIONE A ESPECIALIDADE" />
               </SelectTrigger>
               <SelectContent className="rounded-none border-none shadow-2xl">
@@ -153,9 +154,9 @@ export function ViewConfiguracao({ profissionaisIniciais, especialidadesIniciais
 
           <div className="grid grid-cols-1 gap-6">
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Dia da Semana</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Dia da Semana</Label>
               <Select onValueChange={(val) => val && setDiaSemana(val)} value={diaSemana}>
-                <SelectTrigger className="rounded-none border-slate-200 h-12 font-bold focus:ring-primary bg-slate-50">
+                <SelectTrigger className="rounded-none border-border h-12 font-bold focus:ring-primary bg-background">
                   <SelectValue placeholder="DIA DA SEMANA" />
                 </SelectTrigger>
                 <SelectContent className="rounded-none border-none shadow-2xl">
@@ -166,17 +167,17 @@ export function ViewConfiguracao({ profissionaisIniciais, especialidadesIniciais
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Janela de Horário</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Janela de Horário</Label>
               <div className="flex items-center gap-2">
-                <Input type="time" value={horaInicio} onChange={e => setHoraInicio(e.target.value)} className="rounded-none border-slate-200 h-12 font-bold bg-slate-50" />
-                <span className="text-slate-300 font-bold">às</span>
-                <Input type="time" value={horaFim} onChange={e => setHoraFim(e.target.value)} className="rounded-none border-slate-200 h-12 font-bold bg-slate-50" />
+                <Input type="time" value={horaInicio} onChange={e => setHoraInicio(e.target.value)} className="rounded-none border-border h-12 font-bold bg-card" />
+                <span className="text-muted-foreground font-bold">às</span>
+                <Input type="time" value={horaFim} onChange={e => setHoraFim(e.target.value)} className="rounded-none border-border h-12 font-bold bg-card" />
               </div>
             </div>
           </div>
 
           <Button 
-            className="w-full h-14 mt-4 rounded-none bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-widest shadow-lg shadow-primary/20" 
+            className="w-full h-14 mt-4 rounded-none bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest shadow-lg shadow-primary/20" 
             onClick={handleSave}
             disabled={isPending}
           >
@@ -186,22 +187,22 @@ export function ViewConfiguracao({ profissionaisIniciais, especialidadesIniciais
         </CardContent>
       </Card>
 
-      <Card className="lg:col-span-2 border-none shadow-none rounded-none bg-white">
-        <CardHeader className="border-b border-slate-100 px-0 pb-6 mx-6">
-          <CardTitle className="text-slate-900 font-bold uppercase tracking-widest text-sm">Vagas Ativas na Unidade</CardTitle>
-          <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Contratos de recorrência vigentes</CardDescription>
+      <Card className="lg:col-span-2 border-border shadow-none rounded-none bg-card">
+        <CardHeader className="border-b border-border px-0 pb-6 mx-6">
+          <CardTitle className="text-foreground font-bold uppercase tracking-widest text-sm">Vagas Ativas na Unidade</CardTitle>
+          <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Contratos de recorrência vigentes</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           {loadingVagas ? (
-            <div className="flex flex-col items-center justify-center py-24 text-slate-300">
+            <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
               <Loader2 className="h-10 w-10 animate-spin mb-4" />
               <p className="font-bold uppercase text-[10px] tracking-widest">Carregando vagas...</p>
             </div>
           ) : profissionalId ? (
             <VagasAtivasList vagas={vagasAtivas} onRemove={handleRemoveVaga} />
           ) : (
-            <div className="text-center py-24 text-slate-300">
-              <Calendar className="h-16 w-16 mx-auto mb-6 opacity-10" />
+            <div className="text-center py-24 text-muted-foreground">
+              <Calendar className="h-16 w-16 mx-auto mb-6 opacity-50" />
               <p className="font-bold uppercase text-[10px] tracking-[0.2em]">Selecione um profissional para carregar os dados</p>
             </div>
           )}

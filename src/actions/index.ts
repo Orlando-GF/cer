@@ -43,6 +43,35 @@ export async function buscarPacientes(): Promise<ActionResponse<Paciente[]>> {
   return { success: true, data }
 }
 
+export async function buscarPacientesPorBusca(termo: string): Promise<ActionResponse<Paciente[]>> {
+  const supabase = await createClient()
+
+  if (!termo || termo.trim().length < 3) {
+    return { success: true, data: [] }
+  }
+
+  const apenasNumeros = termo.replace(/\D/g, '')
+  
+  let query = supabase.from('pacientes').select('*').limit(30)
+
+  if (apenasNumeros.length > 0) {
+    query = query.or(`cpf.ilike.%${apenasNumeros}%,cns.ilike.%${apenasNumeros}%`)
+  } else {
+    query = query.ilike('nome_completo', `%${termo}%`)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    return {
+      success: false,
+      error: `Erro ao buscar pacientes: ${error.message}`,
+    }
+  }
+
+  return { success: true, data }
+}
+
 export async function cadastrarPaciente(
   rawData: unknown,
 ): Promise<ActionResponse> {

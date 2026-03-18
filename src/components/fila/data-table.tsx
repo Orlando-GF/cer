@@ -144,7 +144,7 @@ export function DataTable<TData, TValue>({
       <div className="flex flex-col gap-4 bg-card p-4 rounded-none border border-border">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <Tabs defaultValue="ativos" value={statusFilter} onValueChange={(val) => setUrlParams({ status: val })} className="w-full sm:w-auto">
-            <TabsList variant="segmented">
+            <TabsList variant="agenda">
               <TabsTrigger value="todos">Todos</TabsTrigger>
               <TabsTrigger value="ativos">Pacientes Ativos</TabsTrigger>
               <TabsTrigger value="Aguardando">Na Fila</TabsTrigger>
@@ -209,7 +209,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="cursor-pointer hover:bg-muted transition-colors"
                   onClick={() => handleRowClick(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (

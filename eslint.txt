@@ -1,0 +1,112 @@
+﻿
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\agenda\view-configuracao.tsx
+  60:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\agenda\view-configuracao.tsx:60:7
+  58 |   useEffect(() => {
+  59 |     if (profissionalId) {
+> 60 |       loadVagas(profissionalId)
+     |       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  61 |     } else {
+  62 |       setVagasAtivas([])
+  63 |     }  react-hooks/set-state-in-effect
+
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\agenda\view-profissional.tsx
+  88:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\agenda\view-profissional.tsx:88:5
+  86 |
+  87 |   useEffect(() => {
+> 88 |     updateAgenda()
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  89 |   }, [updateAgenda])
+  90 |
+  91 |   const handleOpenEvolucao = (sessao: AgendaSession): void => {  react-hooks/set-state-in-effect
+
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\agenda\view-recepcao.tsx
+  88:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\agenda\view-recepcao.tsx:88:5
+  86 |
+  87 |   useEffect(() => {
+> 88 |     loadAgenda()
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  89 |   }, [loadAgenda])
+  90 |
+  91 |   const handleMarcarPresenca = async (sessao: AgendaSession, status: string): Promise<void> => {  react-hooks/set-state-in-effect
+
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\fila\paciente-sheet.tsx
+  78:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\fila\paciente-sheet.tsx:78:7
+  76 |   useEffect(() => {
+  77 |     if (open && paciente?.id) {
+> 78 |       setIsLoadingHistorico(true)
+     |       ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  79 |       buscarHistoricoFaltas(paciente.id)
+  80 |         .then((res) => {
+  81 |           if (res?.success && res?.data) {  react-hooks/set-state-in-effect
+
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\pacientes\paciente-form.tsx
+  170:7  error  Definition for rule 'react-compiler/react-compiler' was not found                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-compiler/react-compiler
+  171:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\pacientes\paciente-form.tsx:171:7
+  169 |     if (initialData) {
+  170 |       // eslint-disable-next-line react-compiler/react-compiler, react-hooks/exhaustive-deps
+> 171 |       setDados({
+      |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  172 |         ...initialData,
+  173 |         cpf: initialData.cpf ? maskCPF(initialData.cpf) : "",
+  174 |         cns: initialData.cns ? maskCNS(initialData.cns) : "",  react-hooks/set-state-in-effect
+
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\pacientes\paciente-sheet-master.tsx
+  29:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\orlan\Documents\Visual Studio Code\cer\src\components\pacientes\paciente-sheet-master.tsx:29:7
+  27 |   useEffect(() => {
+  28 |     if (!open) {
+> 29 |       setIsEditing(false)
+     |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  30 |     }
+  31 |   }, [open])
+  32 |  react-hooks/set-state-in-effect
+
+Ô£û 7 problems (7 errors, 0 warnings)
+

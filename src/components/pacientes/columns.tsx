@@ -93,7 +93,7 @@ export const columns: ColumnDef<Paciente>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-none border border-border bg-card text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors focus:outline-none"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-none border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none"
             title="Opções do paciente"
             onClick={(e) => e.stopPropagation()}
           >

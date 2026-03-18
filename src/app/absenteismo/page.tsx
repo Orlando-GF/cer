@@ -18,8 +18,8 @@ export default async function AbsenteismoPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <Card className="border-none shadow-sm overflow-hidden bg-card">
-          <CardHeader className="bg-muted/30 border-b pb-4">
+        <Card className="border border-border shadow-none rounded-none bg-card">
+          <CardHeader className="bg-muted/30 border-b border-border pb-4">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg font-semibold flex items-center gap-2 text-destructive">
@@ -27,7 +27,7 @@ export default async function AbsenteismoPage() {
                 </CardTitle>
                 <CardDescription>Estes pacientes perderam o vínculo de 3 sessões consecutivas.</CardDescription>
               </div>
-              <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 px-3 py-1">
+              <Badge variant="outline" className="bg-alert-danger-bg text-alert-danger-text border-alert-danger-text/20 px-3 py-1 rounded-none">
                 {alertas.length} Pacientes Críticos
               </Badge>
             </div>
@@ -35,7 +35,7 @@ export default async function AbsenteismoPage() {
           <CardContent className="p-0">
             {alertas.length === 0 ? (
               <Table>
-                <TableHeader className="bg-muted/50">
+                <TableHeader>
                   <TableRow>
                     <TableHead>Paciente</TableHead>
                     <TableHead>Especialidade / Profissional</TableHead>
@@ -47,7 +47,7 @@ export default async function AbsenteismoPage() {
                 <TableBody>
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-20 text-muted-foreground">
-                      <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-[var(--color-alert-success-text)]" />
+                      <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-alert-success-text" />
                       Nenhum alerta de absenteísmo crítico no momento. 🙌
                     </TableCell>
                   </TableRow>
@@ -60,8 +60,8 @@ export default async function AbsenteismoPage() {
         </Card>
       </div>
 
-      <div className="border border-[var(--color-alert-warning-text)]/20 bg-[var(--color-alert-warning-bg)] p-4 flex gap-4">
-        <AlertTriangle className="w-6 h-6 text-[var(--color-alert-warning-text)] shrink-0" />
+      <div className="border border-alert-warning-text/20 bg-alert-warning-bg p-4 flex gap-4 rounded-none">
+        <AlertTriangle className="w-6 h-6 text-alert-warning-text shrink-0" />
         <div className="space-y-1">
           <p className="text-sm font-semibold text-foreground underline">Importante:</p>
           <p className="text-xs text-muted-foreground leading-relaxed">

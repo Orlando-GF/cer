@@ -1,7 +1,5 @@
-// 1. Externos
 import { useState, useEffect, useMemo } from "react"
 import { format, startOfDay, endOfDay, parseISO, isValid, addMinutes, eachHourOfInterval } from "date-fns"
-import { User } from "lucide-react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
 // 2. Internos
@@ -25,7 +23,7 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
   const pathname = usePathname()
 
   const [sessões, setSessões] = useState<AgendaSession[]>([])
-  const [profissionais, setProfissionais] = useState<Profissional[]>(profissionaisIniciais)
+  const [profissionais] = useState<Profissional[]>(profissionaisIniciais)
   const [loading, setLoading] = useState(false)
 
   // Sincronizar com URL de forma estável para evitar loop de renderização
@@ -91,7 +89,7 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-none border shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-card p-5 rounded-none border border-border shadow-none">
         <div className="flex items-center gap-4">
           <div className="space-y-3">
             <h3 className="text-base font-semibold text-foreground tracking-tight">Visualização macro</h3>
@@ -105,25 +103,25 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
         </div>
 
         <div className="flex gap-2">
-            <Badge variant="outline" className="bg-blue-50 border-blue-100 text-blue-700">
+            <Badge variant="outline" className="bg-primary/10 border-transparent text-primary rounded-none">
                 Timeline / Gantt view
             </Badge>
         </div>
       </div>
 
-      <Card className="border border-slate-200 shadow-sm bg-white overflow-hidden">
+      <Card className="border border-border shadow-none bg-card overflow-hidden rounded-none">
         <div className="overflow-x-auto custom-scrollbar">
           <div className="w-fit flex flex-col relative">
             {/* Header de Horas */}
-            <div className="flex border-b sticky top-0 bg-white z-10 w-full">
-              <div className="w-[200px] shrink-0 p-4 border-r bg-slate-50 font-bold text-slate-900 sticky left-0 z-30 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">Profissional</div>
+            <div className="flex border-b sticky top-0 bg-card z-10 w-full">
+              <div className="w-[200px] shrink-0 p-4 border-r border-border bg-muted font-bold text-foreground sticky left-0 z-30 shadow-none">Profissional</div>
               {horas.map(h => (
-                <div key={h.toISOString()} className="w-[200px] shrink-0 p-4 text-center text-xs font-bold text-slate-500 border-r border-slate-100 tracking-tighter tabular-nums">
+                <div key={h.toISOString()} className="w-[200px] shrink-0 p-4 text-center text-xs font-bold text-muted-foreground border-r border-border tracking-tighter tabular-nums">
                   {format(h, 'HH:mm')}
                 </div>
               ))}
               {/* Borda final transparente para alinhamento */}
-              <div className="w-0 shrink-0 border-r border-slate-200" />
+              <div className="w-0 shrink-0 border-r border-border" />
             </div>
 
             {/* Linhas por Profissional */}
@@ -131,18 +129,18 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
               const sessoesProf = sessões.filter(s => s.profissional_id === prof.id)
               
               return (
-                <div key={prof.id} className="flex border-b hover:bg-slate-50/30 transition-colors group w-full">
-                  <div className="w-[200px] shrink-0 p-4 border-r font-medium flex items-center bg-white sticky left-0 z-20 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">
-                    <span className="text-sm truncate leading-tight text-slate-700 font-semibold">{prof.nome_completo}</span>
+                <div key={prof.id} className="flex border-b hover:bg-muted transition-colors group w-full">
+                  <div className="w-[200px] shrink-0 p-4 border-r border-border font-medium flex items-center bg-card sticky left-0 z-20 shadow-none">
+                    <span className="text-sm truncate leading-tight text-foreground font-semibold">{prof.nome_completo}</span>
                   </div>
                   
-                  <div className="w-[2600px] shrink-0 relative h-20 border-r border-slate-100 bg-white">
+                  <div className="w-[2600px] shrink-0 relative h-20 border-r border-border bg-card">
                     {/* Linhas de grade verticais */}
                     {horas.map(h => (
-                      <div key={h.toISOString()} className="absolute top-0 bottom-0 w-px bg-slate-100 border-l border-dashed left-[var(--pos)]" style={{ '--pos': `${getPosition(h)}px` } as React.CSSProperties} />
+                      <div key={h.toISOString()} className="absolute top-0 bottom-0 w-px bg-border border-l border-dashed left-[var(--pos)]" style={{ '--pos': `${getPosition(h)}px` } as React.CSSProperties} />
                     ))}
                     {/* Linha de fechamento final (19:00) */}
-                    <div className="absolute top-0 bottom-0 w-px bg-slate-200 border-l border-solid left-[var(--pos)] z-10" style={{ '--pos': `${getPosition(addMinutes(startOfDay(dataSelecionada), 19 * 60))}px` } as React.CSSProperties} />
+                    <div className="absolute top-0 bottom-0 w-px bg-border border-l border-solid left-[var(--pos)] z-10" style={{ '--pos': `${getPosition(addMinutes(startOfDay(dataSelecionada), 19 * 60))}px` } as React.CSSProperties} />
 
                     {/* Cards de Sessão */}
                     {sessoesProf.map(sessao => {
@@ -153,10 +151,10 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
                         <div 
                           key={sessao.id}
                           className={cn(
-                            "absolute top-2 bottom-2 rounded-lg border p-2 text-[10px] overflow-hidden shadow-sm transition-all hover:scale-[1.02] hover:z-20 cursor-help",
-                            sessao.status === "Presente" ? "bg-emerald-50 border-emerald-200 text-emerald-900" : 
-                            sessao.status === "Falta Justificada" ? "bg-red-50 border-red-200 text-red-900" :
-                            "bg-blue-50 border-blue-200 text-blue-900"
+                            "absolute top-2 bottom-2 rounded-none border p-2 text-[10px] overflow-hidden shadow-none transition-all hover:scale-[1.02] hover:z-20 cursor-help",
+                            sessao.status === "Presente" ? "bg-alert-success-bg border-alert-success-text/20 text-alert-success-text" : 
+                            sessao.status === "Falta Justificada" || sessao.status === "Falta Nao Justificada" ? "bg-alert-danger-bg border-alert-danger-text/20 text-alert-danger-text" :
+                            "bg-primary/10 border-primary/20 text-primary"
                           )}
                           style={{ left: `${left}px`, width: `${width}px` }}
                           title={`${sessao.paciente_nome} - ${sessao.especialidade_nome}`}
@@ -173,8 +171,8 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
             })}
 
             {loading && profissionais.length > 0 && (
-                <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-30">
-                    <Badge variant="outline" className="bg-white shadow-xl px-6 py-2 border-slate-200 text-slate-600 font-bold tracking-widest animate-pulse">
+                <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-30">
+                    <Badge variant="outline" className="bg-card shadow-xl px-6 py-2 border-border text-muted-foreground rounded-none font-bold tracking-widest animate-pulse">
                         Sincronizando timeline...
                     </Badge>
                 </div>
@@ -184,8 +182,8 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
       </Card>
       
       {profissionais.length === 0 && !loading && (
-          <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-200">
-              <p className="text-slate-500">Nenhum profissional cadastrado para visualização.</p>
+          <div className="text-center py-20 bg-card rounded-none border border-dashed border-border">
+              <p className="text-muted-foreground">Nenhum profissional cadastrado para visualização.</p>
           </div>
       )}
     </div>

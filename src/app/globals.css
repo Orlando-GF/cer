@@ -77,6 +77,11 @@
   --color-card:       var(--color-card);
   --color-border:     var(--color-border);
   --color-primary:    var(--color-primary);
+  --color-primary-50: var(--color-primary-50);
+  --color-primary-100: var(--color-primary-100);
+  --color-primary-300: var(--color-primary-300);
+  --color-primary-800: var(--color-primary-800);
+  --color-primary-900: var(--color-primary-900);
   --color-muted:      var(--color-muted);
 
   /* Sidebar Tokens Conectados */

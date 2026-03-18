@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useTransition } from "react"
+import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import { 
   Sheet, 
@@ -21,7 +21,7 @@ import {
   SelectValue 
 } from "@/components/ui/select"
 import { UserPlus, Loader2, Check } from "lucide-react"
-import { cadastrarProfissional, buscarEspecialidades } from "@/actions"
+import { cadastrarProfissional } from "@/actions"
 import { type PerfilAcesso } from "@/types"
 import { formatarNomeClinico } from "@/lib/utils/string-utils"
 
@@ -39,7 +39,7 @@ function Field({
 }) {
   return (
     <div className="space-y-2">
-      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
       {children}
@@ -48,10 +48,13 @@ function Field({
   )
 }
 
-export function NovoProfissionalSheet() {
+export function NovoProfissionalSheet({ 
+  especialidades = [] 
+}: { 
+  especialidades?: {id: string, nome_especialidade: string}[] 
+}) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [especialidades, setEspecialidades] = useState<{id: string, nome_especialidade: string}[]>([])
 
   const [dados, setDados] = useState({
     nome_completo: "",
@@ -63,16 +66,6 @@ export function NovoProfissionalSheet() {
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  useEffect(() => {
-    if (open) {
-      buscarEspecialidades().then(res => {
-        if (res.success && res.data) {
-          setEspecialidades(res.data)
-        }
-      })
-    }
-  }, [open])
 
   const toggleEspecialidade = (id: string) => {
     setDados(prev => ({
@@ -127,13 +120,13 @@ export function NovoProfissionalSheet() {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="px-7 py-6 space-y-6">
+          <div className="px-7 py-6 space-y-6">
           <Field label="Nome completo" required error={errors.nome_completo}>
             <Input 
               placeholder="EX: DR. PAULO SILVA" 
               value={dados.nome_completo}
               onChange={(e) => setDados({...dados, nome_completo: formatarNomeClinico(e.target.value)})}
-              className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-slate-50 uppercase text-xs"
+              className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-background uppercase text-xs"
             />
           </Field>
 
@@ -143,7 +136,7 @@ export function NovoProfissionalSheet() {
                 placeholder="EX: CRM-BA 12345" 
                 value={dados.registro_conselho}
                 onChange={(e) => setDados({...dados, registro_conselho: e.target.value})}
-                className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-slate-50 uppercase text-xs"
+                className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-background uppercase text-xs"
               />
             </Field>
             <Field label="CBO">
@@ -151,7 +144,7 @@ export function NovoProfissionalSheet() {
                 placeholder="EX: 225125" 
                 value={dados.cbo}
                 onChange={(e) => setDados({...dados, cbo: e.target.value})}
-                className="rounded-none border-slate-200 h-12 font-bold focus-visible:ring-primary bg-slate-50 uppercase text-xs"
+                className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-background uppercase text-xs"
               />
             </Field>
           </div>
@@ -161,7 +154,7 @@ export function NovoProfissionalSheet() {
               value={dados.perfil_acesso} 
               onValueChange={(v) => setDados({...dados, perfil_acesso: v as PerfilAcesso})}
             >
-              <SelectTrigger className="w-full h-12 rounded-none border-slate-200 font-bold focus:ring-primary bg-white uppercase text-xs tracking-wider">
+              <SelectTrigger className="w-full h-12 rounded-none border-border font-bold focus:ring-primary bg-card uppercase text-xs tracking-wider">
                 <SelectValue placeholder="SELECIONE O PERFIL" />
               </SelectTrigger>
               <SelectContent className="rounded-none border-none shadow-2xl">
@@ -175,14 +168,14 @@ export function NovoProfissionalSheet() {
           </Field>
 
           <div className="space-y-3">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               Especialidades Permitidas
             </Label>
-            <div className="grid grid-cols-1 gap-2 p-3 border border-slate-200 rounded-none bg-slate-50 max-h-48 overflow-y-auto">
+            <div className="grid grid-cols-1 gap-2 p-3 border border-border rounded-none bg-background max-h-48 overflow-y-auto">
               {especialidades.map((esp) => (
                 <div 
                   key={esp.id}
-                  className="flex items-center gap-3 p-2 hover:bg-white rounded-md transition-colors cursor-pointer group"
+                  className="flex items-center gap-3 p-2 hover:bg-card rounded-md transition-colors cursor-pointer group"
                   onClick={() => toggleEspecialidade(esp.id)}
                 >
                   <div className={`
@@ -195,7 +188,7 @@ export function NovoProfissionalSheet() {
                       <Check className="h-3.5 w-3.5 text-white stroke-[3px]" />
                     )}
                   </div>
-                  <span className="text-sm text-slate-600 select-none">
+                  <span className="text-sm text-muted-foreground select-none">
                     {esp.nome_especialidade}
                   </span>
                 </div>
@@ -209,7 +202,7 @@ export function NovoProfissionalSheet() {
           <div className="pt-8 flex gap-3">
             <Button 
               variant="outline" 
-              className="flex-1 h-14 rounded-none border-slate-200 font-bold uppercase tracking-widest text-slate-500"
+              className="flex-1 h-14 rounded-none border-border font-bold uppercase tracking-widest text-muted-foreground"
               onClick={() => setOpen(false)}
             >
               CANCELAR

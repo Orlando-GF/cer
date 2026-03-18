@@ -9,6 +9,16 @@ import { Clock, Scale, AlertCircle } from "lucide-react";
 
 import { validarAcessoRota } from "@/lib/access-control";
 
+interface FilaEsperaRow {
+  id: string
+  data_entrada_fila: string
+  nivel_prioridade: string
+  status_fila: string
+  faltas_consecutivas: number
+  pacientes: { nome_completo: string; cns: string } | null
+  linhas_cuidado_especialidades: { nome_especialidade: string } | null
+}
+
 export default async function Dashboard() {
   await validarAcessoRota("/fila");
   const supabase = await createClient();
@@ -41,17 +51,19 @@ export default async function Dashboard() {
 
   if (!error && dbData) {
     // 3. Mapeamento
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    filaReal = dbData.map((row: any) => ({
-      id: row.id as string,
-      nome: row.pacientes?.nome_completo || "Desconhecido",
-      cns: row.pacientes?.cns || "S/N",
-      prioridade: row.nivel_prioridade,
-      status: row.status_fila,
-      especialidade: row.linhas_cuidado_especialidades?.nome_especialidade || "Sem Especialidade",
-      dataEntrada: row.data_entrada_fila,
-      faltas: row.faltas_consecutivas || 0
-    })) as unknown as PacienteFila[];
+    filaReal = dbData.map((rawRow: unknown) => {
+      const row = rawRow as FilaEsperaRow;
+      return {
+        id: row.id,
+        nome: row.pacientes?.nome_completo || "Desconhecido",
+        cns: row.pacientes?.cns || "S/N",
+        prioridade: row.nivel_prioridade as PacienteFila["prioridade"],
+        status: row.status_fila as PacienteFila["status"],
+        especialidade: row.linhas_cuidado_especialidades?.nome_especialidade || "Sem Especialidade",
+        dataEntrada: row.data_entrada_fila,
+        faltas: row.faltas_consecutivas || 0
+      };
+    });
 
 
     // 4. Ordenação Semântica Forte (Server-side antes de renderizar)

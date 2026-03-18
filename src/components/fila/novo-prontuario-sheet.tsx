@@ -266,7 +266,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
               <div className="w-full max-w-md pt-4">
                 <Button type="button" onClick={handleAvancar}
                   disabled={statusBusca !== "encontrado"}
-                  className="w-full h-14 rounded-none text-sm bg-clinico-900 border-none hover:bg-black gap-2 shadow-lg uppercase font-bold tracking-widest">
+                  className="w-full h-14 rounded-none text-sm bg-primary border-none hover:bg-primary/90 gap-2 shadow-lg uppercase font-bold tracking-widest">
                   Avançar e inserir na fila
                   <ChevronRight className="w-4 h-4" />
                 </Button>

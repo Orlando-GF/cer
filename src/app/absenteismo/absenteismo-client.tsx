@@ -42,7 +42,7 @@ export function AbsenteismoClient({ alertas }: AbsenteismoClientProps) {
 
   return (
     <Table>
-      <TableHeader className="bg-muted/50">
+      <TableHeader>
         <TableRow>
           <TableHead>Paciente</TableHead>
           <TableHead>Especialidade / Profissional</TableHead>
@@ -53,7 +53,7 @@ export function AbsenteismoClient({ alertas }: AbsenteismoClientProps) {
       </TableHeader>
       <TableBody>
         {alertas.map((alerta, idx) => (
-          <TableRow key={idx} className="hover:bg-muted/30 transition-colors">
+          <TableRow key={idx} className="hover:bg-muted transition-colors">
             <TableCell>
               <div className="flex flex-col">
                 <span className="font-bold text-foreground">{alerta.paciente.nome_completo}</span>
@@ -69,7 +69,7 @@ export function AbsenteismoClient({ alertas }: AbsenteismoClientProps) {
             <TableCell>
               <div className="flex gap-2">
                 {alerta.ultimas_faltas.map((data: string, i: number) => (
-                  <Badge key={i} variant="secondary" className="font-normal tabular-nums">
+                  <Badge key={i} variant="secondary" className="font-normal tabular-nums rounded-none border-transparent bg-muted/50 text-foreground">
                     {format(parseISO(data), "dd/MM")}
                   </Badge>
                 ))}
@@ -88,7 +88,7 @@ export function AbsenteismoClient({ alertas }: AbsenteismoClientProps) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="gap-2 h-8 text-xs hover:bg-[var(--color-alert-success-bg)] hover:text-[var(--color-alert-success-text)] border-border"
+                  className="gap-2 h-8 text-xs hover:bg-alert-success-bg hover:text-alert-success-text border-border rounded-none"
                   onClick={() =>
                     abrirWhatsApp(
                       alerta.paciente.telefone_principal || "",
@@ -101,7 +101,7 @@ export function AbsenteismoClient({ alertas }: AbsenteismoClientProps) {
                 <Button
                   size="sm"
                   variant="destructive"
-                  className="gap-2 h-8 text-xs"
+                  className="gap-2 h-8 text-xs rounded-none"
                   disabled={isPending}
                   onClick={() =>
                     handleDesligamento(

@@ -3,7 +3,7 @@ import { ClipboardList } from "lucide-react"
 
 export default function ProntuariosPage() {
   return (
-    <main className="min-h-screen bg-slate-50 p-6 space-y-8">
+    <main className="min-h-screen bg-background p-6 space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Prontuários</h1>
         <p className="text-slate-500 mt-1">Acesso ao histórico clínico dos pacientes.</p>
