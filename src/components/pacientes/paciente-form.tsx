@@ -153,7 +153,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
   const [isPending, startTransition] = useTransition()
   
   const [dados, setDados] = useState<PacienteFormData>(() => {
-    const base = initialData || {
+    const base: Partial<PacienteFormData> = {
       cidade: "Barreiras",
       uf: "BA",
       sexo: "M",
@@ -165,9 +165,10 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
       status_cadastro: "Ativo"
     }
 
-    if (!initialData) return base
+    if (!initialData) return base as PacienteFormData
 
     return {
+      ...base,
       ...initialData,
       cpf: initialData.cpf ? maskCPF(initialData.cpf) : "",
       cns: initialData.cns ? maskCNS(initialData.cns) : "",
@@ -181,8 +182,20 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
   // Sincroniza se initialData mudar (ex: troca de paciente com sheet aberto)
   useEffect(() => {
     if (initialData) {
+      const base: Partial<PacienteFormData> = {
+        cidade: "Barreiras",
+        uf: "BA",
+        sexo: "M",
+        pactuado: false,
+        municipio_pactuado: "",
+        necessita_transporte: false,
+        tags_acessibilidade: [],
+        id_legado_vba: "",
+        status_cadastro: "Ativo"
+      }
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setDados({
+        ...base,
         ...initialData,
         cpf: initialData.cpf ? maskCPF(initialData.cpf) : "",
         cns: initialData.cns ? maskCNS(initialData.cns) : "",
@@ -290,7 +303,17 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                 <input
                   type="date"
                   value={dados.data_nascimento || ""}
-                  onChange={(e) => setField("data_nascimento")(e.target.value)}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (val) {
+                      const parts = val.split('-');
+                      if (parts[0] && parts[0].length > 4) {
+                        parts[0] = parts[0].substring(0, 4);
+                        val = parts.join('-');
+                      }
+                    }
+                    setField("data_nascimento")(val);
+                  }}
                   required
                   min="1900-01-01"
                   max={new Date().toISOString().split("T")[0]}
