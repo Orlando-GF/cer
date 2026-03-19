@@ -19,6 +19,136 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useState } from "react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
+function CellActions({ row, table }: { row: any, table: any }) {
+  const paciente = row.original
+  const [openAlta, setOpenAlta] = useState(false)
+  const [openDesistencia, setOpenDesistencia] = useState(false)
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-none border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none"
+          title="Opções do paciente"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="sr-only">Opções</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem
+            className="gap-2 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation()
+              navigator.clipboard.writeText(paciente.cns)
+            }}
+          >
+            <Copy className="h-4 w-4" />
+            Copiar CNS
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="gap-2 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation()
+              table.options.meta?.onOpenSheet?.(paciente)
+            }}
+          >
+            <Eye className="h-4 w-4" />
+            Ver prontuário
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="gap-2 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation()
+              toast.info("Agendamento em desenvolvimento.", { description: "Esta funcionalidade estará disponível em breve." })
+            }}
+          >
+            <CalendarPlus className="h-4 w-4" />
+            Agendar
+          </DropdownMenuItem>
+          
+          <DropdownMenuSeparator />
+          
+          <DropdownMenuItem
+            className="gap-2 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation()
+              setOpenAlta(true)
+            }}
+          >
+            <CheckCircle2 className="h-4 w-4" />
+            Concluir alta
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            className="gap-2 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation()
+              setOpenDesistencia(true)
+            }}
+          >
+            <XOctagon className="h-4 w-4" />
+            Registrar desistência
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={openAlta} onOpenChange={setOpenAlta}>
+        <AlertDialogContent className="rounded-none border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="uppercase tracking-widest text-sm font-bold text-foreground">Confirmar Alta</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs">
+              Deseja realmente dar ALTA para <strong>{paciente.nome}</strong>? 
+              <br />O paciente sairá da fila ativa de espera.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none uppercase text-[10px] font-bold tracking-widest">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => table.options.meta?.onAlterarStatus?.(paciente.id, "Alta")}
+              className="rounded-none bg-primary hover:bg-primary/90 text-primary-foreground uppercase text-[10px] font-bold tracking-widest"
+            >
+              CONFIRMAR ALTA
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={openDesistencia} onOpenChange={setOpenDesistencia}>
+        <AlertDialogContent className="rounded-none border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="uppercase tracking-widest text-sm font-bold text-foreground">Confirmar Desistência</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs">
+              Registrar desistência para <strong>{paciente.nome}</strong>? 
+              <br />O paciente sairá da fila ativa de espera.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none uppercase text-[10px] font-bold tracking-widest">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => table.options.meta?.onAlterarStatus?.(paciente.id, "Desistencia")}
+              className="rounded-none bg-destructive hover:bg-destructive/90 text-destructive-foreground uppercase text-[10px] font-bold tracking-widest"
+            >
+              REGISTRAR DESISTÊNCIA
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  )
+}
 
 export const columns: ColumnDef<PacienteFila>[] = [
   {
@@ -72,81 +202,6 @@ export const columns: ColumnDef<PacienteFila>[] = [
   },
   {
     id: "actions",
-    cell: ({ row, table }) => {
-      const paciente = row.original
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-none border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none"
-            title="Opções do paciente"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="sr-only">Opções</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem
-              className="gap-2 cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation()
-                navigator.clipboard.writeText(paciente.cns)
-              }}
-            >
-              <Copy className="h-4 w-4" />
-              Copiar CNS
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="gap-2 cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation()
-                table.options.meta?.onOpenSheet?.(paciente)
-              }}
-            >
-              <Eye className="h-4 w-4" />
-              Ver prontuário
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="gap-2 cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation()
-                // Futura implementação de agendamento que muda status para Em Atendimento
-                toast.info("Agendamento em desenvolvimento.", { description: "Esta funcionalidade estará disponível em breve." })
-              }}
-            >
-              <CalendarPlus className="h-4 w-4" />
-              Agendar
-            </DropdownMenuItem>
-            
-            <DropdownMenuSeparator />
-            
-            <DropdownMenuItem
-              className="gap-2 cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation()
-                if(confirm("Deseja dar ALTA para este paciente? Ele sairá da fila ativa.")) {
-                  table.options.meta?.onAlterarStatus?.(paciente.id, "Alta")
-                }
-              }}
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              Concluir alta
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              className="gap-2 cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation()
-                if(confirm("Registrar DESISTÊNCIA? O paciente sairá da fila ativa.")) {
-                  table.options.meta?.onAlterarStatus?.(paciente.id, "Desistencia")
-                }
-              }}
-            >
-              <XOctagon className="h-4 w-4" />
-              Registrar desistência
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    cell: ({ row, table }) => <CellActions row={row} table={table} />,
   },
 ]

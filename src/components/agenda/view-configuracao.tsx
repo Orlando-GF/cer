@@ -13,6 +13,16 @@ import { toast } from "sonner"
 import { PacienteSelector } from "@/components/pacientes/paciente-selector"
 import { VagasAtivasList } from "./vagas-ativas-list"
 import { useEffect, useCallback } from "react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const DIAS_SEMANA = [
   { value: "0", label: "Domingo" },
@@ -45,6 +55,10 @@ export function ViewConfiguracao({ profissionaisIniciais, especialidadesIniciais
   // Vagas State
   const [vagasAtivas, setVagasAtivas] = useState<VagaFixaComJoins[]>([])
   const [loadingVagas, setLoadingVagas] = useState(false)
+  
+  // Confirm Delete State
+  const [vagaToDelete, setVagaToDelete] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const loadVagas = useCallback(async (pId: string) => {
     setLoadingVagas(true)
@@ -93,16 +107,25 @@ export function ViewConfiguracao({ profissionaisIniciais, especialidadesIniciais
     })
   }
 
-  const handleRemoveVaga = async (id: string) => {
-    if (!confirm("Tem certeza que deseja encerrar esta vaga fixa?")) return
+  const handleRemoveVaga = (id: string) => {
+    setVagaToDelete(id)
+    setConfirmOpen(true)
+  }
+
+  const confirmRemoveVaga = async () => {
+    if (!vagaToDelete) return
     
-    const res = await encerrarVagaFixa(id)
-    if (res.success) {
-      toast.success("Vaga encerrada com sucesso!")
-      loadVagas(profissionalId)
-    } else {
-      toast.error("Erro ao encerrar vaga: " + res.error)
-    }
+    startTransition(async () => {
+      const res = await encerrarVagaFixa(vagaToDelete)
+      if (res.success) {
+        toast.success("Vaga encerrada com sucesso!")
+        loadVagas(profissionalId)
+      } else {
+        toast.error("Erro ao encerrar vaga: " + res.error)
+      }
+      setConfirmOpen(false)
+      setVagaToDelete(null)
+    })
   }
 
   return (
@@ -208,6 +231,30 @@ export function ViewConfiguracao({ profissionaisIniciais, especialidadesIniciais
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent className="rounded-none border-border bg-card">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="uppercase tracking-widest text-sm font-bold">Encerrar Vaga Fixa</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs">
+              Tem certeza que deseja encerrar esta vaga fixa? Esta ação removerá o paciente da grade recorrente deste profissional.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none uppercase text-[10px] font-bold tracking-widest">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={(e: React.MouseEvent) => {
+                e.preventDefault()
+                confirmRemoveVaga()
+              }}
+              className="rounded-none bg-destructive hover:bg-destructive/90 text-destructive-foreground uppercase text-[10px] font-bold tracking-widest"
+              disabled={isPending}
+            >
+              {isPending ? "PROCESSANDO..." : "ENCERRAR VAGA"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

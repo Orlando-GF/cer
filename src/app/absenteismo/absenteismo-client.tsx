@@ -9,6 +9,17 @@ import { Phone, MessageSquare, Loader2 } from "lucide-react"
 import { processarDesligamentoPorAbandono } from "@/actions"
 import { format, parseISO } from "date-fns"
 import type { AlertaAbsenteismo } from "@/types"
+import { useState } from "react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface AbsenteismoClientProps {
   alertas: AlertaAbsenteismo[]
@@ -25,18 +36,23 @@ export function AbsenteismoClient({ alertas }: AbsenteismoClientProps) {
     window.open(`https://wa.me/55${limpo}?text=${msg}`, "_blank")
   }
 
-  const handleDesligamento = (id: string, nome: string) => {
-    if (!confirm(`Deseja realmente processar o desligamento de ${nome}? Esta ação encerrará todas as vagas fixas.`))
-      return
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [selectedAlerta, setSelectedAlerta] = useState<{ id: string, nome: string } | null>(null)
+
+  const handleDesligamento = () => {
+    if (!selectedAlerta) return
+    
     startTransition(async () => {
-      const res = await processarDesligamentoPorAbandono(id)
+      const res = await processarDesligamentoPorAbandono(selectedAlerta.id)
       if (res.success) {
         toast.success("Desligamento processado com sucesso.", {
-          description: `${nome} foi removido(a) de todas as vagas fixas.`,
+          description: `${selectedAlerta.nome} foi removido(a) de todas as vagas fixas.`,
         })
       } else {
         toast.error("Erro ao processar desligamento.", { description: res.error })
       }
+      setConfirmOpen(false)
+      setSelectedAlerta(null)
     })
   }
 
@@ -103,12 +119,10 @@ export function AbsenteismoClient({ alertas }: AbsenteismoClientProps) {
                   variant="destructive"
                   className="gap-2 h-8 text-xs rounded-none"
                   disabled={isPending}
-                  onClick={() =>
-                    handleDesligamento(
-                      alerta.paciente.id ?? "",
-                      alerta.paciente.nome_completo ?? "Paciente"
-                    )
-                  }
+                  onClick={() => {
+                    setSelectedAlerta({ id: alerta.paciente.id ?? "", nome: alerta.paciente.nome_completo ?? "Paciente" })
+                    setConfirmOpen(true)
+                  }}
                 >
                   {isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : "Processar Desligamento"}
                 </Button>
@@ -117,6 +131,31 @@ export function AbsenteismoClient({ alertas }: AbsenteismoClientProps) {
           </TableRow>
         ))}
       </TableBody>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent className="rounded-none border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="uppercase tracking-widest text-sm font-bold">Confirmar Desligamento</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs">
+              Deseja realmente processar o desligamento de <strong>{selectedAlerta?.nome}</strong>? 
+              <br />Esta ação encerrará todas as vagas fixas e marcará o cadastro como Inativo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none uppercase text-[10px] font-bold tracking-widest">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={(e: React.MouseEvent) => {
+                e.preventDefault()
+                handleDesligamento()
+              }}
+              className="rounded-none bg-destructive hover:bg-destructive/90 text-destructive-foreground uppercase text-[10px] font-bold tracking-widest"
+              disabled={isPending}
+            >
+              {isPending ? "PROCESSANDO..." : "CONFIRMAR DESLIGAMENTO"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Table>
   )
 }
