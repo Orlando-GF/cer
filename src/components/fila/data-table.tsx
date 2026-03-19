@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { PacienteSheet, PacienteFila } from "./paciente-sheet"
+import { PacienteSheet } from "./paciente-sheet"
+import { PacienteFila } from "@/types"
 import { alterarStatusFila } from "@/actions"
 import { useTransition, useMemo, useState } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
@@ -114,6 +115,7 @@ export function DataTable<TData, TValue>({
     setSheetOpen(true)
   }
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: filteredRows as TData[],
     columns,
@@ -125,7 +127,8 @@ export function DataTable<TData, TValue>({
       columnFilters,
     },
     meta: {
-      onOpenSheet: (paciente: PacienteFila) => handleRowClick(paciente),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onOpenSheet: (paciente: any) => handleRowClick(paciente),
       onAlterarStatus: (filaId: string, novoStatus: "Aguardando" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Alta") => {
         startTransition(async () => {
           const res = await alterarStatusFila({ fila_id: filaId, novo_status: novoStatus })

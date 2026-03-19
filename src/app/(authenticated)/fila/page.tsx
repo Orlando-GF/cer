@@ -1,6 +1,6 @@
 import { DataTable } from "@/components/fila/data-table";
 import { columns } from "@/components/fila/columns";
-import { PacienteFila } from "@/components/fila/paciente-sheet";
+import { PacienteFila } from "@/types";
 import { NovoProntuarioSheet } from "@/components/fila/novo-prontuario-sheet";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ interface FilaEsperaRow {
   nivel_prioridade: string
   status_fila: string
   faltas_consecutivas: number
+  numero_processo_judicial?: string | null
   pacientes: { nome_completo: string; cns: string } | null
   linhas_cuidado_especialidades: { nome_especialidade: string } | null
 }
@@ -32,6 +33,7 @@ export default async function Dashboard() {
       nivel_prioridade,
       status_fila,
       faltas_consecutivas,
+      numero_processo_judicial,
       pacientes ( nome_completo, cns ),
       linhas_cuidado_especialidades ( nome_especialidade )
     `)
@@ -53,6 +55,11 @@ export default async function Dashboard() {
     // 3. Mapeamento
     filaReal = dbData.map((rawRow: unknown) => {
       const row = rawRow as FilaEsperaRow;
+      const dataEntradaRaw = new Date(row.data_entrada_fila)
+      const hoje = new Date()
+      const diffTime = Math.abs(hoje.getTime() - dataEntradaRaw.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
       return {
         id: row.id,
         nome: row.pacientes?.nome_completo || "Desconhecido",
@@ -60,8 +67,11 @@ export default async function Dashboard() {
         prioridade: row.nivel_prioridade as PacienteFila["prioridade"],
         status: row.status_fila as PacienteFila["status"],
         especialidade: row.linhas_cuidado_especialidades?.nome_especialidade || "Sem Especialidade",
-        dataEntrada: row.data_entrada_fila,
-        faltas: row.faltas_consecutivas || 0
+        data_encaminhamento: row.data_entrada_fila,
+        dias_espera: diffDays,
+        profissional_nome: null,
+        faltas: row.faltas_consecutivas || 0,
+        numeroProcesso: row.numero_processo_judicial || null
       };
     });
 
@@ -81,7 +91,7 @@ export default async function Dashboard() {
       if (pesoA !== pesoB) return pesoA - pesoB;
       
       // Se tiverem a mesma prioridade, ordena quem chegou primeiro (FIFO)
-      return new Date(a.dataEntrada).getTime() - new Date(b.dataEntrada).getTime();
+      return new Date(a.data_encaminhamento).getTime() - new Date(b.data_encaminhamento).getTime();
     });
   }
 

@@ -5,13 +5,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertTriangle, CheckCircle2 } from "lucide-react"
 import type { AlertaAbsenteismo } from "@/types"
 import { AbsenteismoClient } from "./absenteismo-client"
+import { validarAcessoRota } from "@/lib/access-control"
 
 export default async function AbsenteismoPage() {
+  await validarAcessoRota("/absenteismo")
   const res = await buscarAlertasAbsenteismo()
   const alertas: AlertaAbsenteismo[] = res.success ? (res.data ?? []) as AlertaAbsenteismo[] : []
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-6 space-y-8">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Gestão de Absenteísmo</h1>
         <p className="text-muted-foreground">Pacientes com 3 ou mais faltas consecutivas (Regra de Desligamento).</p>

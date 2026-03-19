@@ -1,7 +1,9 @@
 import { createClient } from "@/utils/supabase/server"
 import { Users, ClipboardList, CalendarDays, ShieldAlert } from "lucide-react"
+import { validarAcessoRota } from "@/lib/access-control"
 
 export default async function PainelGeral() {
+  await validarAcessoRota("/")
   const supabase = await createClient()
 
   const { count: filaAtivos } = await supabase
@@ -19,7 +21,7 @@ export default async function PainelGeral() {
     .select("*", { count: "exact", head: true })
 
   return (
-    <main className="min-h-screen bg-background p-6 space-y-8">
+    <div className="p-6 space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Painel Geral</h1>
         <p className="text-muted-foreground mt-1">Resumo das atividades e ocupação do CER 2.</p>
@@ -62,6 +64,6 @@ export default async function PainelGeral() {
         </div>
 
       </div>
-    </main>
+    </div>
   )
 }

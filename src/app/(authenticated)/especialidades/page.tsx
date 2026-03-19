@@ -10,13 +10,15 @@ import { Badge } from "@/components/ui/badge"
 import { Stethoscope, ClipboardCheck } from "lucide-react"
 import { buscarEspecialidades } from "@/actions"
 import { NovaEspecialidadeSheet } from "@/components/especialidades/nova-especialidade-sheet"
+import { validarAcessoRota } from "@/lib/access-control"
 
 export default async function EspecialidadesPage() {
+  await validarAcessoRota("/especialidades")
   const res = await buscarEspecialidades()
   const especialidades = res.success ? res.data : []
 
   return (
-    <main className="min-h-screen bg-background p-6 space-y-8">
+    <div className="p-6 space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Linhas de Cuidado e Especialidades</h1>
@@ -75,6 +77,6 @@ export default async function EspecialidadesPage() {
           </TableBody>
         </Table>
       </div>
-    </main>
+    </div>
   )
 }

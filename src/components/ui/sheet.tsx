@@ -121,7 +121,7 @@ function SheetDescription({
   return (
     <SheetPrimitive.Description
       data-slot="sheet-description"
-      className={cn("text-[10px] font-bold uppercase tracking-widest text-slate-400", className)}
+      className={cn("text-[10px] font-bold uppercase tracking-widest text-white/60", className)}
       {...props}
     />
   )

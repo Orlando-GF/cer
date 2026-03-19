@@ -15,12 +15,12 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+          cookiesToSet.forEach(({ name, value, options: _options }) =>
+            supabaseResponse.cookies.set(name, value, _options)
           )
         },
       },
@@ -35,27 +35,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    request.nextUrl.pathname !== '/' &&
-    !request.nextUrl.pathname.startsWith('/fila') &&
-    !request.nextUrl.pathname.startsWith('/pacientes') &&
-    !request.nextUrl.pathname.startsWith('/agendamentos') &&
-    !request.nextUrl.pathname.startsWith('/prontuarios') &&
-    !request.nextUrl.pathname.startsWith('/especialidades') &&
-    !request.nextUrl.pathname.startsWith('/judiciais') &&
-    !request.nextUrl.pathname.startsWith('/absenteismo') &&
-    !request.nextUrl.pathname.startsWith('/relatorios') &&
-    !request.nextUrl.pathname.startsWith('/logistica') &&
-    !request.nextUrl.pathname.startsWith('/profissionais') &&
-    !request.nextUrl.pathname.startsWith('/grades') &&
-    !request.nextUrl.pathname.startsWith('/meus-pacientes') &&
-    !request.nextUrl.pathname.startsWith('/meus-atendimentos') &&
-    !request.nextUrl.pathname.startsWith('/configuracoes')
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  if (!user && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/auth')) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

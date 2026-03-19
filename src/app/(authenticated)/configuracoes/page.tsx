@@ -1,8 +1,9 @@
-"use client"
-
 import { EmBreve } from "@/components/ui/em-breve"
+import { validarAcessoRota } from "@/lib/access-control"
 
-export default function ConfiguracoesPage() {
+export default async function ConfiguracoesPage() {
+  await validarAcessoRota("/configuracoes")
+  
   return (
     <EmBreve 
       titulo="Configurações" 

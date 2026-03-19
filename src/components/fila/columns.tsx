@@ -1,16 +1,17 @@
 "use client"
 
-import { RowData, ColumnDef } from "@tanstack/react-table"
+import { RowData, ColumnDef, Row, Table } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 
 declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
     onOpenSheet?: (paciente: PacienteFila) => void
     onAlterarStatus?: (filaId: string, novoStatus: "Aguardando" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Alta") => void
   }
 }
-import { PacienteFila } from "./paciente-sheet"
+import { PacienteFila } from "@/types"
 import { MoreHorizontal, Copy, Eye, CalendarPlus, CheckCircle2, XOctagon } from "lucide-react"
 import {
   DropdownMenu,
@@ -31,7 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-function CellActions({ row, table }: { row: any, table: any }) {
+function CellActions({ row, table }: { row: Row<PacienteFila>; table: Table<PacienteFila> }) {
   const paciente = row.original
   const [openAlta, setOpenAlta] = useState(false)
   const [openDesistencia, setOpenDesistencia] = useState(false)

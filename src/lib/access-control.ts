@@ -1,4 +1,4 @@
-import { getMeuPerfil } from "@/actions"
+import { getMeusDados } from "@/actions"
 import { redirect } from "next/navigation"
 
 export type PerfilSessao = "Recepcao" | "Enfermagem" | "Medico_Terapeuta" | "Administracao" | "Motorista"
@@ -23,21 +23,31 @@ const PERMISSOES_ROTAS: Record<string, PerfilSessao[]> = {
  * Se não tiver, redireciona para a home ou página de erro.
  */
 export async function validarAcessoRota(pathname: string) {
-  const perfil = await getMeuPerfil() as PerfilSessao | null
+  const dados = await getMeusDados()
+  const perfil = dados?.perfil_acesso as PerfilSessao | null
 
   if (!perfil) {
      redirect("/login")
   }
 
-  // Verifica se a rota atual tem restrições
-  // Precisamos casar caminhos exatos ou prefixos
-  const rotaRestrita = Object.keys(PERMISSOES_ROTAS).find(rota => pathname.startsWith(rota))
+  // Dashboard é acessível por todos os perfis autenticados
+  if (pathname === "/" || pathname === "/dashboard") {
+    return perfil
+  }
 
-  if (rotaRestrita) {
-    const permitidos = PERMISSOES_ROTAS[rotaRestrita]
+  // Verifica se a rota atual tem restrições definidas
+  const rotaDefinida = Object.keys(PERMISSOES_ROTAS).find(rota => pathname.startsWith(rota))
+
+  if (rotaDefinida) {
+    const permitidos = PERMISSOES_ROTAS[rotaDefinida]
     if (!permitidos.includes(perfil)) {
-      redirect("/")
+      redirect("/") // Sem permissão para esta rota específica
     }
+  } else {
+    // Se a rota está no grupo (authenticated) mas não está no mapa e não é a home, 
+    // por segurança tratamos como restrita.
+    console.warn(`[Acesso] Rota não mapeada: ${pathname}. Bloqueando por segurança.`)
+    redirect("/")
   }
 
   return perfil

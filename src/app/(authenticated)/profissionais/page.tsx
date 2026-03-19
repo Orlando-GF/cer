@@ -3,8 +3,10 @@ import { NovoProfissionalSheet } from "@/components/especialidades/novo-profissi
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
+import { validarAcessoRota } from "@/lib/access-control"
 
 export default async function ProfissionaisPage() {
+  await validarAcessoRota("/profissionais")
   const [profissionaisRes, especialidadesRes] = await Promise.all([
     buscarProfissionais(),
     buscarEspecialidades()
@@ -14,7 +16,7 @@ export default async function ProfissionaisPage() {
   const especialidades = especialidadesRes.data || []
 
   return (
-    <div className="p-8 max-w-[1200px] mx-auto space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Profissionais & Acessos</h1>
         <NovoProfissionalSheet especialidades={especialidades} />
@@ -38,7 +40,7 @@ export default async function ProfissionaisPage() {
               </TableRow>
             ) : (
               profissionais.map((prof) => (
-                <TableRow key={prof.id} className="hover:bg-muted/50 transition-colors">
+                <TableRow key={prof.id} className="hover:bg-muted transition-colors">
                   <TableCell className="font-medium text-sm">
                     {prof.nome_completo}
                   </TableCell>
@@ -48,7 +50,13 @@ export default async function ProfissionaisPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={prof.ativo ? "default" : "secondary"} className="rounded-none font-bold text-[10px] uppercase tracking-widest">
+                    <Badge
+                      className={`rounded-none font-bold text-[10px] uppercase tracking-widest border-none ${
+                        prof.ativo
+                          ? "bg-alert-success-bg text-alert-success-text"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
                       {prof.ativo ? "Ativo" : "Inativo"}
                     </Badge>
                   </TableCell>

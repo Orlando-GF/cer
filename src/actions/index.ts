@@ -12,6 +12,7 @@ import {
   profissionalSchema,
   statusFilaSchema,
   vagaFixaSchema,
+  avaliacaoServicoSocialSchema,
 } from "@/lib/validations/schema"
 import { 
   type Paciente, 
@@ -22,7 +23,9 @@ import {
   type FaltaRegistro,
   type VagaFixaComJoins,
   type AlertaAbsenteismo,
-  type AgendamentoHistoricoComJoins
+  type AgendamentoHistoricoComJoins,
+  type PacienteFila,
+  type DadosUsuario
 } from "@/types"
 
 export async function buscarPacientes(): Promise<ActionResponse<Paciente[]>> {
@@ -613,24 +616,43 @@ export async function cadastrarProfissional(
   return { success: true }
 }
 
-export async function getMeuPerfil(): Promise<string | null> {
+export async function getMeusDados(): Promise<DadosUsuario | null> {
   const supabase = await createClient()
-  const authUser = await supabase.auth.getUser()
-  const user = authUser.data.user
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (process.env.NODE_ENV === 'development' && !user) return 'Administracao'
+  if (!user) {
+    // Fallback para desenvolvimento local se não houver sessão
+    if (process.env.NODE_ENV === 'development') {
+      return {
+        perfil_acesso: 'Administracao',
+        nome_completo: 'Dev Local',
+        email: 'dev@cer2.local'
+      }
+    }
+    return null
+  }
 
-  if (!user) return null
-
-  const { data, error } = await supabase
+  const { data: prof } = await supabase
     .from('profissionais')
-    .select('perfil_acesso')
-    .eq('id', user.id)
+    .select('perfil_acesso, nome_completo')
+    .eq('email', user.email)
     .single()
 
-  if (error || !data) return 'Administracao'
+  if (!prof) {
+    // Se o usuário está no Auth mas não na tabela de profissionais,
+    // tratamos como Admin para que ele possa se cadastrar/configurar.
+    return {
+      perfil_acesso: 'Administracao',
+      nome_completo: 'Administrador',
+      email: user.email ?? ''
+    }
+  }
 
-  return data.perfil_acesso
+  return {
+    perfil_acesso: prof.perfil_acesso,
+    nome_completo: prof.nome_completo,
+    email: user.email ?? ''
+  }
 }
 
 export async function buscarAgendaCoordenação(
@@ -836,5 +858,154 @@ export async function buscarHistoricoClinicoPaciente(
   return { success: true, data: data as AgendamentoHistoricoComJoins[] }
 }
 
+export async function buscarMeusAtendimentos(
+  data: string
+): Promise<ActionResponse<{ vagas: VagaFixaComJoins[]; hist: AgendamentoHistoricoComJoins[] }>> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { success: false, error: 'Usuário não autenticado' }
+
+  // Se for dev e não tiver user, buscarAgendaData vai lidar (retornando Admin se simularmos)
+  // Mas aqui usamos o ID real do profissional logado
+  return buscarAgendaData(user.id, `${data}T00:00:00Z`, `${data}T23:59:59Z`)
+}
+
+export async function buscarMeusPacientesVagaFixa(): Promise<ActionResponse<Paciente[]>> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { success: false, error: 'Usuário não autenticado' }
+
+  // Buscamos as vagas fixas desse profissional
+  const { data, error } = await supabase
+    .from('vagas_fixas')
+    .select(`
+      pacientes (*)
+    `)
+    .eq('profissional_id', user.id)
+    .eq('status_vaga', 'Ativa')
+
+  if (error) return { success: false, error: error.message }
+
+  // Extrair pacientes únicos a partir das vagas
+  const listaPacientes: Paciente[] = []
+  const idsVistos = new Set<string>()
+
+  if (data) {
+    for (const item of data) {
+      const p = item.pacientes as unknown as Paciente
+      if (p && !idsVistos.has(p.id)) {
+        listaPacientes.push(p)
+        idsVistos.add(p.id)
+      }
+    }
+  }
+
+  return { success: true, data: listaPacientes }
+}
+
+interface FilaJudicialRow {
+  id: string
+  nivel_prioridade: string
+  status_fila: string
+  data_entrada_fila: string
+  faltas_consecutivas: number | null
+  numero_processo_judicial: string | null
+  pacientes: { nome_completo: string; cns: string } | { nome_completo: string; cns: string }[] | null
+  linhas_cuidado_especialidades: { nome_especialidade: string } | { nome_especialidade: string }[] | null
+}
+
+export async function buscarFilaJudicial(): Promise<ActionResponse<PacienteFila[]>> {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('fila_espera')
+    .select(`
+      id,
+      data_entrada_fila,
+      nivel_prioridade,
+      status_fila,
+      faltas_consecutivas,
+      numero_processo_judicial,
+      pacientes ( nome_completo, cns ),
+      linhas_cuidado_especialidades ( nome_especialidade )
+    `)
+    .eq('nivel_prioridade', 'Mandado Judicial')
+    .order('data_entrada_fila', { ascending: true })
+
+  if (error) return { success: false, error: error.message }
+
+  const filaMapped: PacienteFila[] = (data as unknown as FilaJudicialRow[] || []).map((r) => {
+    const p = Array.isArray(r.pacientes) ? r.pacientes[0] : r.pacientes;
+    const e = Array.isArray(r.linhas_cuidado_especialidades) ? r.linhas_cuidado_especialidades[0] : r.linhas_cuidado_especialidades;
+
+    const dataEntrada = new Date(r.data_entrada_fila)
+    const hoje = new Date()
+    const diffTime = Math.abs(hoje.getTime() - dataEntrada.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+    return {
+      id: r.id,
+      nome: p?.nome_completo || "Desconhecido",
+      cns: p?.cns || "S/N",
+      prioridade: r.nivel_prioridade as PacienteFila["prioridade"],
+      status: r.status_fila as PacienteFila["status"],
+      especialidade: e?.nome_especialidade || "Sem Especialidade",
+      data_encaminhamento: r.data_entrada_fila,
+      dias_espera: diffDays,
+      profissional_nome: null,
+      faltas: r.faltas_consecutivas || 0,
+      numeroProcesso: r.numero_processo_judicial
+    }
+  })
+
+  return { success: true, data: filaMapped }
+}
 
 
+
+
+
+
+export async function cadastrarAvaliacaoSocial(
+  rawData: unknown,
+): Promise<ActionResponse> {
+  const supabase = await createClient()
+
+  const validation = avaliacaoServicoSocialSchema.safeParse(rawData)
+  if (!validation.success) {
+    const errorMsg = validation.error.issues
+      .map((i: { message: string }) => i.message)
+      .join(', ')
+    return { success: false, error: errorMsg }
+  }
+
+  const { data } = validation
+  const { error } = await supabase.from('avaliacoes_servico_social').insert({
+    paciente_id: data.paciente_id,
+    profissional_id: data.profissional_id,
+    quantidade_membros_familia: data.quantidade_membros_familia,
+    renda_familiar_total: data.renda_familiar_total,
+    recebe_beneficio: data.recebe_beneficio,
+    tipo_beneficio: data.tipo_beneficio,
+    tipo_moradia: data.tipo_moradia,
+    tem_saneamento_basico: data.tem_saneamento_basico,
+    tem_energia_eletrica: data.tem_energia_eletrica,
+    descricao_barreiras_arquitetonicas: data.descricao_barreiras_arquitetonicas,
+    impacto_incapacidade_trabalho: data.impacto_incapacidade_trabalho,
+    relatorio_social: data.relatorio_social,
+    parecer_final: data.parecer_final,
+    data_avaliacao: data.data_avaliacao,
+  })
+
+  if (error) {
+    return {
+      success: false,
+      error: `Erro ao salvar avaliação social: ${error.message}`,
+    }
+  }
+
+  revalidatePath('/pacientes')
+  return { success: true }
+}

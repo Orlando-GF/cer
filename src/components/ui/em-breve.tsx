@@ -1,8 +1,6 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { LucideIcon, Rocket, Timer, Construction, Scale, BarChart3, UserCheck, Users, Settings, Briefcase, Clock, Truck } from "lucide-react"
+import { LucideIcon, Rocket, Construction, Scale, BarChart3, UserCheck, Users, Settings, Briefcase, Clock, Truck } from "lucide-react"
 
 const iconsMap: Record<string, LucideIcon> = {
   Scale,
@@ -25,7 +23,7 @@ interface EmBreveProps {
 export function EmBreve({ titulo, descricao, iconName }: EmBreveProps) {
   const Icon = iconName ? iconsMap[iconName] || Construction : Construction
   return (
-    <main className="min-h-[80vh] flex items-center justify-center p-6 bg-slate-50/30">
+    <div className="p-6 space-y-8 flex flex-col items-center justify-center min-h-[60vh]">
       <div className="max-w-2xl w-full text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="flex justify-center">
           <Icon className="w-24 h-24 text-blue-600/90" strokeWidth={1} />
@@ -40,10 +38,10 @@ export function EmBreve({ titulo, descricao, iconName }: EmBreveProps) {
           </p>
         </div>
 
-        <p className="text-sm text-slate-500 italic pt-8">
+        <p className="text-sm text-slate-500 pt-8">
           Estamos trabalhando para entregar a melhor experiência clínica em breve.
         </p>
       </div>
-    </main>
+    </div>
   )
 }

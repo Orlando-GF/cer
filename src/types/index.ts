@@ -168,6 +168,12 @@ export type StatusComparecimento =
   | "Falta Nao Justificada"
   | "Cancelado"
 
+export interface DadosUsuario {
+  perfil_acesso: PerfilAcesso
+  nome_completo: string
+  email: string
+}
+
 export type ActionResponse<T = undefined> = {
   success: boolean
   data?: T
@@ -271,4 +277,18 @@ export interface AgendamentoHistoricoComJoins
     Especialidade,
     "id" | "nome_especialidade"
   >
+}
+
+export type PacienteFila = {
+  id: string
+  nome: string
+  cns: string
+  prioridade: "Rotina" | "Urgencia Clinica" | "Mandado Judicial"
+  status: "Aguardando" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Alta"
+  especialidade: string
+  data_encaminhamento: string
+  dias_espera: number
+  profissional_nome: string | null
+  faltas: number
+  numeroProcesso: string | null
 }

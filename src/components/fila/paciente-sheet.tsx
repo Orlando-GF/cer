@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect, useMemo } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { toast } from "sonner"
 import {
   Sheet,
@@ -15,340 +15,223 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { registrarFaltaPaciente, buscarHistoricoFaltas } from "@/actions"
+import { PacienteFila, FaltaRegistro } from "@/types"
 
-
-export type PacienteFila = {
-  id: string
-  nome: string
-  cns: string
-  prioridade: "Rotina" | "Urgencia Clinica" | "Mandado Judicial"
-  status: "Aguardando" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Alta"
-  especialidade: string
-  dataEntrada: string
-  faltas: number
-}
-
-interface FaltaHistorico {
-  id: string
-  data_falta: string
-  justificada: boolean
-  observacao?: string
-}
-
-/*
-## Fase 8: Depuração de Erro Runtime [/]
-- [x] Analisar logs do terminal e stack traces (Identificada causa provável em hooks/promessas)
-- [x] Corrigir erro de hooks no `paciente-sheet.tsx` (Hook order fix)
-- [/] Adicionar robustez a promessas no `paciente-sheet.tsx` (.catch e neutralização de undefined)
-- [ ] Validar integridade dos componentes de UI recém-modificados
-*/
-
-interface PacienteSheetProps {
+export interface PacienteSheetProps {
   paciente: PacienteFila | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-const prioridadeConfig = {
-  "Rotina": { color: "bg-muted text-muted-foreground", label: "Rotina" },
-  "Urgencia Clinica": { color: "bg-alert-warning-bg text-alert-warning-text", label: "Urgência Clínica" },
-  "Mandado Judicial": { color: "bg-alert-danger-bg text-alert-danger-text", label: "Mandado Judicial" },
-}
-
-const statusConfig = {
-  "Aguardando": { color: "bg-alert-warning-bg text-alert-warning-text", label: "Aguardando" },
-  "Em Atendimento": { color: "bg-alert-success-bg text-alert-success-text", label: "Em Atendimento" },
-  "Em Risco": { color: "bg-alert-danger-bg text-alert-danger-text border border-alert-danger-text/20", label: "Em Risco (Faltas)" },
-  "Desistencia": { color: "bg-muted text-muted-foreground", label: "Desistência" },
-  "Alta": { color: "bg-alert-shared-bg text-alert-shared-text", label: "Alta" },
-}
-
 export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetProps) {
-  const [isRegisteringFalta, setIsRegisteringFalta] = useState(false)
-  const [justificada, setJustificada] = useState(false)
   const [observacao, setObservacao] = useState("")
+  const [justificada, setJustificada] = useState(true)
+  const [showFaltas, setShowFaltas] = useState(false)
+  const [historico, setHistorico] = useState<FaltaRegistro[]>([])
+  const [loadingHistorico, setLoadingHistorico] = useState(false)
   const [isPending, startTransition] = useTransition()
 
-  const [historicoFaltas, setHistoricoFaltas] = useState<FaltaHistorico[]>([])
-  const [isLoadingHistorico, setIsLoadingHistorico] = useState(false)
-
-  // Busca histórico de faltas ao abrir o paciente
-  // EXCEÇÃO (Regra 3.2): Este useEffect é mantido porque o histórico de faltas não é crucial para o LCP (Largest Contentful Paint) 
-  // da Fila de Espera, sendo carregado sob demanda (lazy loading) apenas quando a Sheet deste paciente for explícitamente aberta via interação do usuário.
   useEffect(() => {
-    if (open && paciente?.id) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsLoadingHistorico(true)
-      buscarHistoricoFaltas(paciente.id)
-        .then((res) => {
-          if (res?.success && res?.data) {
-            setHistoricoFaltas(res.data as FaltaHistorico[])
-          } else {
-            setHistoricoFaltas([])
-          }
-          setIsLoadingHistorico(false)
-        })
-        .catch((err) => {
-          console.error("Erro ao buscar histórico:", err)
-          setHistoricoFaltas([])
-          setIsLoadingHistorico(false)
-        })
-    } else {
-      setHistoricoFaltas([])
+    if (open && paciente) {
+      setObservacao("")
+      setJustificada(true)
+      setShowFaltas(false)
+      loadHistorico()
     }
-  }, [open, paciente?.id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, paciente])
 
-  const diasEspera = useMemo(() => {
-    if (!paciente) return 0
-    const entrada = new Date(paciente.dataEntrada).getTime()
-    if (isNaN(entrada)) return 0
-    const hoje = new Date().setHours(0, 0, 0, 0)
-    return Math.floor((hoje - entrada) / (1000 * 60 * 60 * 24))
-  }, [paciente])
-
-  const prio = paciente ? prioridadeConfig[paciente.prioridade] : { color: "", label: "" }
-  const stat = paciente ? statusConfig[paciente.status] : { color: "", label: "" }
-
-  if (!paciente) return null
+  const loadHistorico = async () => {
+    if (!paciente) return
+    setLoadingHistorico(true)
+    try {
+      const { success, data } = await buscarHistoricoFaltas(paciente.id)
+      if (success && data) setHistorico(data)
+    } finally {
+      setLoadingHistorico(false)
+    }
+  }
 
   const handleRegistrarFalta = () => {
+    if (!paciente) return
     startTransition(async () => {
-      if (!paciente) return
-      const result = await registrarFaltaPaciente({
-        fila_id: paciente.id,
+      const res = await registrarFaltaPaciente({
+        paciente_id: paciente.id,
         justificada,
         observacao,
       })
-
-      if (result.success) {
-        toast.success("Falta registrada com sucesso.")
-        setIsRegisteringFalta(false)
-        setJustificada(false)
+      if (res.success) {
+        toast.success("Falta registrada com sucesso")
+        loadHistorico()
         setObservacao("")
-        onOpenChange(false)
       } else {
-        toast.error(result.error || "Erro ao registrar falta.")
+        toast.error(`Erro: ${res.error}`)
       }
     })
   }
 
-  const fecharOuCancelar = (isOpen: boolean) => {
-    if (!isOpen) {
-      setIsRegisteringFalta(false)
-      setJustificada(false)
-      setObservacao("")
-    }
-    onOpenChange(isOpen)
+  if (!paciente) return null
+
+  const statusMap = {
+    Aguardando: { color: "bg-blue-100 text-blue-700 border-blue-200", label: "Aguardando" },
+    "Em Atendimento": { color: "bg-amber-100 text-amber-700 border-amber-200", label: "Em Atendimento" },
+    "Em Risco": { color: "bg-red-100 text-red-700 border-red-200", label: "Em Risco" },
+    Desistencia: { color: "bg-slate-100 text-slate-700 border-slate-200", label: "Desistência" },
+    Alta: { color: "bg-emerald-100 text-emerald-700 border-emerald-200", label: "Alta Médica" },
   }
 
+  const prioridadeMap = {
+    Rotina: { color: "text-slate-600 bg-slate-50 border-slate-200", label: "Rotina" },
+    "Urgencia Clinica": { color: "text-orange-600 bg-orange-50 border-orange-200", label: "Urgência Clínica" },
+    "Mandado Judicial": { color: "text-red-600 bg-red-50 border-red-200", label: "Mandado Judicial" },
+  }
+
+  const s = statusMap[paciente.status] || statusMap.Aguardando
+
   return (
-    <Sheet open={open} onOpenChange={fecharOuCancelar}>
-      <SheetContent
-        side="right"
-        className="p-0 overflow-hidden flex flex-col"
-      >
-        {/* HEADER */}
-        <SheetHeader className="mb-0 border-b border-white/10 shrink-0">
-          <div className="flex items-start justify-between gap-4 w-full">
-            <div className="flex-1 min-w-0">
-              <SheetTitle className="flex items-center gap-2">
-                <Hash className="w-4 h-4 text-white/70" />
-                {paciente.nome}
-              </SheetTitle>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
-                CNS: <span className="font-mono text-white/90">{paciente.cns}</span>
-              </p>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-xl overflow-y-auto bg-white border-l p-0">
+        <div className="flex flex-col h-full">
+          {/* Header estilizado */}
+          <div className="bg-slate-50 border-b p-6 space-y-4">
+            <div className="flex justify-between items-start">
+              <SheetHeader className="text-left space-y-1">
+                <div className="flex items-center gap-2 text-primary uppercase tracking-tighter font-bold text-xs opacity-60">
+                  <Hash className="w-3 h-3" />
+                  <span>Prontuário {paciente.cns}</span>
+                </div>
+                <SheetTitle className="text-2xl font-black text-slate-900 leading-tight">
+                  {paciente.nome}
+                </SheetTitle>
+              </SheetHeader>
+              <Badge variant="outline" className={`${s.color} border font-bold uppercase text-[10px] tracking-widest px-2 py-0.5 rounded-none`}>
+                {s.label}
+              </Badge>
             </div>
-            <div className="flex flex-col gap-1.5 items-end shrink-0">
-              <Badge className={`${prio.color} border-none text-[9px] font-bold uppercase tracking-wider rounded-none px-2`}>{prio.label}</Badge>
-              <Badge className={`${stat.color} border-none text-[9px] font-bold uppercase tracking-wider rounded-none px-2`}>{stat.label}</Badge>
+
+            <div className="flex flex-wrap gap-3">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border rounded-none text-sm text-slate-600 shadow-sm">
+                <Stethoscope className="w-4 h-4 text-primary" />
+                <span className="font-semibold">{paciente.especialidade}</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border rounded-none text-sm text-slate-600 shadow-sm">
+                <Calendar className="w-4 h-4 text-blue-500" />
+                <span>Na fila desde <strong>{paciente.data_encaminhamento}</strong></span>
+              </div>
             </div>
           </div>
-        </SheetHeader>
 
-        {/* BODY rolável */}
-        <div className="flex-1 overflow-y-auto px-7 py-6 space-y-6">
-
-          {/* Info da fila */}
-          <section>
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">
-              Situação na fila
-            </h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="rounded-none border border-border bg-card p-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Stethoscope className="w-4 h-4" />
-                  <span className="text-xs">Especialidade</span>
-                </div>
-                <p className="text-sm font-medium text-foreground">{paciente.especialidade}</p>
+          <div className="p-6 space-y-8 flex-1">
+            {/* Cards de Métricas Rápidas */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-none space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> Tempo de espera
+                </span>
+                <p className="text-xl font-black text-slate-900">{paciente.dias_espera} dias</p>
               </div>
-              <div className="rounded-none border border-border bg-card p-4">
-                <div className="flex items-center gap-2 text-muted mb-1">
-                  <Clock className="w-4 h-4" />
-                  <span className="text-xs">Dias em espera</span>
-                </div>
-                <p className="text-2xl font-bold text-primary">{diasEspera}</p>
-              </div>
-              <div className="rounded-none border border-border bg-card p-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-xs">Faltas</span>
-                </div>
-                <p className={`text-2xl font-bold ${paciente.faltas >= 2 ? "text-destructive" : "text-foreground"}`}>
-                  {paciente.faltas}<span className="text-sm font-normal text-muted-foreground">/3</span>
-                </p>
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-none space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider flex items-center gap-1">
+                   Alertas
+                </span>
+                <p className="text-xl font-black text-slate-900">0</p>
               </div>
             </div>
-          </section>
 
-          {/* Data de entrada */}
-          <section>
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">
-              Histórico
-            </h3>
-            <div className="flex items-center gap-3 p-4 rounded-none border border-border bg-card">
-              <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
-              <div>
-                <p className="text-xs text-muted-foreground">Data de entrada na fila</p>
-                <p className="text-sm font-medium text-foreground">
-                  {new Date(paciente.dataEntrada).toLocaleDateString("pt-BR", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Alerta de faltas críticas */}
-          {paciente.faltas >= 2 && (
-            <div className="flex items-start gap-3 rounded-none border border-destructive/20 bg-destructive/10 p-4">
-              <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-destructive">
-                  {paciente.faltas >= 3 ? "Limite de faltas atingido" : "Atenção: próximo do limite"}
-                </p>
-                <p className="text-xs text-destructive/80 mt-0.5">
-                  {paciente.faltas >= 3
-                    ? "Paciente pode ser desligado da fila por 3 faltas injustificadas."
-                    : "1 falta restante antes de atingir o limite de desligamento."}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Histórico de Faltas - Secão Nova */}
-          <section className="pt-4 border-t border-border">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
-              <History className="w-4 h-4" />
-              Últimas faltas registradas
-            </h3>
-            
-            {isLoadingHistorico ? (
-              <div className="flex items-center justify-center py-6 text-muted-foreground">
-                <Loader2 className="w-5 h-5 animate-spin" />
-              </div>
-            ) : historicoFaltas.length === 0 ? (
-              <div className="text-center py-6 px-4 rounded-none bg-muted/30 border border-dashed border-border">
-                <CheckCircle2 className="w-6 h-6 text-alert-success-text mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Nenhum registro de falta para este paciente.</p>
-              </div>
-            ) : (
+            {/* Seções de Detalhes */}
+            <div className="space-y-6">
               <div className="space-y-3">
-                {historicoFaltas.map((falta) => (
-                  <div key={falta.id} className="flex flex-col gap-1 p-3 rounded-none border border-border bg-card">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground flex items-center gap-2">
-                        <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-                        {new Date(falta.data_falta + 'T00:00:00').toLocaleDateString("pt-BR")}
-                      </span>
-                      {falta.justificada ? (
-                        <Badge variant="outline" className="bg-alert-success-bg text-alert-success-text border-none shadow-none text-[10px] font-semibold h-5">Justificada</Badge>
-                      ) : (
-                        <Badge variant="outline" className="bg-alert-danger-bg text-alert-danger-text border-none shadow-none text-[10px] font-semibold h-5">Não justificada</Badge>
-                      )}
-                    </div>
-                    {falta.observacao && (
-                      <p className="text-xs text-muted-foreground pl-5 border-l-2 border-border ml-1.5 py-0.5 mt-1 align-middle">
-                        {falta.observacao}
-                      </p>
+                <h4 className="text-xs font-bold uppercase text-slate-400 tracking-widest">Informações Clínicas</h4>
+                <div className="grid gap-4">
+                  <div className="flex items-center justify-between p-3 border rounded-none bg-white">
+                    <span className="text-sm text-slate-500">Prioridade</span>
+                    <Badge variant="outline" className={`${prioridadeMap[paciente.prioridade as keyof typeof prioridadeMap]?.color || 'bg-slate-50'} border-none font-bold`}>
+                      {paciente.prioridade}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-3 border rounded-none bg-white">
+                    <span className="text-sm text-slate-500">Médico solicitante</span>
+                    <span className="text-sm font-semibold">{paciente.profissional_nome || "Não informado"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Registro de Faltas */}
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                    <AlertTriangle className="w-3 h-3 text-amber-500" /> Registro de Faltas
+                  </h4>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 text-[10px] uppercase font-bold text-primary"
+                    onClick={() => setShowFaltas(!showFaltas)}
+                  >
+                    <History className="w-3.5 h-3.5 mr-1" />
+                    Histórico ({historico.length})
+                  </Button>
+                </div>
+
+                {showFaltas ? (
+                  <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    {loadingHistorico ? (
+                      <div className="flex items-center justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+                    ) : historico.length === 0 ? (
+                      <div className="text-center p-8 bg-slate-50 border border-dashed text-slate-400 text-sm">Nenhuma falta registrada.</div>
+                    ) : (
+                      <div className="space-y-2">
+                        {historico.map(f => (
+                          <div key={f.id} className="p-3 bg-white border rounded-none flex items-start gap-3">
+                            <div className={`mt-1 h-2 w-2 rounded-full ${f.justificada ? 'bg-blue-400' : 'bg-red-500'}`} />
+                            <div className="flex-1">
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-xs font-bold">{new Date(f.data_falta).toLocaleDateString('pt-BR')}</span>
+                                <Badge variant="outline" className={`text-[9px] uppercase font-black ${f.justificada ? 'text-blue-600 bg-blue-50 border-blue-100' : 'text-red-600 bg-red-50 border-red-100'}`}>
+                                  {f.justificada ? 'Justificada' : 'Não Justificada'}
+                                </Badge>
+                              </div>
+                              {f.observacao && <p className="text-xs text-slate-500 leading-relaxed">{f.observacao}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-        </div>
-
-        {/* FOOTER fixo - Adaptativo */}
-        <div className="shrink-0 border-t bg-card px-7 py-4">
-          {!isRegisteringFalta ? (
-            <div className="flex gap-3">
-              <Button className="flex-1 shadow-sm" onClick={() => toast.info("Agendamento em desenvolvimento.", { description: "Esta funcionalidade estará disponível em breve." })}>
-                Agendar sessão
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10"
-                onClick={() => setIsRegisteringFalta(true)}
-              >
-                Registrar falta
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-              <div className="flex items-center justify-between border-b pb-3 border-alert-danger-text/20">
-                <h4 className="font-medium text-alert-danger-text flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  Registrar nova falta
-                </h4>
-                <div className="flex items-center gap-2">
-                  <Switch 
-                    id="justificada" 
-                    checked={justificada} 
-                    onCheckedChange={setJustificada} 
-                  />
-                  <Label htmlFor="justificada" className="text-xs text-muted-foreground cursor-pointer">
-                    Falta justificada?
-                  </Label>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="obs" className="text-xs text-muted-foreground">Observação (Opcional)</Label>
-                <Textarea 
-                  id="obs" 
-                  placeholder="Motivo da falta ou observação pertinente..."
-                  className="resize-none h-20 text-sm"
-                  value={observacao}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setObservacao(e.target.value)}
-                  disabled={isPending}
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <Button 
-                  variant="outline" 
-                  className="flex-1"
-                  onClick={() => setIsRegisteringFalta(false)}
-                  disabled={isPending}
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  className="flex-1 gap-2"
-                  onClick={handleRegistrarFalta}
-                  disabled={isPending}
-                >
-                  {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
-                  {isPending ? "Registrando..." : "Confirmar falta"}
-                </Button>
+                ) : (
+                  <div className="bg-slate-50 p-4 border rounded-none space-y-4 shadow-inner">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="justificada" className="text-sm font-bold text-slate-700">Falta Justificada?</Label>
+                      <Switch 
+                        id="justificada" 
+                        checked={justificada} 
+                        onCheckedChange={setJustificada}
+                        className="data-[state=checked]:bg-blue-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] uppercase font-bold text-slate-400">Observações / Motivo</Label>
+                      <Textarea 
+                        placeholder="Descreva o motivo da falta..." 
+                        className="bg-white rounded-none border-slate-200 focus-visible:ring-primary min-h-[80px]"
+                        value={observacao}
+                        onChange={(e) => setObservacao(e.target.value)}
+                      />
+                    </div>
+                    <Button 
+                      className="w-full rounded-none font-bold uppercase tracking-widest text-xs h-10 shadow-lg"
+                      size="sm"
+                      onClick={handleRegistrarFalta}
+                      disabled={isPending}
+                    >
+                      {isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
+                      Registrar Ocorrência
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
-          )}
+          </div>
         </div>
       </SheetContent>
     </Sheet>

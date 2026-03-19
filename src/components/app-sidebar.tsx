@@ -23,12 +23,16 @@ import {
   Scale,
   Stethoscope,
   ShieldCheck,
-  Settings,
   Truck,
   UserCheck,
   Clock,
   Briefcase,
+  LogOut,
+  Loader2,
 } from "lucide-react"
+import { signOut } from "@/actions/auth-actions"
+import { useTransition } from "react"
+import type { DadosUsuario } from "@/types"
 
 const navItems = [
   {
@@ -76,10 +80,12 @@ const navItems = [
   },
 ]
 
-export function AppSidebar({ perfil }: { perfil: string | null }) {
+export function AppSidebar({ dados }: { dados: DadosUsuario | null }) {
   const pathname = usePathname()
 
   const filteredGroups = navItems.filter(group => {
+    const perfil = dados?.perfil_acesso
+    
     // Se o perfil for nulo (usuário logado sem registro em profissionais),
     // liberamos acesso básico para que ele possa se cadastrar.
     if (!perfil) return group.group === "ATENDIMENTO" || group.group === "CONFIGURAÇÕES"
@@ -93,10 +99,10 @@ export function AppSidebar({ perfil }: { perfil: string | null }) {
       <SidebarHeader className="px-4 py-5">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-black/20">
-            <span className="text-white font-bold text-sm">C2</span>
+            <span className="text-white font-bold text-sm">CER</span>
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-sm leading-tight text-white">CER 2</p>
+            <p className="font-semibold text-sm leading-tight text-white">CER II TEAcolhe</p>
             <p className="text-[10px] text-sidebar-foreground/60 truncate uppercase tracking-wider font-medium">Sistema de Gestão SUS</p>
           </div>
         </div>
@@ -133,22 +139,57 @@ export function AppSidebar({ perfil }: { perfil: string | null }) {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="px-2 pb-4">
-        <SidebarSeparator className="mb-2" />
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Configurações"
-              render={
-                <Link href="/configuracoes">
-                  <Settings />
-                  <span>Configurações</span>
-                </Link>
-              }
-            />
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarFooter className="px-3 pb-4 pt-2">
+        <SidebarSeparator className="mb-3" />
+        {/* Card do usuário logado */}
+        <div className="flex items-center gap-3 px-2 py-2 rounded-none">
+          {/* Avatar com iniciais */}
+          <div className="w-8 h-8 rounded-none bg-primary flex items-center justify-center shrink-0">
+            <span className="text-white font-bold text-xs">
+              {dados?.nome_completo
+                ? dados.nome_completo
+                    .split(' ')
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map(n => n[0])
+                    .join('')
+                    .toUpperCase()
+                : '??'}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-white truncate leading-tight">
+              {dados?.nome_completo ?? 'Usuário'}
+            </p>
+            <p className="text-[10px] text-sidebar-foreground/50 truncate uppercase tracking-wider font-medium">
+              {dados?.perfil_acesso?.replace('_', ' ') ?? ''}
+            </p>
+          </div>
+          {/* Botão logout */}
+          <LogoutButton />
+        </div>
       </SidebarFooter>
     </Sidebar>
+  )
+}
+
+function LogoutButton() {
+  const [isPending, startTransition] = useTransition()
+
+  return (
+    <button
+      onClick={() => startTransition(async () => {
+        await signOut()
+      })}
+      disabled={isPending}
+      className="text-sidebar-foreground/50 hover:text-white hover:bg-white/10 rounded-none p-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      title="Sair do sistema"
+    >
+      {isPending ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : (
+        <LogOut className="w-4 h-4" />
+      )}
+    </button>
   )
 }

@@ -190,8 +190,35 @@ export const gradeHorariaSchema = z.object({
   capacidade: z.number().int().min(1).default(1),
 })
 
+export const avaliacaoServicoSocialSchema = z.object({
+  paciente_id: z.string().uuid("Paciente inválido"),
+  profissional_id: z.string().uuid("Profissional inválido"),
+  
+  // Composição Familiar
+  quantidade_membros_familia: z.number().int().min(1, "Quantidade de membros deve ser pelo menos 1"),
+  renda_familiar_total: z.number().min(0, "Renda não pode ser negativa"),
+  recebe_beneficio: z.boolean().default(false),
+  tipo_beneficio: optionalStr,
+  
+  // Moradia e Saneamento
+  tipo_moradia: z.enum(["Propria", "Alugada", "Cedida", "Financiada"]).default("Propria"),
+  tem_saneamento_basico: z.boolean().default(true),
+  tem_energia_eletrica: z.boolean().default(true),
+  
+  // Barreiras e Incapacidade
+  descricao_barreiras_arquitetonicas: optionalStr,
+  impacto_incapacidade_trabalho: optionalStr,
+  
+  // Relatório
+  relatorio_social: z.string().min(10, "Relatório social deve ser mais detalhado (mínimo 10 caracteres)"),
+  parecer_final: z.string().min(5, "Parecer final é obrigatório"),
+  
+  data_avaliacao: z.string().length(10, "Data inválida — formato esperado: AAAA-MM-DD")
+})
+
 export type VagaFixaInput = z.infer<typeof vagaFixaSchema>
 export type AgendamentoHistoricoInput = z.infer<typeof agendamentoHistoricoSchema>
 export type ProfissionalInput = z.infer<typeof profissionalSchema>
 export type EspecialidadeInput = z.infer<typeof especialidadeSchema>
 export type GradeHorariaInput = z.infer<typeof gradeHorariaSchema>
+export type AvaliacaoServicoSocialInput = z.infer<typeof avaliacaoServicoSocialSchema>

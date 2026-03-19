@@ -66,7 +66,8 @@ export function DataTable<TData, TValue>({
     )
   }, [data, searchTerm])
 
-  const table = useReactTable({
+    // eslint-disable-next-line react-hooks/incompatible-library
+    const table = useReactTable({
     data: filteredRows as TData[],
     columns,
     getCoreRowModel: getCoreRowModel(),

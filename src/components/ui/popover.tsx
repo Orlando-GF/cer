@@ -12,7 +12,7 @@ function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
   return <PopoverPrimitive.Trigger {...props} />
 }
 
-function PopoverContent({ className, align = "center", sideOffset = 4, ...props }: PopoverPrimitive.Popup.Props & { align?: string; sideOffset?: number }) {
+function PopoverContent({ className, sideOffset = 4, ...props }: PopoverPrimitive.Popup.Props & { align?: string; sideOffset?: number }) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner sideOffset={sideOffset}>

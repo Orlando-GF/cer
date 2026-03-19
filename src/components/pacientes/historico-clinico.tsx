@@ -46,7 +46,7 @@ export function HistoricoClinico({ pacienteId }: HistoricoClinicoProps) {
   }
 
   return (
-    <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-border before:via-border/50 before:to-transparent">
+    <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-border">
       {historico.map((item) => (
         <div key={item.id} className="relative flex items-start gap-6 group">
           {/* Timeline Dot */}
@@ -95,7 +95,7 @@ export function HistoricoClinico({ pacienteId }: HistoricoClinicoProps) {
               <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1.5">
                 <MessageSquare className="w-3 h-3" /> Evolução Clínica
               </span>
-              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap italic">
+              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                 {item.evolucao_clinica || "Nenhuma evolução registrada para este atendimento."}
               </p>
               {item.conduta && (

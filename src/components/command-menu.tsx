@@ -3,17 +3,11 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import {
-  Calculator,
   Calendar,
-  CreditCard,
   Settings,
-  Smile,
   User,
-  Search,
   Users,
   LayoutDashboard,
-  FileText,
-  Truck,
 } from "lucide-react"
 
 import {
@@ -24,7 +18,6 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut,
 } from "@/components/ui/command"
 
 export function CommandMenu() {

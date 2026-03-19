@@ -15,7 +15,7 @@ export default function LoginPage() {
           </div>
           <div className="text-center">
             <h1 className="text-3xl font-extrabold tracking-tighter text-white uppercase italic">
-              CER <span className="font-light not-italic">SISTEMA</span>
+              CER II <span className="font-light not-italic">TEAcolhe</span>
             </h1>
             <p className="text-white/60 text-xs font-medium tracking-[0.2em] uppercase">
               Centro de Especialidade e Reabilitação

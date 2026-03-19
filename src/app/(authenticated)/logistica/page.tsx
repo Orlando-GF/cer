@@ -1,8 +1,9 @@
-"use client"
-
 import { EmBreve } from "@/components/ui/em-breve"
+import { validarAcessoRota } from "@/lib/access-control"
 
-export default function LogisticaPage() {
+export default async function LogisticaPage() {
+  await validarAcessoRota("/logistica")
+  
   return (
     <EmBreve 
       titulo="Rotas de Transporte" 

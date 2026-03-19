@@ -68,8 +68,8 @@ const onlyDigits = (v: string) => v.replace(/\D/g, "")
 const TAGS_ACESSIBILIDADE = [
   "Cadeirante",
   "Acamado/Uso de Maca",
-  "Risco de Agitação Psicomotora",
   "Deficiência Visual Severa",
+  "Risco de Agitação Psicomotora",
   "Uso de Oxigênio",
   "Obesidade Severa",
 ] as const
