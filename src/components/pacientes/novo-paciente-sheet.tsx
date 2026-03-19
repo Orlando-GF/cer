@@ -128,7 +128,7 @@ export function NovoPacienteSheet() {
                   <Search className="w-7 h-7 text-primary" />
                 </div>
                 <p className="text-muted-foreground text-sm max-w-xs">
-                  Digite o <strong>CNS</strong> (15 dígitos) ou <strong>CPF</strong> (11 dígitos) para buscar os dados automaticamente.
+                  Digite o <strong>CNS</strong> (15 dígitos) ou <strong>CPF</strong> (11 dígitos). Os dados serão pré-preenchidos quando disponível, ou preencha o cadastro manualmente.
                 </p>
               </div>
 

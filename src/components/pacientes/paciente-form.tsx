@@ -276,6 +276,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
           <div className="space-y-4">
             <Field label="Nome completo" required>
               <Input
+                autoFocus
                 value={dados.nome_completo || ""}
                 onChange={(e) => setField("nome_completo")(formatarNomeClinico(e.target.value))}
                 placeholder="NOME COMO CONSTA NO DOCUMENTO"
@@ -293,7 +294,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   required
                   min="1900-01-01"
                   max={new Date().toISOString().split("T")[0]}
-                  className="rounded-none border border-border h-12 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary bg-card text-xs tracking-wider w-full px-2.5 cursor-pointer"
+                  className="rounded-none border border-border h-12 w-full px-2.5 font-bold bg-card text-xs tracking-wider cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               </Field>
               <Field label="Sexo" required>
