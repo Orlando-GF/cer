@@ -1,0 +1,113 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { buscarHistoricoClinicoPaciente } from "@/actions"
+import { AgendamentoHistoricoComJoins } from "@/types"
+import { format, parseISO } from "date-fns"
+import { ptBR } from "date-fns/locale"
+import { Loader2, Calendar, User, Stethoscope, MessageSquare } from "lucide-react"
+
+interface HistoricoClinicoProps {
+  pacienteId: string
+}
+
+export function HistoricoClinico({ pacienteId }: HistoricoClinicoProps) {
+  const [historico, setHistorico] = useState<AgendamentoHistoricoComJoins[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true)
+      const result = await buscarHistoricoClinicoPaciente(pacienteId)
+      if (result.success && result.data) {
+        setHistorico(result.data)
+      }
+      setIsLoading(false)
+    }
+    loadData()
+  }, [pacienteId])
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+        <Loader2 className="w-8 h-8 animate-spin mb-2" />
+        <p className="text-xs uppercase tracking-widest font-bold">Carregando histórico...</p>
+      </div>
+    )
+  }
+
+  if (historico.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border border-dashed border-border bg-muted/10">
+        <Calendar className="w-8 h-8 mb-2 opacity-20" />
+        <p className="text-xs uppercase tracking-widest font-bold">Nenhum atendimento registrado.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-border before:via-border/50 before:to-transparent">
+      {historico.map((item) => (
+        <div key={item.id} className="relative flex items-start gap-6 group">
+          {/* Timeline Dot */}
+          <div className="absolute left-0 mt-1.5 w-10 flex items-center justify-center">
+            <div className="w-3 h-3 rounded-none bg-primary ring-4 ring-background border border-primary group-hover:scale-125 transition-transform" />
+          </div>
+
+          <div className="flex-1 bg-card border border-border p-5 shadow-sm space-y-4 hover:border-primary/30 transition-colors">
+            {/* Header: Date and Status */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 pb-3">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-primary" />
+                <span className="text-sm font-bold text-foreground">
+                  {format(parseISO(item.data_hora_inicio), "PPP 'às' HH:mm", { locale: ptBR })}
+                </span>
+              </div>
+              <div className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest border border-primary/20">
+                {item.status_comparecimento}
+              </div>
+            </div>
+
+            {/* Info Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1.5">
+                  <User className="w-3 h-3" /> Profissional
+                </span>
+                <p className="font-semibold text-foreground">
+                  {Array.isArray(item.profissionais) ? item.profissionais[0]?.nome_completo : item.profissionais?.nome_completo}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1.5">
+                  <Stethoscope className="w-3 h-3" /> Especialidade
+                </span>
+                <p className="font-semibold text-foreground">
+                  {Array.isArray(item.linhas_cuidado_especialidades) 
+                    ? item.linhas_cuidado_especialidades[0]?.nome_especialidade 
+                    : item.linhas_cuidado_especialidades?.nome_especialidade}
+                </p>
+              </div>
+            </div>
+
+            {/* Evolution Content */}
+            <div className="space-y-2 bg-muted/30 p-4 border-l-2 border-primary/50">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1.5">
+                <MessageSquare className="w-3 h-3" /> Evolução Clínica
+              </span>
+              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap italic">
+                {item.evolucao_clinica || "Nenhuma evolução registrada para este atendimento."}
+              </p>
+              {item.conduta && (
+                <div className="mt-3 pt-3 border-t border-border/50">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Conduta / Orientações</span>
+                  <p className="text-sm text-foreground mt-1">{item.conduta}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}

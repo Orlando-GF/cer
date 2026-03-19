@@ -13,6 +13,7 @@ import { History, User, Phone, Edit, Copy } from "lucide-react"
 import { Paciente } from "./columns"
 import { useRouter } from "next/navigation"
 import { PacienteForm, PacienteFormData } from "./paciente-form"
+import { HistoricoClinico } from "./historico-clinico"
 
 interface PacienteSheetMasterProps {
   paciente: Paciente | null
@@ -140,13 +141,16 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
                 </div>
               </div>
 
-              {/* SEÇÃO DE HISTÓRICO (PROMPT PARA FUTURO) */}
-              <div className="bg-muted/30 p-6 rounded-none border border-dashed border-border flex flex-col items-center justify-center text-center py-12">
-                <div className="w-12 h-12 rounded-none bg-muted flex items-center justify-center mb-3">
-                   <History className="w-6 h-6 text-muted-foreground" />
+              {/* SEÇÃO DE HISTÓRICO - EVOLUÇÃO CLÍNICA */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-border/50 pb-2">
+                  <History className="w-4 h-4 text-primary" />
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
+                    Histórico de Atendimentos e Evoluções
+                  </h3>
                 </div>
-                <h4 className="text-sm font-medium text-foreground">Histórico de Atendimentos</h4>
-                <p className="text-xs text-muted-foreground mt-1 max-w-[240px]">Em breve: Linha do tempo completa de evoluções e prontuário digital.</p>
+                
+                <HistoricoClinico pacienteId={paciente.id} />
               </div>
             </div>
           )}

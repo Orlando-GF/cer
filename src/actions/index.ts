@@ -810,4 +810,31 @@ export async function encerrarVagaFixa(
   return { success: true }
 }
 
+export async function buscarHistoricoClinicoPaciente(
+  pacienteId: string
+): Promise<ActionResponse<AgendamentoHistoricoComJoins[]>> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('agendamentos_historico')
+    .select(`
+      *,
+      pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+      profissionais (id, nome_completo),
+      linhas_cuidado_especialidades (id, nome_especialidade)
+    `)
+    .eq('paciente_id', pacienteId)
+    .order('data_hora_inicio', { ascending: false })
+
+  if (error) {
+    return {
+      success: false,
+      error: `Erro ao buscar histórico clínico: ${error.message}`,
+    }
+  }
+
+  return { success: true, data: data as AgendamentoHistoricoComJoins[] }
+}
+
+
 
