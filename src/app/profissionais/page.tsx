@@ -1,13 +1,63 @@
-"use client"
+import { buscarProfissionais, buscarEspecialidades } from "@/actions"
+import { NovoProfissionalSheet } from "@/components/especialidades/novo-profissional-sheet"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
 
-import { EmBreve } from "@/components/ui/em-breve"
+export default async function ProfissionaisPage() {
+  const [profissionaisRes, especialidadesRes] = await Promise.all([
+    buscarProfissionais(),
+    buscarEspecialidades()
+  ])
 
-export default function ProfissionaisPage() {
+  const profissionais = profissionaisRes.data || []
+  const especialidades = especialidadesRes.data || []
+
   return (
-    <EmBreve 
-      titulo="Profissionais & Acessos" 
-      descricao="Controle de usuários, permissões RBAC e cadastro de profissionais de saúde."
-      iconName="Briefcase"
-    />
+    <div className="p-8 max-w-[1200px] mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">Profissionais & Acessos</h1>
+        <NovoProfissionalSheet especialidades={especialidades} />
+      </div>
+
+      <Card className="rounded-none border-border shadow-none">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-[300px] font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Nome</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Perfil de Acesso</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {profissionais.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center py-10 text-muted-foreground text-sm">
+                  Nenhum profissional cadastrado.
+                </TableCell>
+              </TableRow>
+            ) : (
+              profissionais.map((prof) => (
+                <TableRow key={prof.id} className="hover:bg-muted/50 transition-colors">
+                  <TableCell className="font-medium text-sm">
+                    {prof.nome_completo}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="rounded-none font-bold text-[10px] uppercase tracking-widest bg-muted/50 border-border">
+                      {prof.perfil_acesso}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={prof.ativo ? "default" : "secondary"} className="rounded-none font-bold text-[10px] uppercase tracking-widest">
+                      {prof.ativo ? "Ativo" : "Inativo"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Card>
+    </div>
   )
 }

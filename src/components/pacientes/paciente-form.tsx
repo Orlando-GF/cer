@@ -25,6 +25,7 @@ import {
 import { cadastrarPaciente, atualizarPaciente } from "@/actions"
 import { type ActionResponse } from "@/types"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { formatarNomeClinico, buscarEnderecoPorCep } from "@/lib/utils/string-utils"
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
@@ -258,6 +259,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
       if (!result.success) {
         setSubmitError(result.error || "Ocorreu um erro desconhecido.")
       } else {
+        toast.success(dados.id ? "Paciente atualizado com sucesso!" : "Paciente cadastrado com sucesso!")
         if (onSuccess) onSuccess()
         router.refresh()
       }
@@ -326,6 +328,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                   placeholder="000.0000.0000.0000"
                   className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-widest tabular-nums"
                   maxLength={19}
+                  required
                 />
               </Field>
               <Field label="CPF" hint="Opcional" error={fieldErrors.cpf}>

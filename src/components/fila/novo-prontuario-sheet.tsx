@@ -31,6 +31,7 @@ import {
 } from "lucide-react"
 import { buscarPacientePorDocumento, incluirPacienteNaFila } from "@/actions"
 import { type ActionResponse, type Paciente } from "@/types"
+import { toast } from "sonner"
 import Link from "next/link"
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
@@ -161,6 +162,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
       if (!result.success) {
         setSubmitError(result.error || "Ocorreu um erro desconhecido.")
       } else {
+        toast.success("Paciente inserido na fila com sucesso!")
         handleOpen(false)
       }
     })

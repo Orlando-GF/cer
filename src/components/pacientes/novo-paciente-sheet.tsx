@@ -19,7 +19,7 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { PacienteForm, PacienteFormData } from "./paciente-form"
-
+import { buscarPacientePorDocumento } from "@/actions"
 // ─── funções auxiliares ───────────────────────────────────────────────────────
 
 const onlyDigits = (v: string) => v.replace(/\D/g, "")
@@ -63,11 +63,16 @@ export function NovoPacienteSheet() {
     setBuscando(true)
     setStatusBusca("idle")
     
-    // Stub da busca SUS - simulando atraso
-    await new Promise((r) => setTimeout(r, 800))
+    const docLimpo = onlyDigits(identificador)
+    const result = await buscarPacientePorDocumento(docLimpo)
     
     setBuscando(false)
-    setStatusBusca("nao_encontrado")
+    if (result.success && result.data) {
+      setDados(result.data as PacienteFormData)
+      setStatusBusca("encontrado")
+    } else {
+      setStatusBusca("nao_encontrado")
+    }
   }
 
   function handleAvancar() {
@@ -97,7 +102,7 @@ export function NovoPacienteSheet() {
               CADASTRO BASE DE PACIENTE
             </SheetTitle>
             {etapa === "busca" && (
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mt-0.5">
                 Informe o CNS OU CPF para começar.
               </p>
             )}
@@ -122,7 +127,7 @@ export function NovoPacienteSheet() {
                 <div className="w-16 h-16 rounded-none bg-muted/40 flex items-center justify-center">
                   <Search className="w-7 h-7 text-primary" />
                 </div>
-                <p className="text-slate-600 text-sm max-w-xs">
+                <p className="text-muted-foreground text-sm max-w-xs">
                   Digite o <strong>CNS</strong> (15 dígitos) ou <strong>CPF</strong> (11 dígitos) para buscar os dados automaticamente.
                 </p>
               </div>
@@ -139,6 +144,7 @@ export function NovoPacienteSheet() {
                     onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
                     placeholder="CNS OU CPF"
                     className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider"
+                    maxLength={15}
                     autoFocus
                   />
                   <Button type="button" onClick={handleBuscar}
@@ -169,7 +175,7 @@ export function NovoPacienteSheet() {
                   {statusBusca === "encontrado" ? "Confirmar e avançar" : "Preencher manualmente"}
                   <ChevronRight className="w-4 h-4" />
                 </Button>
-                <Button type="button" variant="ghost" className="w-full h-12 rounded-none font-bold uppercase tracking-widest text-slate-400" onClick={() => handleOpen(false)}>
+                <Button type="button" variant="ghost" className="w-full h-12 rounded-none font-bold uppercase tracking-widest text-muted-foreground" onClick={() => handleOpen(false)}>
                   Cancelar
                 </Button>
               </div>

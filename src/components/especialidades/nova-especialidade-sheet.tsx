@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { useTransition } from "react"
+import { useState, useRef, useTransition } from "react"
 import { 
   Sheet, 
   SheetContent, 
@@ -21,6 +20,7 @@ import { type TipoAtendimento } from "@/types"
 export function NovaEspecialidadeSheet() {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const formRef = useRef<HTMLFormElement>(null)
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -37,6 +37,7 @@ export function NovaEspecialidadeSheet() {
       if (res.success) {
         toast.success("Especialidade cadastrada com sucesso!")
         setOpen(false)
+        formRef.current?.reset()
       } else {
         toast.error("Erro ao cadastrar: " + res.error)
       }
@@ -57,7 +58,7 @@ export function NovaEspecialidadeSheet() {
           <SheetTitle>Nova Especialidade / Linha de Cuidado</SheetTitle>
         </SheetHeader>
         
-        <form onSubmit={onSubmit} className="px-7 py-6 space-y-6">
+        <form ref={formRef} onSubmit={onSubmit} className="px-7 py-6 space-y-6">
           <div className="space-y-2">
             <Label htmlFor="nome" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nome da Especialidade</Label>
             <Input id="nome" name="nome" placeholder="EX: FISIOTERAPIA ADULTO" required maxLength={80} className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs" />
@@ -84,6 +85,8 @@ export function NovaEspecialidadeSheet() {
                 <SelectItem value="Terapia Continua" className="font-bold uppercase text-[11px]">Terapia Contínua</SelectItem>
                 <SelectItem value="Dispensacao_OPM" className="font-bold uppercase text-[11px]">Dispensação OPM</SelectItem>
                 <SelectItem value="Avaliacao_Diagnostica" className="font-bold uppercase text-[11px]">Avaliação Diagnóstica</SelectItem>
+                <SelectItem value="Acolhimento" className="font-bold uppercase text-[11px]">Acolhimento</SelectItem>
+                <SelectItem value="Pedagogico" className="font-bold uppercase text-[11px]">Pedagógico</SelectItem>
               </SelectContent>
             </Select>
           </div>
