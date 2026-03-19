@@ -156,7 +156,6 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
     const base: Partial<PacienteFormData> = {
       cidade: "Barreiras",
       uf: "BA",
-      sexo: "M",
       pactuado: false,
       municipio_pactuado: "",
       necessita_transporte: false,
@@ -185,7 +184,6 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
       const base: Partial<PacienteFormData> = {
         cidade: "Barreiras",
         uf: "BA",
-        sexo: "M",
         pactuado: false,
         municipio_pactuado: "",
         necessita_transporte: false,
