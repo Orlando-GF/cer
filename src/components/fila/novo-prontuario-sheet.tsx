@@ -186,7 +186,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
               Inserir na fila de espera
             </SheetTitle>
             {etapa === "busca" && (
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-0.5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mt-0.5">
                 Localize o paciente cadastrado na Base.
               </p>
             )}
@@ -224,6 +224,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                     onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
                     placeholder="CNS OU CPF..."
                     className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider"
+                    maxLength={15}
                     autoFocus
                   />
                   <Button type="button" onClick={handleBuscar}
@@ -341,6 +342,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                             onChange={(e) => setNumProcesso(e.target.value)}
                             placeholder="0001234-12.2024.8.05.0000"
                             className="rounded-none border-destructive/30 h-12 font-bold focus-visible:ring-destructive/40 bg-alert-danger-bg uppercase text-xs"
+                            maxLength={40}
                             required
                           />
                         </Field>
@@ -353,6 +355,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
                         onChange={(e) => setOrigemEncaminhamento(e.target.value)}
                         placeholder="EX: UBS CENTRO, HOSPITAL REGIONAL..."
                         className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs"
+                        maxLength={100}
                       />
                     </Field>
 

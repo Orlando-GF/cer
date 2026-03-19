@@ -171,7 +171,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
 
           {/* Info da fila */}
           <section>
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">
               Situação na fila
             </h3>
             <div className="grid grid-cols-3 gap-4">
@@ -203,7 +203,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
 
           {/* Data de entrada */}
           <section>
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">
               Histórico
             </h3>
             <div className="flex items-center gap-3 p-4 rounded-none border border-border bg-card">
@@ -299,8 +299,8 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
             </div>
           ) : (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-              <div className="flex items-center justify-between border-b pb-3 border-red-100">
-                <h4 className="font-medium text-red-800 flex items-center gap-2">
+              <div className="flex items-center justify-between border-b pb-3 border-alert-danger-text/20">
+                <h4 className="font-medium text-alert-danger-text flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" />
                   Registrar nova falta
                 </h4>

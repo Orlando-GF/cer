@@ -40,10 +40,10 @@ function Field({
   return (
     <div className="space-y-2">
       <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-        {label} {required && <span className="text-red-500">*</span>}
+        {label} {required && <span className="text-alert-danger-text">*</span>}
       </Label>
       {children}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-alert-danger-text">{error}</p>}
     </div>
   )
 }
@@ -126,7 +126,8 @@ export function NovoProfissionalSheet({
               placeholder="EX: DR. PAULO SILVA" 
               value={dados.nome_completo}
               onChange={(e) => setDados({...dados, nome_completo: formatarNomeClinico(e.target.value)})}
-              className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-background uppercase text-xs"
+              className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs"
+              maxLength={100}
             />
           </Field>
 
@@ -136,7 +137,8 @@ export function NovoProfissionalSheet({
                 placeholder="EX: CRM-BA 12345" 
                 value={dados.registro_conselho}
                 onChange={(e) => setDados({...dados, registro_conselho: e.target.value})}
-                className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-background uppercase text-xs"
+                className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs"
+                maxLength={30}
               />
             </Field>
             <Field label="CBO">
@@ -144,7 +146,8 @@ export function NovoProfissionalSheet({
                 placeholder="EX: 225125" 
                 value={dados.cbo}
                 onChange={(e) => setDados({...dados, cbo: e.target.value})}
-                className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-background uppercase text-xs"
+                className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs"
+                maxLength={10}
               />
             </Field>
           </div>
@@ -175,7 +178,7 @@ export function NovoProfissionalSheet({
               {especialidades.map((esp) => (
                 <div 
                   key={esp.id}
-                  className="flex items-center gap-3 p-2 hover:bg-card rounded-md transition-colors cursor-pointer group"
+                  className="flex items-center gap-3 p-2 hover:bg-muted rounded-none transition-colors cursor-pointer group"
                   onClick={() => toggleEspecialidade(esp.id)}
                 >
                   <div className={`

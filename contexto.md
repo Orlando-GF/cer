@@ -963,3 +963,145 @@ Sequência obrigatória ao implementar qualquer funcionalidade nova:
 7. Nunca `useState` para filtros — usar URL (`searchParams`)
 8. Nunca `alert()` — usar toast
 9. Nunca classes `slate-*`, `blue-*`, `white` — usar variáveis CSS do design system
+
+---
+
+## 16. Padrão de Qualidade para Formulários
+
+> Derivado da auditoria do `paciente-form.tsx` em 18/03/2026.
+> Aplicar em **todos** os formulários do sistema, sem exceção.
+
+### 16.1 Valores Padrão Inteligentes (Defaults)
+
+Todo formulário deve inicializar com defaults que refletem o caso mais comum,
+eliminando cliques desnecessários.
+
+| Campo                  | Default obrigatório | Racional                                 |
+| ---------------------- | ------------------- | ---------------------------------------- |
+| `status_cadastro`      | `"Ativo"`           | 100% dos novos cadastros começam ativos  |
+| `sexo`                 | `"M"`               | Default neutro — usuário sempre confirma |
+| `cidade`               | `"Barreiras"`       | Maioria dos pacientes é local            |
+| `uf`                   | `"BA"`              | Idem                                     |
+| `pactuado`             | `false`             | Caso majoritário                         |
+| `necessita_transporte` | `false`             | Caso majoritário                         |
+| `tags_acessibilidade`  | `[]`                | Vazio por padrão                         |
+| `data_nascimento`      | `""`                | Não pre-preencher — é dado crítico       |
+
+> ✅ O `paciente-form.tsx` já implementa todos estes defaults corretamente.
+
+### 16.2 Máscaras e Limites de Input
+
+Todo campo com formato fixo **obrigatoriamente** usa máscara e `maxLength`.
+Proibido deixar o usuário digitar livremente em campo com formato conhecido.
+
+| Campo                       | Máscara                           | `maxLength` | `type`                 |
+| --------------------------- | --------------------------------- | ----------- | ---------------------- |
+| CPF                         | `000.000.000-00`                  | `14`        | `text`                 |
+| CNS                         | `000 0000 0000 0000` (sem pontos) | `15`        | `text`                 |
+| CEP                         | `00000-000`                       | `9`         | `text`                 |
+| Telefone                    | `(00) 00000-0000`                 | `15`        | `text`                 |
+| Data de nascimento          | —                                 | —           | `date` (picker nativo) |
+| CID                         | `.toUpperCase()` no onChange      | `10`        | `text`                 |
+| UF                          | `.toUpperCase()` no onChange      | `2`         | `text`                 |
+| Número do processo judicial | sem máscara                       | `30`        | `text`                 |
+
+> **Data de nascimento:** Usar `<Input type="date">` — o picker nativo do
+> browser já impede entrada inválida. **Nunca** usar `type="text"` para datas,
+> pois o usuário pode digitar infinitamente. O campo retorna string no formato
+> `YYYY-MM-DD`, que é o formato esperado pelo banco.
+
+### 16.3 Busca de CEP via ViaCEP
+
+A função `buscarEnderecoPorCep()` existe em `lib/utils/string-utils.ts` e
+chama a API `viacep.com.br`. O padrão de uso no formulário é:
+
+```ts
+// useEffect correto — reage ao input do usuário, não busca dados iniciais
+useEffect(() => {
+  const cepLimpo = (dados.endereco_cep || '').replace(/\D/g, '')
+  if (cepLimpo.length !== 8) return // só dispara com CEP completo
+
+  const timer = setTimeout(async () => {
+    const info = await buscarEnderecoPorCep(cepLimpo)
+    if (info) {
+      setDados((prev) => ({
+        ...prev,
+        // Nunca sobrescreve campo que o usuário já preencheu manualmente
+        logradouro: prev.logradouro || info.logradouro,
+        bairro: prev.bairro || info.bairro,
+        cidade: info.cidade, // Cidade e UF sempre atualizam
+        uf: info.uf,
+      }))
+    }
+  }, 500) // debounce de 500ms
+
+  return () => clearTimeout(timer)
+}, [dados.endereco_cep])
+```
+
+> ⚠️ **Problema identificado:** A API ViaCEP é uma requisição externa — em
+> produção, o Next.js pode bloquear fetch do lado cliente para domínios externos
+> dependendo da configuração de CSP. Se o CEP não estiver preenchendo, verificar
+> `next.config.js` e adicionar `viacep.com.br` à allowlist de dominios externos,
+> ou mover a chamada para uma Server Action que atua como proxy.
+
+### 16.4 Validação em Duas Camadas
+
+| Camada              | Quando                 | Como                                                         |
+| ------------------- | ---------------------- | ------------------------------------------------------------ |
+| **Inline (onBlur)** | Ao sair do campo       | `validateField()` — mostra erro imediato abaixo do campo     |
+| **Submit (Zod)**    | Ao enviar o formulário | Schema Zod na Server Action — retorna `ActionResponse.error` |
+
+Erros inline (`fieldErrors`) e erro de submit (`submitError`) são estados
+separados. O `submitError` aparece num bloco de alerta acima do botão de submit.
+
+### 16.5 Estado de Loading e Feedback
+
+```tsx
+// Botão de submit — padrão obrigatório
+<Button type="submit" disabled={isPending}>
+  {isPending ? (
+    <>
+      <Loader2 className="h-4 w-4 animate-spin" /> SALVANDO...
+    </>
+  ) : (
+    <>
+      {isEditing ? 'SALVAR ALTERAÇÕES' : 'CADASTRAR'}{' '}
+      <CheckCircle2 className="h-4 w-4" />
+    </>
+  )}
+</Button>
+```
+
+- `disabled={isPending}` em **todos** os botões interativos durante o submit
+- Spinner animado (`animate-spin`) enquanto processa
+- Label diferenciado para criação vs edição
+
+### 16.6 Campos Opcionais vs Obrigatórios
+
+- Campos obrigatórios: `required` no input HTML + asterisco vermelho `*` no label
+- Campos opcionais: hint `"Opcional"` abaixo do campo via prop `hint`
+- Campos com formato específico: hint com o formato, ex: `"15 dígitos"` para CNS
+
+### 16.7 Tags de Acessibilidade — Valores Canônicos
+
+Os valores de `tags_acessibilidade` no formulário **devem** ser idênticos aos
+armazenados no banco. Nunca abreviar. Lista canônica:
+
+```ts
+const TAGS_ACESSIBILIDADE = [
+  'Cadeirante',
+  'Acamado/Uso de Maca',
+  'Uso de Oxigênio',
+  'Risco de Agitação Psicomotora',
+  'Deficiência Visual Severa',
+  'Obesidade Severa',
+] as const
+```
+
+> ⚠️ **Bug identificado no `paciente-form.tsx`:** Os valores usados nos botões
+> de tag (`"Cadeirante"`, `"Acamado"`, `"Risco Agitação"`, `"Deficiência Visual"`,
+> `"Deficiência Auditiva"`, `"Uso de Maca"`) **não correspondem** aos valores
+> canônicos definidos no banco e no schema Zod. Isso causa dados inconsistentes.
+> Corrigir para os valores canônicos acima e remover `"Deficiência Auditiva"` que
+> não existe no modelo.

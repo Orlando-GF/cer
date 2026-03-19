@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 import { cadastrarEspecialidade } from "@/actions"
 import { type TipoAtendimento } from "@/types"
 
@@ -34,9 +35,10 @@ export function NovaEspecialidadeSheet() {
       })
 
       if (res.success) {
+        toast.success("Especialidade cadastrada com sucesso!")
         setOpen(false)
       } else {
-        console.error(res.error)
+        toast.error("Erro ao cadastrar: " + res.error)
       }
     })
   }
@@ -58,17 +60,17 @@ export function NovaEspecialidadeSheet() {
         <form onSubmit={onSubmit} className="px-7 py-6 space-y-6">
           <div className="space-y-2">
             <Label htmlFor="nome" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nome da Especialidade</Label>
-            <Input id="nome" name="nome" placeholder="EX: FISIOTERAPIA ADULTO" required className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs" />
+            <Input id="nome" name="nome" placeholder="EX: FISIOTERAPIA ADULTO" required maxLength={80} className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs" />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="equipe" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Equipe Responsável</Label>
-            <Input id="equipe" name="equipe" placeholder="EX: EQUIPE DE REABILITAÇÃO FÍSICA" className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs" />
+            <Input id="equipe" name="equipe" placeholder="EX: EQUIPE DE REABILITAÇÃO FÍSICA" maxLength={80} className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs" />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="linha" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Linha de Reabilitação</Label>
-            <Input id="linha" name="linha" placeholder="EX: INTELECTUAL / AUTISMO" className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs" />
+            <Input id="linha" name="linha" placeholder="EX: INTELECTUAL / AUTISMO" maxLength={60} className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs" />
           </div>
 
           <div className="space-y-2">

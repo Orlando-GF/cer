@@ -62,6 +62,19 @@ export interface PacienteFormData {
 
 const onlyDigits = (v: string) => v.replace(/\D/g, "")
 
+// ─── tags de acessibilidade canônicas ────────────────────────────────────────
+
+const TAGS_ACESSIBILIDADE = [
+  "Cadeirante",
+  "Acamado/Uso de Maca",
+  "Risco de Agitação Psicomotora",
+  "Deficiência Visual Severa",
+  "Uso de Oxigênio",
+  "Obesidade Severa",
+] as const
+
+type TagAcessibilidade = typeof TAGS_ACESSIBILIDADE[number]
+
 function maskCPF(value: string): string {
   const d = onlyDigits(value).substring(0, 11)
   if (d.length <= 3) return d
@@ -119,10 +132,10 @@ function Field({
   return (
     <div className="space-y-1.5">
       <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-        {label} {required && <span className="text-red-500">*</span>}
+        {label} {required && <span className="text-alert-danger-text">*</span>}
       </Label>
       {children}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-alert-danger-text">{error}</p>}
       {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   )
@@ -499,7 +512,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
 
             <Field label="Tags de Acessibilidade / Observações de Risco">
               <div className="flex flex-wrap gap-2 p-3 border rounded-none bg-card min-h-[80px]">
-                {["Cadeirante", "Acamado", "Risco Agitação", "Deficiência Visual", "Deficiência Auditiva", "Uso de Maca"].map(tag => (
+                {TAGS_ACESSIBILIDADE.map((tag: TagAcessibilidade) => (
                   <Button
                     key={tag}
                     type="button"
@@ -523,7 +536,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
         </section>
 
         {submitError && (
-          <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="flex items-start gap-2 rounded-none border border-alert-danger-text/20 bg-alert-danger-bg px-4 py-3 text-sm text-alert-danger-text">
             <X className="w-4 h-4 shrink-0 mt-0.5" />
             {submitError}
           </div>
