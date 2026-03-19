@@ -293,7 +293,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                 />
               </Field>
               <Field label="Sexo" required>
-                <Select value={dados.sexo} onValueChange={(v) => setField("sexo")(v)}>
+                <Select value={dados.sexo || ""} onValueChange={(v) => setField("sexo")(v)}>
                   <SelectTrigger className="w-full h-12 rounded-none border-border font-bold bg-card text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
                   <SelectContent className="rounded-none border-none shadow-2xl">
                     <SelectItem value="M" className="font-bold uppercase text-[11px]">Masculino</SelectItem>
@@ -303,7 +303,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                 </Select>
               </Field>
               <Field label="Status do Cadastro" required>
-                <Select value={dados.status_cadastro} onValueChange={(v) => setField("status_cadastro")(v)}>
+                <Select value={dados.status_cadastro || ""} onValueChange={(v) => setField("status_cadastro")(v)}>
                   <SelectTrigger className="w-full h-12 rounded-none border-border font-bold bg-card text-xs uppercase tracking-wider"><SelectValue /></SelectTrigger>
                   <SelectContent className="rounded-none border-none shadow-2xl">
                     <SelectItem value="Ativo" className="font-bold uppercase text-[11px]">Ativo</SelectItem>
