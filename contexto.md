@@ -867,62 +867,59 @@ export const StatusComparecimentoEnum = z.enum([
 
 ## 13. Auditoria do Código Atual
 
-> Análise do código-fonte real em `/src`. Última revisão: **18/03/2026**.
+> Análise do código-fonte real em `/src`. Última revisão: **19/03/2026**.
 
-### 13.1 Melhorias Implementadas Nesta Iteração ✅
+### 13.1 Melhorias Implementadas — Estado Acumulado ✅
 
-Comparando com a análise anterior, as seguintes dívidas técnicas foram resolvidas:
-
-| Item                        | O que foi corrigido                                                                                                                       |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **`app-sidebar.tsx`**       | `useEffect` + `getMeuPerfil()` removidos. Perfil agora buscado no `layout.tsx` (Server Component) e passado como prop `{ perfil }`. ✅    |
-| **`layout.tsx`**            | `getMeuPerfil()` chamado server-side. `Toaster` do `sonner` instalado e configurado. ✅                                                   |
-| **`lib/agenda-utils.ts`**   | `any[]` eliminado. Usa `VagaFixaComJoins[]` e `AgendamentoHistoricoComJoins[]`. ✅                                                        |
-| **`types/index.ts`**        | `VagaFixaComJoins` e `AgendamentoHistoricoComJoins` criados com `Pick<>` corretos. ✅                                                     |
-| **`alert()` nativo**        | Substituído por `toast.success()` / `toast.error()` do `sonner` em todos os componentes. ✅                                               |
-| **`view-configuracao.tsx`** | Profissionais e especialidades recebidos como `profissionaisIniciais` / `especialidadesIniciais` props. `useEffect` de fetch removido. ✅ |
-| **`view-configuracao.tsx`** | Busca de paciente por UUID manual substituída pelo `PacienteSelector` (combobox com busca). ✅                                            |
-| **`app/page.tsx`**          | Classes hardcoded removidas — usa `bg-card`, `border-border`, `rounded-none`, `text-foreground`, tokens CSS semânticos. ✅                |
-| **`absenteismo/page.tsx`**  | Página implementada como Server Component + `AbsenteismoClient` para ações. ✅                                                            |
-| **`VagasAtivasList`**       | Novo componente para listar vagas fixas ativas por profissional. ✅                                                                       |
+| Item                                                                                                                            | Status |
+| ------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `app-sidebar.tsx` — perfil via prop do `layout.tsx`, sem `useEffect`                                                            | ✅     |
+| `layout.tsx` — `getMeuPerfil()` server-side, `Toaster` sonner configurado                                                       | ✅     |
+| `lib/agenda-utils.ts` — `any[]` eliminado, usa `VagaFixaComJoins[]` e `AgendamentoHistoricoComJoins[]`                          | ✅     |
+| `types/index.ts` — `VagaFixaComJoins`, `AgendamentoHistoricoComJoins` com `Pick<>`                                              | ✅     |
+| `alert()` nativo — 100% substituído por `toast.success/error` do sonner                                                         | ✅     |
+| `lib/validations/schema.ts` — enum `"Falta Nao Justificada"` corrigido e alinhado                                               | ✅     |
+| `app/fila/page.tsx` — `row: any` substituído por interface `FilaEsperaRow` tipada                                               | ✅     |
+| `paciente-selector.tsx` — busca debounced implementada (`useDebounce` + `buscarPacientesPorBusca`) sem carregar 8.000 registros | ✅     |
+| `view-configuracao.tsx` — props server-side, `PacienteSelector` com busca real                                                  | ✅     |
+| `nova-especialidade-sheet.tsx` — toast de sucesso/erro, `maxLength` em todos os campos                                          | ✅     |
+| `novo-profissional-sheet.tsx` — `maxLength` em todos os campos                                                                  | ✅     |
+| `novo-prontuario-sheet.tsx` — `bg-clinico-900 hover:bg-black` corrigido, `maxLength` adicionado                                 | ✅     |
+| `paciente-form.tsx` — tags canônicas (`TAGS_ACESSIBILIDADE` const), todas classes slate/blue/white removidas                    | ✅     |
+| `app/page.tsx` — design system 100% correto                                                                                     | ✅     |
+| Views de agenda (`view-coordenacao`, `view-logistica`, `view-profissional`, `view-recepcao`) — sem violações de cor             | ✅     |
+| Hovers normalizados para `hover:bg-muted` em todo o projeto                                                                     | ✅     |
 
 ### 13.2 Dívidas Técnicas Remanescentes ⚠️
 
-**CRÍTICO — Ainda viola regras do projeto:**
-
-| #   | Arquivo                                                          | Problema                                                                                                                                     | Solução                                                                                                                                                |
-| --- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | `lib/validations/schema.ts` linha 14                             | `StatusComparecimentoEnum` ainda usa `"Falta Injustificada"` — diverge do `types/index.ts` que usa `"Falta Nao Justificada"`                 | Corrigir schema para `"Falta Nao Justificada"` e verificar se há registros no banco com o valor antigo                                                 |
-| 2   | `app/fila/page.tsx` linha 45                                     | `row: any` no mapeamento do resultado do Supabase                                                                                            | Criar interface `FilaEsperaRow` com os campos do select ou usar o tipo inferido do Supabase                                                            |
-| 3   | `components/pacientes/paciente-selector.tsx`                     | `useEffect` para buscar todos os pacientes ao montar o componente — viola regra 3.2 e tem problema de performance (carrega 8.000+ registros) | Implementar busca debounced por texto via Server Action, não carregar tudo upfront                                                                     |
-| 4   | `components/especialidades/novo-profissional-sheet.tsx` linha 67 | `useEffect` para buscar especialidades quando o Sheet abre                                                                                   | Passar especialidades como prop do Server Component pai                                                                                                |
-| 5   | `components/fila/paciente-sheet.tsx` linha 76                    | `useEffect` para buscar histórico de faltas quando o Sheet abre                                                                              | Aceitável como exceção — é lazy load de dados secundários disparado por interação do usuário, não fetch inicial. Documentar com comentário explicativo |
-
 **MÉDIO — Inconsistências de design:**
 
-| #   | Arquivo                                      | Problema                                                                                          | Solução                                                                                                                         |
-| --- | -------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| 6   | `components/pacientes/paciente-form.tsx`     | Usa extensivamente `slate-200`, `slate-500`, `blue-50`, `blue-600`, `bg-white` em ~30 ocorrências | Substituir por variáveis do design system: `border-border`, `text-muted-foreground`, `bg-primary-50`, `text-primary`, `bg-card` |
-| 7   | `components/pacientes/paciente-selector.tsx` | Usa `border-slate-200`, `bg-slate-50`, `text-slate-400`, `text-slate-900`                         | Substituir por tokens semânticos                                                                                                |
+| #   | Arquivo                                        | Problema                                                                           | Solução                                                    |
+| --- | ---------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| 1   | `novo-paciente-sheet.tsx` linhas 100, 125, 172 | 3 ocorrências de `text-slate-400` e `text-slate-600` no conteúdo da etapa de busca | Substituir por `text-muted` e `text-muted-foreground`      |
+| 2   | `app/prontuarios/page.tsx` linhas 8–9          | `text-slate-900` e `text-slate-500` no título e subtítulo da página                | Substituir por `text-foreground` e `text-muted-foreground` |
 
-**BAIXO — Observações:**
+**BAIXO — Observações e exceções documentadas:**
 
-| #   | Observação                                                                                                                                                                                                                                              |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 8   | `view-configuracao.tsx` ainda usa `useEffect` para recarregar vagas ao trocar de profissional (`loadVagas` via `useCallback`). Este é um caso legítimo de reação a estado local (não é fetch inicial), portanto aceitável.                              |
-| 9   | `paciente-form.tsx` usa dois `useEffect` — um para popular o formulário com `initialData` (legítimo, reação a prop) e outro para buscar CEP via API externa com debounce (legítimo, reação a input do usuário). Ambos são exceções válidas à regra 3.2. |
-| 10  | `command-menu.tsx` usa `useEffect` para listener de teclado `Cmd+K` — legítimo, não é fetch de dados.                                                                                                                                                   |
+| #   | Arquivo                                                                 | Observação                                                                                                                                                                                                              |
+| --- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3   | `paciente-sheet-master.tsx` linhas 48, 67                               | `text-white/50`, `bg-white/10`, `hover:bg-white/20` — estas classes são **corretas**. Estão dentro do `SheetHeader` com fundo `bg-clinico-900` (escuro), portanto branco com opacidade é o padrão definido na seção 4.3 |
+| 4   | `paciente-selector.tsx`                                                 | 3 `useEffect` restantes são todos **legítimos**: (1) debounce de timer, (2) busca reativa ao `debouncedSearchTerm`, (3) hidratação do paciente selecionado via prop `value`. Nenhum viola a regra 3.2                   |
+| 5   | `fila/paciente-sheet.tsx`                                               | `useEffect` para buscar histórico de faltas ao abrir — aceitável, é lazy load disparado por interação do usuário                                                                                                        |
+| 6   | `fila/columns.tsx` e `view-configuracao.tsx` e `absenteismo-client.tsx` | Usam `confirm()` nativo do browser — deve ser substituído por Dialog de confirmação (shadcn `AlertDialog`) para manter consistência visual                                                                              |
+| 7   | `fila/paciente-sheet.tsx` e `string-utils.ts`                           | `console.error` — aceitável apenas para erros de rede/fetch interno. Não expor ao usuário                                                                                                                               |
 
 ### 13.3 Funcionalidades Pendentes 🔲
 
-| Prioridade | Módulo                                            | Observação                                                                      |
-| ---------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
-| 🔴 ALTA    | Página `/login`                                   | `redirect('/login')` referenciado em `access-control.ts` mas a rota não existe  |
-| 🔴 ALTA    | `PacienteSelector` — busca debounced              | Atualmente carrega 8.000+ pacientes de uma vez. Crítico para performance        |
-| 🔴 ALTA    | `paciente-sheet-master.tsx` — prontuário completo | Arquivo existe, conteúdo incompleto — aba de histórico clínico, evoluções, etc. |
-| 🟡 MÉDIA   | Páginas `/meus-atendimentos` e `/meus-pacientes`  | Implementadas com `EmBreve` — estrutura de dados disponível                     |
-| 🟡 MÉDIA   | Página `/judiciais`                               | `fila_espera` com `numero_processo_judicial` disponível                         |
-| 🟢 BAIXA   | Página `/relatorios` e exportação BPA             | Alta complexidade, pós-MVP                                                      |
+| Prioridade | Módulo                                            | Observação                                                                                                                    |
+| ---------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 ALTA    | Página `/login`                                   | `redirect('/login')` referenciado em `access-control.ts` mas a rota não existe                                                |
+| 🔴 ALTA    | `confirm()` nativo em 4 lugares                   | Substituir por `AlertDialog` do shadcn — `fila/columns.tsx` (2x), `view-configuracao.tsx` (1x), `absenteismo-client.tsx` (1x) |
+| 🔴 ALTA    | `paciente-sheet-master.tsx` — prontuário completo | Estrutura existe, conteúdo incompleto — aba de histórico clínico, evoluções                                                   |
+| 🟡 MÉDIA   | Páginas `/meus-atendimentos` e `/meus-pacientes`  | Implementadas com `EmBreve` — estrutura de dados disponível                                                                   |
+| 🟡 MÉDIA   | Página `/judiciais`                               | `fila_espera` com `numero_processo_judicial` disponível                                                                       |
+| 🟡 MÉDIA   | CEP no `paciente-form.tsx`                        | Verificar allowlist de domínio externo `viacep.com.br` no `next.config.js` para funcionar em produção                         |
+| 🟢 BAIXA   | Página `/relatorios` e exportação BPA             | Alta complexidade, pós-MVP                                                                                                    |
 
 ---
 

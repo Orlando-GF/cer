@@ -16,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { buscarAgendaLogistica } from "@/actions";
 import { projectAgendaSessions } from "@/lib/agenda-utils";
 
@@ -83,9 +82,9 @@ export function ViewLogistica(): React.ReactNode {
             <h3 className="text-base font-semibold text-foreground tracking-tight">
               Transporte da data
             </h3>
-            <Input
+            <input
               type="date"
-              className="w-full"
+              className="w-full h-10 rounded-none border border-border bg-card px-2.5 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
               value={format(dataSelecionada, "yyyy-MM-dd")}
               onChange={(e) => setUrlParams({ date: e.target.value })}
             />

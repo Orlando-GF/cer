@@ -284,12 +284,14 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
 
             <div className="grid grid-cols-3 gap-4">
               <Field label="Data de Nascimento" required>
-                <Input
+                <input
                   type="date"
                   value={dados.data_nascimento || ""}
                   onChange={(e) => setField("data_nascimento")(e.target.value)}
                   required
-                  className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider"
+                  min="1900-01-01"
+                  max={new Date().toISOString().split("T")[0]}
+                  className="rounded-none border border-border h-12 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary bg-card text-xs tracking-wider w-full px-2.5 cursor-pointer"
                 />
               </Field>
               <Field label="Sexo" required>

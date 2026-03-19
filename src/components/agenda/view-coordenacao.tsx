@@ -5,7 +5,6 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation"
 // 2. Internos
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
 import { buscarAgendaCoordenação } from "@/actions"
 import { projectAgendaSessions } from "@/lib/agenda-utils"
 import { cn } from "@/lib/utils"
@@ -93,9 +92,9 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
         <div className="flex items-center gap-4">
           <div className="space-y-3">
             <h3 className="text-base font-semibold text-foreground tracking-tight">Visualização macro</h3>
-            <Input 
-              type="date" 
-              className="w-full"
+            <input
+              type="date"
+              className="w-full h-10 rounded-none border border-border bg-card px-2.5 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
               value={format(dataSelecionada, 'yyyy-MM-dd')}
               onChange={(e) => setUrlParams({ date: e.target.value })}
             />

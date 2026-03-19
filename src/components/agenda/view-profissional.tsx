@@ -16,7 +16,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { 
   buscarAgendaData, 
   registrarSessaoHistorico
@@ -148,9 +147,9 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
           
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">Data</span>
-            <Input 
-              type="date" 
-              className="w-[180px] font-medium h-10 rounded-none"
+            <input
+              type="date"
+              className="w-[180px] font-medium h-10 rounded-none border border-border bg-card px-2.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
               value={format(dataSelecionada, 'yyyy-MM-dd')}
               onChange={(e) => setUrlParams({ date: e.target.value })}
             />

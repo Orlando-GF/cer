@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
 import { 
   buscarAgendaData, 
   registrarSessaoHistorico
@@ -137,9 +136,9 @@ export function ViewRecepcao({ profissionaisIniciais }: ViewRecepcaoProps) {
           
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Data</span>
-            <Input 
-              type="date" 
-              className="w-[180px] font-medium h-10 rounded-none h-10"
+            <input
+              type="date"
+              className="w-[180px] font-medium h-10 rounded-none border border-border bg-card px-2.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
               value={format(dataSelecionada, 'yyyy-MM-dd')}
               onChange={(e) => setUrlParams({ date: e.target.value })}
             />
