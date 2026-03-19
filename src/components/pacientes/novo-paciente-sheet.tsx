@@ -33,7 +33,11 @@ function maskCPF(value: string): string {
 }
 
 function maskCNS(value: string): string {
-  return onlyDigits(value).substring(0, 15)
+  const d = onlyDigits(value).substring(0, 15)
+  if (d.length <= 3) return d
+  if (d.length <= 7) return `${d.slice(0, 3)} ${d.slice(3)}`
+  if (d.length <= 11) return `${d.slice(0, 3)} ${d.slice(3, 7)} ${d.slice(7)}`
+  return `${d.slice(0, 3)} ${d.slice(3, 7)} ${d.slice(7, 11)} ${d.slice(11)}`
 }
 
 export function NovoPacienteSheet() {
