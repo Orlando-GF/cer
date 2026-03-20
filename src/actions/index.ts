@@ -31,15 +31,19 @@ import {
 
 // --- PACIENTES ---
 
-export async function buscarPacientes(): Promise<ActionResponse<Paciente[]>> {
+export async function buscarPacientes(page: number = 1, pageSize: number = 20): Promise<ActionResponse<{ data: Paciente[], total: number }>> {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+
+  const { data, error, count } = await supabase
     .from('pacientes')
-    .select('id, nome_completo, cns, data_nascimento, status_cadastro')
-    .order('id', { ascending: false })
+    .select('id, nome_completo, cns, data_nascimento, status_cadastro', { count: 'exact' })
+    .order('nome_completo', { ascending: true })
+    .range(from, to)
 
   if (error) return { success: false, error: `Erro ao buscar pacientes: ${error.message}` }
-  return { success: true, data: data as unknown as Paciente[] }
+  return { success: true, data: { data: data as unknown as Paciente[], total: count || 0 } }
 }
 
 export async function buscarPacientesPorBusca(termo: string): Promise<ActionResponse<Paciente[]>> {
@@ -47,7 +51,9 @@ export async function buscarPacientesPorBusca(termo: string): Promise<ActionResp
   if (!termo || termo.trim().length < 3) return { success: true, data: [] }
 
   const apenasNumeros = termo.replace(/\D/g, '')
-  let query = supabase.from('pacientes').select('*').limit(30)
+  let query = supabase.from('pacientes')
+    .select('id, nome_completo, cns, cpf, data_nascimento, status_cadastro')
+    .limit(30)
 
   if (apenasNumeros.length > 0) {
     query = query.or(`cpf.ilike.%${apenasNumeros}%,cns.ilike.%${apenasNumeros}%`)
@@ -57,7 +63,7 @@ export async function buscarPacientesPorBusca(termo: string): Promise<ActionResp
 
   const { data, error } = await query
   if (error) return { success: false, error: `Erro ao buscar pacientes: ${error.message}` }
-  return { success: true, data }
+  return { success: true, data: data as unknown as Paciente[] }
 }
 
 export async function cadastrarPaciente(rawData: unknown): Promise<ActionResponse> {
@@ -120,14 +126,15 @@ export async function atualizarPaciente(id: string, rawData: unknown): Promise<A
 export async function buscarPacientePorDocumento(documento: string): Promise<ActionResponse<Paciente>> {
   const supabase = await createClient()
   const docLimpo = documento.replace(/\D/g, '')
-  const query = supabase.from('pacientes').select('*')
+  const query = supabase.from('pacientes')
+    .select('id, nome_completo, cns, cpf, data_nascimento, status_cadastro, telefone_principal, endereco_cep, logradouro, numero, bairro, cidade, uf, nome_mae, cid_principal')
 
   if (docLimpo.length === 11) query.eq('cpf', docLimpo)
   else query.eq('cns', docLimpo)
 
   const { data, error } = await query.single()
   if (error || !data) return { success: false, error: 'Paciente nao encontrado' }
-  return { success: true, data }
+  return { success: true, data: data as unknown as Paciente }
 }
 
 // --- FILA DE ESPERA ---
@@ -243,7 +250,9 @@ export async function registrarSessaoHistorico(rawData: unknown): Promise<Action
   let dadosAnteriores = null
   const id = (val.data as any).id
   if (id) {
-    const { data: existing } = await supabase.from('agendamentos_historico').select('*').eq('id', id).single()
+    const { data: existing } = await supabase.from('agendamentos_historico')
+      .select('id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id')
+      .eq('id', id).single()
     dadosAnteriores = existing
   }
 
@@ -282,8 +291,8 @@ async function registrarLogAuditoria(params: {
 export async function buscarAgendaData(profissionalId: string, startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
-    *,
-    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    id, horario_inicio, horario_fim, dia_semana, status_vaga, especialidade_id, profissional_id, paciente_id, data_inicio_contrato,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
     profissionais (id, nome_completo),
     linhas_cuidado_especialidades (id, nome_especialidade)
   `).eq('profissional_id', profissionalId).eq('status_vaga', 'Ativa')
@@ -291,21 +300,21 @@ export async function buscarAgendaData(profissionalId: string, startDate: string
   if (errVagas) return { success: false, error: errVagas.message }
 
   const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
-    *,
-    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
     profissionais (id, nome_completo),
     linhas_cuidado_especialidades (id, nome_especialidade)
   `).eq('profissional_id', profissionalId).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate)
 
   if (errHist) return { success: false, error: errHist.message }
-  return { success: true, data: { vagas: vagas || [], hist: hist || [] } }
+  return { success: true, data: { vagas: (vagas as any) || [], hist: (hist as any) || [] } }
 }
 
 export async function buscarAgendaLogistica(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
-    *,
-    pacientes (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em),
+    id, horario_inicio, horario_fim, dia_semana, status_vaga, data_inicio_contrato,
+    pacientes (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em, data_ultimo_laudo, data_nascimento, cns),
     profissionais (id, nome_completo),
     linhas_cuidado_especialidades (id, nome_especialidade)
   `).eq('status_vaga', 'Ativa').filter('pacientes.necessita_transporte', 'eq', true)
@@ -313,23 +322,25 @@ export async function buscarAgendaLogistica(startDate: string, endDate: string) 
   if (errVagas) return { success: false, error: errVagas.message }
 
   const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
-    *,
-    pacientes (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em),
+    id, data_hora_inicio, data_hora_fim, status_comparecimento,
+    pacientes (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em, data_ultimo_laudo, data_nascimento, cns),
     profissionais (id, nome_completo),
     linhas_cuidado_especialidades (id, nome_especialidade)
   `).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate).filter('pacientes.necessita_transporte', 'eq', true)
 
   if (errHist) return { success: false, error: errHist.message }
-  return { success: true, data: { vagas: vagas || [], hist: hist || [] } }
+  return { success: true, data: { vagas: (vagas as any) || [], hist: (hist as any) || [] } }
 }
 
 // --- CONFIGURACOES: ESPECIALIDADES ---
 
 export async function buscarEspecialidades(): Promise<ActionResponse<Especialidade[]>> {
   const supabase = await createClient()
-  const { data, error } = await supabase.from('linhas_cuidado_especialidades').select('*').order('nome_especialidade')
+  const { data, error } = await supabase.from('linhas_cuidado_especialidades')
+    .select('id, nome_especialidade, ativo, cor_hex, descricao, criado_em')
+    .order('nome_especialidade')
   if (error) return { success: false, error: error.message }
-  return { success: true, data }
+  return { success: true, data: data as unknown as Especialidade[] }
 }
 
 export async function cadastrarEspecialidade(rawData: unknown): Promise<ActionResponse<Especialidade>> {
@@ -368,7 +379,9 @@ export async function toggleAtivaEspecialidade(id: string, ativo: boolean): Prom
 
 export async function buscarGradesHorarias(): Promise<ActionResponse<GradeHoraria[]>> {
   const supabase = await createClient()
-  const { data, error } = await supabase.from('grade_horaria').select('*, profissional:profissionais(nome_completo)').order('dia_semana').order('horario_inicio')
+  const { data, error } = await supabase.from('grade_horaria')
+    .select('id, dia_semana, horario_inicio, horario_fim, ativo, profissional_id, especialidade_id, profissional:profissionais(nome_completo)')
+    .order('dia_semana').order('horario_inicio')
   if (error) return { success: false, error: error.message }
   return { success: true, data: data as unknown as GradeHoraria[] }
 }
@@ -397,9 +410,11 @@ export async function toggleAtivaGradeHoraria(id: string, ativo: boolean): Promi
 
 export async function buscarProfissionais(): Promise<ActionResponse<Profissional[]>> {
   const supabase = await createClient()
-  const { data, error } = await supabase.from('profissionais').select('*, especialidades_permitidas').order('nome_completo')
+  const { data, error } = await supabase.from('profissionais')
+    .select('id, nome_completo, nome_clinico, conselho_tipo, conselho_numero, perfil_acesso, ativo, cor_agenda, especialidades_permitidas')
+    .order('nome_completo')
   if (error) return { success: false, error: error.message }
-  return { success: true, data }
+  return { success: true, data: data as unknown as Profissional[] }
 }
 
 export async function cadastrarProfissional(rawData: unknown): Promise<ActionResponse> {
@@ -456,8 +471,8 @@ export const getMeuPerfil = reactCache(async (): Promise<DadosUsuario | null> =>
 export async function buscarAgendaCoordenacao(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
-    *,
-    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    id, horario_inicio, horario_fim, dia_semana, status_vaga, especialidade_id, profissional_id, paciente_id, data_inicio_contrato,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
     profissionais (id, nome_completo),
     linhas_cuidado_especialidades (id, nome_especialidade)
   `).eq('status_vaga', 'Ativa')
@@ -465,14 +480,14 @@ export async function buscarAgendaCoordenacao(startDate: string, endDate: string
   if (errVagas) return { success: false, error: errVagas.message }
 
   const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
-    *,
-    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
     profissionais (id, nome_completo),
     linhas_cuidado_especialidades (id, nome_especialidade)
   `).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate)
 
   if (errHist) return { success: false, error: errHist.message }
-  return { success: true, data: { vagas: vagas || [], hist: hist || [] } }
+  return { success: true, data: { vagas: (vagas as any) || [], hist: (hist as any) || [] } }
 }
 
 export async function buscarAlertasAbsenteismo(): Promise<ActionResponse<AlertaAbsenteismo[]>> {
@@ -527,14 +542,14 @@ export async function processarDesligamentoPorAbandono(pacienteId: string): Prom
 export async function buscarVagasFixas(profissionalId: string): Promise<ActionResponse<VagaFixaComJoins[]>> {
   const supabase = await createClient()
   const { data, error } = await supabase.from('vagas_fixas').select(`
-    *,
-    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    id, horario_inicio, horario_fim, dia_semana, status_vaga, especialidade_id, profissional_id, paciente_id, data_inicio_contrato, data_fim_contrato,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
     profissionais (id, nome_completo),
     linhas_cuidado_especialidades (id, nome_especialidade)
   `).eq('profissional_id', profissionalId).eq('status_vaga', 'Ativa')
 
   if (error) return { success: false, error: error.message }
-  return { success: true, data: data as VagaFixaComJoins[] }
+  return { success: true, data: (data as unknown as VagaFixaComJoins[]) || [] }
 }
 
 export async function encerrarVagaFixa(vagaId: string): Promise<ActionResponse> {
@@ -548,14 +563,14 @@ export async function encerrarVagaFixa(vagaId: string): Promise<ActionResponse> 
 export async function buscarHistoricoClinicoPaciente(pacienteId: string): Promise<ActionResponse<AgendamentoHistoricoComJoins[]>> {
   const supabase = await createClient()
   const { data, error } = await supabase.from('agendamentos_historico').select(`
-    *,
-    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
     profissionais (id, nome_completo),
     linhas_cuidado_especialidades (id, nome_especialidade)
   `).eq('paciente_id', pacienteId).order('data_hora_inicio', { ascending: false })
 
   if (error) return { success: false, error: error.message }
-  return { success: true, data: data as AgendamentoHistoricoComJoins[] }
+  return { success: true, data: (data as unknown as AgendamentoHistoricoComJoins[]) || [] }
 }
 
 export async function buscarMeusAtendimentos(data: string) {
@@ -570,7 +585,11 @@ export async function buscarMeusPacientesVagaFixa(): Promise<ActionResponse<Paci
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Usuario nao autenticado' }
 
-  const { data, error } = await supabase.from('vagas_fixas').select('pacientes(*)').eq('profissional_id', user.id).eq('status_vaga', 'Ativa')
+  const { data, error } = await supabase.from('vagas_fixas')
+    .select('pacientes(id, nome_completo, cns, data_nascimento, status_cadastro)')
+    .eq('profissional_id', user.id)
+    .eq('status_vaga', 'Ativa')
+
   if (error) return { success: false, error: error.message }
 
   const listaPacientes: Paciente[] = []
@@ -588,7 +607,78 @@ export async function buscarMeusPacientesVagaFixa(): Promise<ActionResponse<Paci
   return { success: true, data: listaPacientes }
 }
 
-// --- FILA JUDICIAL ---
+// --- FILA DE ESPERA ---
+
+export async function buscarFilaEspera(params: {
+  page?: number,
+  pageSize?: number,
+  status?: string,
+  especialidade?: string,
+  judicial?: boolean,
+  busca?: string
+} = {}): Promise<ActionResponse<{ data: PacienteFila[], total: number }>> {
+  const { page = 1, pageSize = 20, status = 'ativos', especialidade = 'todas', judicial = false, busca = '' } = params
+  const supabase = await createClient()
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+
+  let query = supabase
+    .from('fila_espera')
+    .select(`
+      id, data_entrada_fila, nivel_prioridade, status_fila, numero_processo_judicial, faltas_consecutivas,
+      pacientes (id, nome_completo, cns),
+      linhas_cuidado_especialidades (id, nome_especialidade)
+    `, { count: 'exact' })
+
+  // Filtros Server-side (Escalabilidade v7.4)
+  if (status !== 'todos') {
+    if (status === 'ativos') {
+      query = query.in('status_fila', ['Aguardando', 'Em Atendimento', 'Em Risco'])
+    } else {
+      query = query.eq('status_fila', status)
+    }
+  }
+
+  if (especialidade !== 'todas') {
+    query = query.eq('especialidade_id', especialidade)
+  }
+
+  if (judicial) {
+    query = query.eq('nivel_prioridade', 'Mandado Judicial')
+  }
+
+  if (busca.trim().length > 0) {
+    // Busca no join pacientes (PostgREST suporta filtro em join via dot notation)
+    query = query.or(`nome_completo.ilike.%${busca}%,cns.ilike.%${busca}%`, { foreignTable: 'pacientes' })
+  }
+
+  const { data, error, count } = await query
+    .order('nivel_prioridade', { ascending: true })
+    .order('data_entrada_fila', { ascending: true })
+    .range(from, to)
+
+  if (error) return { success: false, error: error.message }
+
+  const hoje = new Date()
+  const filaMapped = (data as any[] || []).map(r => {
+    const diffDays = Math.ceil(Math.abs(hoje.getTime() - new Date(r.data_entrada_fila).getTime()) / (1000 * 60 * 60 * 24))
+    return {
+      id: r.id,
+      nome: r.pacientes?.nome_completo || 'Desconhecido',
+      cns: r.pacientes?.cns || 'S/N',
+      prioridade: r.nivel_prioridade,
+      status: r.status_fila,
+      especialidade: r.linhas_cuidado_especialidades?.nome_especialidade || 'N/A',
+      data_encaminhamento: r.data_entrada_fila,
+      dias_espera: diffDays,
+      profissional_nome: null,
+      faltas: r.faltas_consecutivas || 0,
+      numeroProcesso: r.numero_processo_judicial,
+    }
+  })
+
+  return { success: true, data: { data: filaMapped, total: count || 0 } }
+}
 
 export async function buscarFilaJudicial(): Promise<ActionResponse<PacienteFila[]>> {
   const supabase = await createClient()

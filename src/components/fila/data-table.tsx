@@ -6,9 +6,8 @@ import {
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
   useReactTable,
+  PaginationState,
 } from "@tanstack/react-table"
 import {
   Table,
@@ -24,30 +23,25 @@ import { Input } from "@/components/ui/input"
 import { PacienteSheet } from "./paciente-sheet"
 import { PacienteFila } from "@/types"
 import { alterarStatusFila } from "@/actions"
-import { useTransition, useMemo, useState, useEffect, useCallback } from "react"
+import { useTransition, useState, useEffect, useCallback } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { toast } from "sonner"
 
+import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Search } from "lucide-react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  rowCount?: number
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  rowCount = 0,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -58,11 +52,13 @@ export function DataTable<TData, TValue>({
   const [sheetOpen, setSheetOpen] = useState(false)
   const [, startTransition] = useTransition()
 
-  // Filtros via URL
+  // Filtros via URL (Conformidade v7.4)
   const statusFilter = searchParams.get("status") || "ativos"
-  const especialidadeFilter = searchParams.get("esp") || "todas"
   const onlyMandados = searchParams.get("judicial") === "true"
   const searchTerm = searchParams.get("q") || ""
+  const currentPage = Number(searchParams.get("page")) || 1
+  const pageSize = 20
+  
   const [inputValue, setInputValue] = useState(searchTerm)
 
   // 1. Sincronização externa
@@ -83,66 +79,28 @@ export function DataTable<TData, TValue>({
   useEffect(() => {
     const timer = setTimeout(() => {
       if (inputValue !== searchTerm) {
-        setUrlParams({ q: inputValue || null })
+        setUrlParams({ q: inputValue || null, page: "1" })
       }
-    }, 300)
+    }, 400)
     return () => clearTimeout(timer)
   }, [inputValue, searchTerm, setUrlParams])
 
-  // Obter lista única de especialidades para o filtro
-  const especialidadesUnicas = useMemo(() => {
-    const list = Array.from(new Set((data as PacienteFila[]).map(d => d.especialidade)))
-    return list.sort()
-  }, [data])
-
-  // Aplica os filtros customizados nas linhas
-  const filteredRows = useMemo(() => {
-    let rows = data as PacienteFila[]
-
-    // Filtro de Texto (Nome ou CNS)
-    if (searchTerm) {
-      const lowerSearch = searchTerm.toLowerCase()
-      rows = rows.filter(row => 
-        row.nome.toLowerCase().includes(lowerSearch) || 
-        row.cns.toLowerCase().includes(lowerSearch)
-      )
-    }
-
-    if (statusFilter !== "todos") {
-      if (statusFilter === "ativos") {
-        rows = rows.filter(val => val.status === "Aguardando" || val.status === "Em Atendimento" || val.status === "Em Risco")
-      } else {
-        rows = rows.filter(val => val.status === statusFilter)
-      }
-    }
-
-    if (especialidadeFilter !== "todas") {
-      rows = rows.filter(row => row.especialidade === especialidadeFilter)
-    }
-
-    if (onlyMandados) {
-      rows = rows.filter(row => row.prioridade === "Mandado Judicial")
-    }
-
-    return rows
-  }, [data, statusFilter, especialidadeFilter, onlyMandados, searchTerm])
-
-  const handleRowClick = (rowData: unknown) => {
-    setSelectedPaciente(rowData as PacienteFila)
-    setSheetOpen(true)
+  const paginationState: PaginationState = {
+    pageIndex: currentPage - 1,
+    pageSize: pageSize,
   }
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: filteredRows as TData[],
+    data: data as TData[],
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
+    rowCount: rowCount,
     state: {
       columnFilters,
+      pagination: paginationState,
     },
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    manualPagination: true, // CARA DA CONFORMIDADE v7.4
     meta: {
       onOpenSheet: (paciente: PacienteFila) => handleRowClick(paciente),
       onAlterarStatus: (filaId: string, novoStatus: "Aguardando" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Alta") => {
@@ -156,13 +114,24 @@ export function DataTable<TData, TValue>({
     },
   })
 
+  const handleRowClick = (rowData: unknown) => {
+    setSelectedPaciente(rowData as PacienteFila)
+    setSheetOpen(true)
+  }
+
+  const goToPage = (page: number) => {
+    setUrlParams({ page: page.toString() })
+  }
+
+  const totalPages = Math.ceil(rowCount / pageSize)
+
   return (
     <div className="space-y-4">
       
       {/* Barra de Ferramentas / Filtros */}
       <div className="flex flex-col gap-4 bg-card p-4 rounded-none border border-border">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <Tabs defaultValue="ativos" value={statusFilter} onValueChange={(val) => setUrlParams({ status: val })} className="w-full sm:w-auto">
+          <Tabs defaultValue="ativos" value={statusFilter} onValueChange={(val) => setUrlParams({ status: val, page: "1" })} className="w-full sm:w-auto">
             <TabsList variant="agenda">
               <TabsTrigger value="todos">Todos</TabsTrigger>
               <TabsTrigger value="ativos">Pacientes Ativos</TabsTrigger>
@@ -174,7 +143,7 @@ export function DataTable<TData, TValue>({
           </Tabs>
 
           <div className="flex items-center gap-2">
-            <Switch id="only-mandados" checked={onlyMandados} onCheckedChange={(val) => setUrlParams({ judicial: val ? "true" : "false" })} />
+            <Switch id="only-mandados" checked={onlyMandados} onCheckedChange={(val) => setUrlParams({ judicial: val ? "true" : "false", page: "1" })} />
             <Label htmlFor="only-mandados" className="text-sm text-muted-foreground font-medium whitespace-nowrap cursor-pointer">
               Somente Judiciais
             </Label>
@@ -188,20 +157,12 @@ export function DataTable<TData, TValue>({
               placeholder="Buscar paciente (Nome ou CNS)..."
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
-              className="pl-9 w-full"
+              className="pl-9 w-full rounded-none"
             />
           </div>
-          <Select value={especialidadeFilter} onValueChange={(val) => setUrlParams({ esp: val })}>
-            <SelectTrigger className="w-full sm:w-[250px] bg-card">
-              <SelectValue placeholder="Todas Especialidades" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todas">Todas Especialidades</SelectItem>
-              {especialidadesUnicas.map(esp => (
-                <SelectItem key={esp} value={esp}>{esp}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Nota: As especialidades agora devem vir de uma lista centralizada se possível, 
+              mas para manter compatibilidade, o Select pode ser preenchido pela página pai 
+              ou derivado de uma action. Por enquanto, mantemos a lógica simplificada. */}
         </div>
       </div>
 
@@ -212,7 +173,7 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="bg-muted/30">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -226,16 +187,16 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {data.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="cursor-pointer hover:bg-muted transition-colors"
+                  className="cursor-pointer hover:bg-muted transition-colors border-b border-border/50"
                   onClick={() => handleRowClick(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="py-3">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -254,26 +215,38 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-          className="rounded-none border-border bg-card text-foreground hover:bg-muted disabled:text-muted-foreground disabled:opacity-50"
-        >
-          Anterior
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-          className="rounded-none border-border bg-card text-foreground hover:bg-muted disabled:text-muted-foreground disabled:opacity-50"
-        >
-          Próxima
-        </Button>
-      </div>
+
+      {/* CONTROLE DE PAGINAÇÃO SERVER-SIDE */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between py-2 px-2">
+          <div className="flex-1 text-sm text-muted-foreground">
+             Total: <span className="font-medium text-foreground">{rowCount}</span> registros
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-none h-8 w-8 p-0"
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage <= 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex items-center justify-center min-w-[100px] text-sm font-medium">
+              Página {currentPage} de {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-none h-8 w-8 p-0"
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <PacienteSheet 
         paciente={selectedPaciente} 

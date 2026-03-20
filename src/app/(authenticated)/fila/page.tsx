@@ -4,102 +4,55 @@ import { PacienteFila } from "@/types";
 import { NovoProntuarioSheet } from "@/components/fila/novo-prontuario-sheet";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { createClient } from "@/utils/supabase/server";
 import { Clock, Scale, AlertCircle } from "lucide-react";
-
+import { buscarFilaEspera, buscarEspecialidades } from "@/actions";
 import { validarAcessoRota } from "@/lib/access-control";
 
-interface FilaEsperaRow {
-  id: string
-  data_entrada_fila: string
-  nivel_prioridade: string
-  status_fila: string
-  faltas_consecutivas: number
-  numero_processo_judicial?: string | null
-  pacientes: { nome_completo: string; cns: string } | null
-  linhas_cuidado_especialidades: { nome_especialidade: string } | null
-}
-
-export default async function Dashboard() {
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams: { 
+    page?: string; 
+    status?: string; 
+    esp?: string; 
+    judicial?: string; 
+    q?: string 
+  }
+}) {
   await validarAcessoRota("/fila");
-  const supabase = await createClient();
+  
+  const page = Number(searchParams?.page) || 1
+  const status = searchParams?.status || "ativos"
+  const especialidade = searchParams?.esp || "todas"
+  const judicial = searchParams?.judicial === "true"
+  const busca = searchParams?.q || ""
 
-  // 1. Busca os dados reais do Supabase com prioridade inteligente
-  const { data: dbData, error } = await supabase
-    .from('fila_espera')
-    .select(`
-      id,
-      data_entrada_fila,
-      nivel_prioridade,
-      status_fila,
-      faltas_consecutivas,
-      numero_processo_judicial,
-      pacientes ( nome_completo, cns ),
-      linhas_cuidado_especialidades ( nome_especialidade )
-    `)
-    // Ordenação garantida no banco: Mandado Judicial -> Urgência -> Rotina
-    .order('nivel_prioridade', { ascending: true }) // Aproveita a ordem alfabética: Mandado (M) -> Rotina (R) -> Urgencia (U), ops... vamos corrigir isso depois via JS ou case no BD.
-    // Como os enums em texto não têm ordem semântica natural no banco, a ordenação fina é feita via JS abaixo.
-    .order('data_entrada_fila', { ascending: true });
-    
+  // 1. Busca os dados reais via Server Action com filtros server-side (v7.4)
+  const response = await buscarFilaEspera({ 
+    page, 
+    pageSize: 20, 
+    status, 
+    especialidade, 
+    judicial, 
+    busca 
+  });
+  
   // 2. Busca Especialidades Ativas para o formulário
-  const { data: especialidades } = await supabase
-    .from('linhas_cuidado_especialidades')
-    .select('id, nome_especialidade')
-    .eq('ativa', true)
-    .order('nome_especialidade', { ascending: true });
+  const espResponse = await buscarEspecialidades();
+  const especialidades = espResponse.success ? espResponse.data || [] : [];
 
   let filaReal: PacienteFila[] = [];
+  let totalFilaReal = 0;
 
-  if (!error && dbData) {
-    // 3. Mapeamento
-    filaReal = dbData.map((rawRow: unknown) => {
-      const row = rawRow as FilaEsperaRow;
-      const dataEntradaRaw = new Date(row.data_entrada_fila)
-      const hoje = new Date()
-      const diffTime = Math.abs(hoje.getTime() - dataEntradaRaw.getTime())
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-      return {
-        id: row.id,
-        nome: row.pacientes?.nome_completo || "Desconhecido",
-        cns: row.pacientes?.cns || "S/N",
-        prioridade: row.nivel_prioridade as PacienteFila["prioridade"],
-        status: row.status_fila as PacienteFila["status"],
-        especialidade: row.linhas_cuidado_especialidades?.nome_especialidade || "Sem Especialidade",
-        data_encaminhamento: row.data_entrada_fila,
-        dias_espera: diffDays,
-        profissional_nome: null,
-        faltas: row.faltas_consecutivas || 0,
-        numeroProcesso: row.numero_processo_judicial || null
-      };
-    });
-
-
-    // 4. Ordenação Semântica Forte (Server-side antes de renderizar)
-    // 1º = Mandado Judicial | 2º = Urgência Clínica | 3º = Rotina
-    const prioridadePeso: Record<string, number> = {
-      "Mandado Judicial": 1,
-      "Urgencia Clinica": 2,
-      "Rotina": 3
-    };
-
-    filaReal.sort((a, b) => {
-      // Ordena primeiro pelo peso da prioridade
-      const pesoA = prioridadePeso[a.prioridade] || 99;
-      const pesoB = prioridadePeso[b.prioridade] || 99;
-      if (pesoA !== pesoB) return pesoA - pesoB;
-      
-      // Se tiverem a mesma prioridade, ordena quem chegou primeiro (FIFO)
-      return new Date(a.data_encaminhamento).getTime() - new Date(b.data_encaminhamento).getTime();
-    });
+  if (response.success && response.data) {
+    filaReal = response.data.data;
+    totalFilaReal = response.data.total;
   }
 
-  // Agregações atualizadas para os novos Enums
-  const totalFila = filaReal.filter(f => f.status === 'Aguardando').length;
-  const judiciais = filaReal.filter(f => f.prioridade === 'Mandado Judicial').length;
-  const emAtendimento = filaReal.filter(f => f.status === 'Em Atendimento').length;
-  const desitencias = filaReal.filter(f => f.status === 'Desistencia').length; // Novo KPI para o Contexto V2
+  // KPIs
+  const totalAguardando = totalFilaReal; 
+  const judiciaisCount = filaReal.filter(f => f.prioridade === 'Mandado Judicial').length; // Local na página
+  const emAtendimentoCount = filaReal.filter(f => f.status === 'Em Atendimento').length;
 
   return (
     <main className="min-h-screen bg-background p-6 space-y-8">
@@ -110,7 +63,7 @@ export default async function Dashboard() {
           <p className="text-muted-foreground mt-1">Visão consolidada de pacientes aguardando vagas e mandados judiciais.</p>
         </div>
         <div className="flex gap-3">
-          <NovoProntuarioSheet especialidades={especialidades?.map(e => ({ id: e.id, nome_especialidade: e.nome_especialidade })) ?? []} />
+          <NovoProntuarioSheet especialidades={especialidades.map(e => ({ id: e.id, nome_especialidade: e.nome_especialidade }))} />
         </div>
       </div>
 
@@ -122,8 +75,8 @@ export default async function Dashboard() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalFila}</div>
-            <p className="text-xs text-muted-foreground">Pacientes ativos na fila</p>
+            <div className="text-2xl font-bold">{totalAguardando}</div>
+            <p className="text-xs text-muted-foreground">Registros filtrados</p>
           </CardContent>
         </Card>
 
@@ -133,8 +86,8 @@ export default async function Dashboard() {
             <Scale className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{judiciais}</div>
-            <p className="text-xs text-muted-foreground">Prioridade Máxima Cumprimento</p>
+            <div className="text-2xl font-bold text-destructive">{judiciaisCount}</div>
+            <p className="text-xs text-muted-foreground">Na página atual</p>
           </CardContent>
         </Card>
 
@@ -145,19 +98,19 @@ export default async function Dashboard() {
             </Badge>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{emAtendimento}</div>
-            <p className="text-xs text-muted-foreground">Reabilitações em curso</p>
+            <div className="text-2xl font-bold">{emAtendimentoCount}</div>
+            <p className="text-xs text-muted-foreground">Na página atual</p>
           </CardContent>
         </Card>
 
         <Card className="shadow-sm border-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Desistências e altas</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Geral</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-muted-foreground">{desitencias}</div>
-            <p className="text-xs text-muted-foreground">Histórico de saídas da fila</p>
+            <div className="text-2xl font-bold text-muted-foreground">{totalFilaReal}</div>
+            <p className="text-xs text-muted-foreground">Total da base (com filtros)</p>
           </CardContent>
         </Card>
       </div>
@@ -165,9 +118,8 @@ export default async function Dashboard() {
       {/* Fila Real-time DataTable */}
       <div className="space-y-3">
         <h3 className="text-base font-semibold tracking-tight text-foreground">Prontuários da fila</h3>
-        <DataTable columns={columns} data={filaReal} />
+        <DataTable columns={columns} data={filaReal} rowCount={totalFilaReal} />
       </div>
     </main>
   );
 }
-// Trigger HMR para registrar rota

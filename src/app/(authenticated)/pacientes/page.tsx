@@ -1,14 +1,43 @@
-import { buscarPacientes } from "@/actions"
+import { buscarPacientes, buscarPacientesPorBusca } from "@/actions"
 import { DataTable } from "@/components/pacientes/data-table"
 import { columns } from "@/components/pacientes/columns"
 import { NovoPacienteSheet } from "@/components/pacientes/novo-paciente-sheet"
 import { validarAcessoRota } from "@/lib/access-control"
+import { Paciente } from "@/types"
 
-export default async function PacientesPage() {
+export default async function PacientesPage({
+  searchParams,
+}: {
+  searchParams: { page?: string; q?: string }
+}) {
   await validarAcessoRota("/pacientes")
-  // Busca os dados mestre direto do banco de pacientes
-  const response = await buscarPacientes()
-  const pacientes = response.success ? response.data || [] : []
+  
+  const page = Number(searchParams?.page) || 1
+  const query = searchParams?.q || ""
+
+  // Busca os dados (paginados ou por busca)
+  let response;
+  if (query.trim().length >= 3) {
+    response = await buscarPacientesPorBusca(query)
+  } else {
+    response = await buscarPacientes(page)
+  }
+
+  const data = response.success ? response.data : null
+  
+  // Normalização do retorno para o DataTable
+  let pacientes: Paciente[] = []
+  let total = 0
+
+  if (data) {
+    if ('data' in (data as any) && Array.isArray((data as any).data)) {
+      pacientes = (data as any).data as Paciente[]
+      total = (data as any).total
+    } else if (Array.isArray(data)) {
+      pacientes = data as Paciente[]
+      total = pacientes.length
+    }
+  }
 
   return (
     <main className="min-h-screen bg-background p-6 space-y-8">
@@ -37,7 +66,7 @@ export default async function PacientesPage() {
 
       {/* DATA TABLE */}
       {response.success && (
-        <DataTable columns={columns} data={pacientes} />
+        <DataTable columns={columns} data={pacientes} rowCount={total} />
       )}
     </main>
   )

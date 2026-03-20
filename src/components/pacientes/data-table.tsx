@@ -7,9 +7,8 @@ import {
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
   useReactTable,
+  PaginationState,
 } from "@tanstack/react-table"
 import {
   Table,
@@ -21,21 +20,22 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
-// Importaremos a folha de mestre que será construída no próximo passo.
 import { PacienteSheetMaster } from "./paciente-sheet-master"
 import { Paciente } from "./columns"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  rowCount?: number
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  rowCount = 0,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -45,8 +45,10 @@ export function DataTable<TData, TValue>({
   const [selectedPaciente, setSelectedPaciente] = React.useState<Paciente | null>(null)
   const [sheetOpen, setSheetOpen] = React.useState(false)
 
-  // Sincronizar Termo de Busca com URL
+  // Sincronizar Termo de Busca e Página com URL
   const searchTerm = searchParams.get("q") || ""
+  const currentPage = Number(searchParams.get("page")) || 1
+  const pageSize = 20
   const [inputValue, setInputValue] = useState(searchTerm)
 
   // 1. Sincronização externa (se a URL mudar por outro motivo)
@@ -54,13 +56,13 @@ export function DataTable<TData, TValue>({
     setInputValue(searchTerm)
   }, [searchTerm])
 
-  // 2. Debounce para atualizar a URL apenas após 300ms sem digitar
+  // 2. Debounce para atualizar a URL (Busca)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (inputValue !== searchTerm) {
-        setUrlParams({ q: inputValue || null })
+        setUrlParams({ q: inputValue || null, page: "1" }) // Volta para página 1 ao buscar
       }
-    }, 300)
+    }, 400)
     return () => clearTimeout(timer)
   }, [inputValue, searchTerm])
 
@@ -73,27 +75,22 @@ export function DataTable<TData, TValue>({
     router.replace(`${pathname}?${params.toString()}`)
   }
 
-  // Filtro de Dados manual (como no outro DataTable) para ser reativo à URL
-  const filteredRows = React.useMemo(() => {
-    if (!searchTerm) return data as Paciente[]
-    const lowerSearch = searchTerm.toLowerCase()
-    return (data as Paciente[]).filter(row => 
-      row.nome_completo.toLowerCase().includes(lowerSearch) || 
-      row.cns.toLowerCase().includes(lowerSearch)
-    )
-  }, [data, searchTerm])
+  const paginationState: PaginationState = {
+    pageIndex: currentPage - 1,
+    pageSize: pageSize,
+  }
 
-    // eslint-disable-next-line react-hooks/incompatible-library
-    const table = useReactTable({
-    data: filteredRows as TData[],
+  const table = useReactTable({
+    data: data as TData[],
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
+    rowCount: rowCount,
     state: {
       columnFilters,
+      pagination: paginationState,
     },
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    manualPagination: true, // CARA DA CONFORMIDADE v7.4
     meta: {
       onOpenPacienteSheet: (paciente: Paciente) => handleRowClick(paciente),
     },
@@ -103,6 +100,12 @@ export function DataTable<TData, TValue>({
     setSelectedPaciente(rowData as Paciente)
     setSheetOpen(true)
   }
+
+  const goToPage = (page: number) => {
+    setUrlParams({ page: page.toString() })
+  }
+
+  const totalPages = Math.ceil(rowCount / pageSize)
 
   return (
     <div className="space-y-4">
@@ -114,8 +117,11 @@ export function DataTable<TData, TValue>({
             placeholder="Buscar por Nome ou Prontuário (CNS)..."
             value={inputValue}
             onChange={(event) => setInputValue(event.target.value)}
-            className="pl-9 h-10 w-full bg-card border-border border-opacity-50 focus-visible:border-primary transition-all"
+            className="pl-9 h-10 w-full bg-card border-border border-opacity-50 focus-visible:border-primary transition-all rounded-none"
           />
+        </div>
+        <div className="text-xs text-muted-foreground">
+          Mostrando <span className="font-medium text-foreground">{data.length}</span> de <span className="font-medium text-foreground">{rowCount}</span> registros
         </div>
       </div>
 
@@ -126,7 +132,7 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="text-muted-foreground font-semibold uppercase text-[10px] tracking-widest">
+                    <TableHead key={header.id} className="text-muted-foreground font-semibold uppercase text-[10px] tracking-widest bg-muted/30">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -140,12 +146,12 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {data.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="cursor-pointer hover:bg-muted transition-colors"
+                  className="cursor-pointer hover:bg-muted transition-colors border-b border-border/50"
                   onClick={() => handleRowClick(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -158,7 +164,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground">
-                  Nenhum registro encontrado. Comece cadastrando um novo paciente.
+                  Nenhum registro encontrado.
                 </TableCell>
               </TableRow>
             )}
@@ -166,27 +172,35 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      {table.getPageCount() > 1 && (
-        <div className="flex items-center justify-end space-x-2 py-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Anterior
-          </Button>
-          <span className="text-sm text-muted-foreground mx-2">
-            Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Próxima
-          </Button>
+      {/* CONTROLE DE PAGINAÇÃO SERVER-SIDE */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between py-2 px-2">
+          <div className="flex-1 text-sm text-muted-foreground">
+             Filtro ativo: <span className="italic">{searchTerm || "Todos"}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-none h-8 w-8 p-0"
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage <= 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex items-center justify-center min-w-[100px] text-sm font-medium">
+              Página {currentPage} de {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-none h-8 w-8 p-0"
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       )}
 
