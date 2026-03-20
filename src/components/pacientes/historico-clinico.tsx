@@ -63,7 +63,13 @@ export function HistoricoClinico({ pacienteId }: HistoricoClinicoProps) {
                   {format(parseISO(item.data_hora_inicio), "PPP 'às' HH:mm", { locale: ptBR })}
                 </span>
               </div>
-              <div className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest border border-primary/20">
+              <div className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-widest border border-border shadow-sm rounded-none ${
+                item.status_comparecimento === 'Presente' 
+                  ? 'bg-alert-success-bg text-alert-success-text' 
+                  : (item.status_comparecimento === 'Falta Justificada' || item.status_comparecimento === 'Falta Nao Justificada')
+                    ? 'bg-alert-danger-bg text-alert-danger-text' 
+                    : 'bg-muted/20 text-muted-foreground'
+              }`}>
                 {item.status_comparecimento}
               </div>
             </div>

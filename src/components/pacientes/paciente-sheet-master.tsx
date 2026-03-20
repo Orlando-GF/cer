@@ -52,17 +52,17 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent side="right" className="p-0 flex flex-col bg-card overflow-hidden text-foreground w-full sm:max-w-[820px] border-l border-border">
-        <SheetHeader className="mb-0 border-b border-border flex flex-row items-center justify-between shrink-0 p-4 bg-muted/20">
+      <SheetContent side="right" className="p-0 flex flex-col bg-background overflow-hidden text-foreground w-full sm:max-w-[820px] border-l border-border">
+        <SheetHeader className="mb-0 flex flex-row items-center justify-between shrink-0 p-6 bg-clinico-900 shadow-md border-b border-white/10">
           <div>
-            <SheetTitle className="flex items-center gap-2 text-foreground">
-              <User className="w-5 h-5 text-primary" />
+            <SheetTitle className="flex items-center gap-2 text-white font-black">
+              <User className="w-5 h-5 text-white/70" />
               {isEditing ? "EDITAR CADASTRO" : "PRONTUÁRIO INTEGRADO"}
             </SheetTitle>
             {!isEditing && (
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1 flex items-center gap-2">
-                CNS: <strong className="font-mono text-foreground/90">{paciente.cns}</strong>
-                <Button variant="ghost" size="icon" className="h-5 w-5 rounded-none text-muted-foreground hover:text-foreground hover:bg-muted" onClick={() => navigator.clipboard.writeText(paciente.cns)}>
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mt-1 flex items-center gap-2">
+                CNS: <strong className="font-mono text-white/90">{paciente.cns}</strong>
+                <Button variant="ghost" size="icon" className="h-5 w-5 rounded-none text-white/40 hover:text-white hover:bg-white/10" onClick={() => navigator.clipboard.writeText(paciente.cns)}>
                   <Copy className="h-3 w-3" />
                 </Button>
               </p>
@@ -70,7 +70,7 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
             {isEditing && (
               <button 
                 onClick={() => setIsEditing(false)}
-                className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline mt-1 transition-all"
+                className="text-[10px] font-black uppercase tracking-widest text-primary-300 hover:text-white mt-1 transition-all"
               >
                 ← Voltar para Visualização
               </button>
@@ -81,7 +81,7 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
             <Button 
                 variant="outline" 
                 size="sm" 
-                className="rounded-none border-border bg-background text-foreground hover:bg-muted font-bold uppercase tracking-widest text-[10px]"
+                className="rounded-none border-white/20 bg-white/5 text-white hover:bg-white/10 font-bold uppercase tracking-widest text-[10px]"
                 onClick={() => setIsEditing(true)}
             >
               <Edit className="w-4 h-4 mr-2" />
@@ -105,12 +105,12 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
               />
             </div>
           ) : (
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-              <TabsList className="w-full justify-start rounded-none border-b border-border bg-muted/10 h-10 px-4 gap-4">
-                <TabsTrigger value="clinico" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 px-0 text-[10px] font-bold uppercase tracking-widest">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden bg-background">
+              <TabsList className="w-full justify-start rounded-none border-b border-border bg-muted/30 h-11 px-6 gap-8 shadow-inner">
+                <TabsTrigger value="clinico" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary text-muted-foreground/80 hover:text-foreground rounded-none h-11 px-0 text-[10px] font-black uppercase tracking-widest transition-all">
                   Histórico Clínico
                 </TabsTrigger>
-                <TabsTrigger value="social" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-10 px-0 text-[10px] font-bold uppercase tracking-widest">
+                <TabsTrigger value="social" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary text-muted-foreground/80 hover:text-foreground rounded-none h-11 px-0 text-[10px] font-black uppercase tracking-widest transition-all">
                   Serviço Social
                 </TabsTrigger>
               </TabsList>

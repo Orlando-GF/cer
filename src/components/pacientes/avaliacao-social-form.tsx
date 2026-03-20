@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Loader2, Save } from "lucide-react"
-import { avaliacaoServicoSocialSchema } from "@/lib/validations/schema"
+import { avaliacaoServicoSocialSchema, type AvaliacaoServicoSocialInput } from "@/lib/validations/schema"
 import { cadastrarAvaliacaoSocial } from "@/actions"
 import { toast } from "sonner"
 
@@ -39,8 +39,7 @@ function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: 
   )
 }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function Field({ label, required, children, error }: { label: string; required?: boolean; children: React.ReactNode; error?: any }) {
+function Field({ label, required, children, error }: { label: string; required?: boolean; children: React.ReactNode; error?: string }) {
   return (
     <div className="space-y-2">
       <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
@@ -85,8 +84,7 @@ export function AvaliacaoSocialForm({ pacienteId, onSuccess, onCancel }: Avaliac
   // eslint-disable-next-line react-hooks/incompatible-library
   const recebeBeneficio = watch("recebe_beneficio")
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: AvaliacaoServicoSocialInput) => {
     startTransition(async () => {
       const resp = await cadastrarAvaliacaoSocial(data)
       if (resp.success) {
@@ -106,8 +104,7 @@ export function AvaliacaoSocialForm({ pacienteId, onSuccess, onCancel }: Avaliac
         <section className="bg-card p-6 rounded-none border border-border shadow-sm">
           <SectionHeader icon={Save} title="Composição Familiar e Renda" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <Field label="Membros na Família" required error={errors.quantidade_membros_familia?.message as any}>
+            <Field label="Membros na Família" required error={errors.quantidade_membros_familia?.message}>
               <Input 
                 id="quantidade_membros_familia" 
                 type="number" 
@@ -116,8 +113,7 @@ export function AvaliacaoSocialForm({ pacienteId, onSuccess, onCancel }: Avaliac
               />
             </Field>
 
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <Field label="Renda Familiar Total (R$)" required error={errors.renda_familiar_total?.message as any}>
+            <Field label="Renda Familiar Total (R$)" required error={errors.renda_familiar_total?.message}>
               <Input 
                 id="renda_familiar_total" 
                 type="number" 
@@ -214,8 +210,7 @@ export function AvaliacaoSocialForm({ pacienteId, onSuccess, onCancel }: Avaliac
               />
             </Field>
 
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <Field label="Relatório Social Detalhado" required error={errors.relatorio_social?.message as any}>
+          <Field label="Relatório Social Detalhado" required error={errors.relatorio_social?.message}>
               <Textarea 
                 id="relatorio_social" 
                 {...register("relatorio_social")} 
@@ -224,8 +219,7 @@ export function AvaliacaoSocialForm({ pacienteId, onSuccess, onCancel }: Avaliac
               />
             </Field>
 
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <Field label="Parecer Final / Conduta" required error={errors.parecer_final?.message as any}>
+          <Field label="Parecer Final / Conduta" required error={errors.parecer_final?.message}>
               <Input 
                 id="parecer_final" 
                 {...register("parecer_final")} 

@@ -1,4 +1,4 @@
-import { getMeusDados } from "@/actions"
+import { getMeuPerfil } from "@/actions"
 import { redirect } from "next/navigation"
 
 export type PerfilSessao = "Recepcao" | "Enfermagem" | "Medico_Terapeuta" | "Administracao" | "Motorista"
@@ -16,15 +16,19 @@ const PERMISSOES_ROTAS: Record<string, PerfilSessao[]> = {
   "/profissionais": ["Administracao"],
   "/especialidades": ["Administracao"],
   "/grades": ["Administracao"],
+  "/configuracoes": ["Administracao"],
+  "/prontuarios": ["Administracao", "Recepcao", "Enfermagem", "Medico_Terapeuta"],
 }
 
 /**
  * Valida se o usuário logado tem permissão para acessar uma rota.
  * Se não tiver, redireciona para a home ou página de erro.
  */
-export async function validarAcessoRota(pathname: string) {
-  const dados = await getMeusDados()
-  const perfil = dados?.perfil_acesso as PerfilSessao | null
+export async function validarAcessoRota(
+  pathname: string,
+  perfilJaCarregado?: string | null
+) {
+  const perfil = (perfilJaCarregado ?? (await getMeuPerfil())?.perfil_acesso) as PerfilSessao | null
 
   if (!perfil) {
      redirect("/login")
@@ -44,10 +48,8 @@ export async function validarAcessoRota(pathname: string) {
       redirect("/") // Sem permissão para esta rota específica
     }
   } else {
-    // Se a rota está no grupo (authenticated) mas não está no mapa e não é a home, 
-    // por segurança tratamos como restrita.
-    console.warn(`[Acesso] Rota não mapeada: ${pathname}. Bloqueando por segurança.`)
-    redirect("/")
+    // Se a rota não está mapeada e o usuário está autenticado, permitir acesso
+    return perfil
   }
 
   return perfil

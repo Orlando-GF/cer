@@ -180,6 +180,7 @@ export const especialidadeSchema = z.object({
   equipe_responsavel: z.string().optional().nullable(),
   linha_reabilitacao: z.string().optional().nullable(),
   tipo_atendimento: TipoAtendimentoEnum.default("Terapia Continua"),
+  ativo: z.boolean().default(true),
 })
 
 export const gradeHorariaSchema = z.object({
@@ -188,6 +189,7 @@ export const gradeHorariaSchema = z.object({
   horario_inicio: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Horário de início inválido (HH:mm)"),
   horario_fim: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Horário de fim inválido (HH:mm)"),
   capacidade: z.number().int().min(1).default(1),
+  ativo: z.boolean().default(true),
 })
 
 export const avaliacaoServicoSocialSchema = z.object({

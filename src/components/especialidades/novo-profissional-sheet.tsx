@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { toast } from "sonner"
 import { 
   Sheet, 
@@ -20,9 +20,9 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select"
-import { UserPlus, Loader2, Check } from "lucide-react"
-import { cadastrarProfissional } from "@/actions"
-import { type PerfilAcesso } from "@/types"
+import { UserPlus, Loader2, Check, Pencil } from "lucide-react"
+import { cadastrarProfissional, atualizarProfissional } from "@/actions"
+import { type PerfilAcesso, type Profissional } from "@/types"
 import { formatarNomeClinico } from "@/lib/utils/string-utils"
 
 // Componente de Campo Reutilizável (Padrão PacienteForm)
@@ -49,11 +49,21 @@ function Field({
 }
 
 export function NovoProfissionalSheet({ 
-  especialidades = [] 
+  especialidades = [],
+  profissional,
+  onOpenChange,
+  open: controlledOpen,
 }: { 
-  especialidades?: {id: string, nome_especialidade: string}[] 
+  especialidades?: {id: string, nome_especialidade: string}[],
+  profissional?: Profissional,
+  onOpenChange?: (open: boolean) => void,
+  open?: boolean,
 }) {
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen
+  const setOpen = onOpenChange || setInternalOpen
+
+  const isEditing = !!profissional
   const [isPending, startTransition] = useTransition()
 
   const [dados, setDados] = useState({
@@ -64,6 +74,25 @@ export function NovoProfissionalSheet({
     especialidades_permitidas: [] as string[],
     ativo: true,
   })
+
+  // Carregar dados para edição quando o profissional mudar ou o sheet abrir
+  useEffect(() => {
+    if (profissional && open) {
+      const novosDados = {
+        nome_completo: profissional.nome_completo,
+        registro_conselho: profissional.registro_conselho || "",
+        cbo: profissional.cbo || "",
+        perfil_acesso: profissional.perfil_acesso,
+        especialidades_permitidas: profissional.especialidades_permitidas || [],
+        ativo: profissional.ativo ?? true,
+      };
+      
+      // Sincroniza apenas se mudou e o sheet está aberto
+      if (JSON.stringify(dados) !== JSON.stringify(novosDados)) {
+        setDados(novosDados);
+      }
+    }
+  }, [profissional, open, dados])
 
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -87,9 +116,12 @@ export function NovoProfissionalSheet({
     }
 
     startTransition(async () => {
-      const res = await cadastrarProfissional(dados)
+      const res = isEditing 
+        ? await atualizarProfissional(profissional!.id, dados)
+        : await cadastrarProfissional(dados)
+
       if (res.success) {
-        toast.success("Profissional cadastrado com sucesso!")
+        toast.success(isEditing ? "Profissional atualizado!" : "Profissional cadastrado!")
         setOpen(false)
         setDados({
           nome_completo: "",
@@ -108,15 +140,28 @@ export function NovoProfissionalSheet({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger render={<Button className="gap-2" />}>
-        <UserPlus className="h-4 w-4" />
-        Novo Profissional
-      </SheetTrigger>
+      {isEditing ? (
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => setOpen(true)}
+          className="h-8 w-8 p-0 rounded-none text-muted-foreground hover:text-primary hover:bg-primary/10"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </Button>
+      ) : (
+        <SheetTrigger render={<Button className="gap-2" />}>
+          <UserPlus className="h-4 w-4" />
+          Novo Profissional
+        </SheetTrigger>
+      )}
       <SheetContent className="overflow-y-auto">
         <SheetHeader className="mb-6">
-          <SheetTitle>Cadastrar Novo Profissional</SheetTitle>
+          <SheetTitle>{isEditing ? "Editar Profissional" : "Cadastrar Novo Profissional"}</SheetTitle>
           <SheetDescription>
-            Adicione um novo membro ao corpo clínico para habilitar agendamentos.
+            {isEditing 
+              ? "Altere os dados cadastrais ou permissões de acesso do profissional."
+              : "Adicione um novo membro ao corpo clínico para habilitar agendamentos."}
           </SheetDescription>
         </SheetHeader>
 
@@ -221,7 +266,7 @@ export function NovoProfissionalSheet({
                   SALVANDO...
                 </>
               ) : (
-                "CADASTRAR PROFISSIONAL"
+                isEditing ? "SALVAR ALTERAÇÕES" : "CADASTRAR PROFISSIONAL"
               )}
             </Button>
           </div>

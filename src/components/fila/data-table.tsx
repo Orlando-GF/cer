@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input"
 import { PacienteSheet } from "./paciente-sheet"
 import { PacienteFila } from "@/types"
 import { alterarStatusFila } from "@/actions"
-import { useTransition, useMemo, useState } from "react"
+import { useTransition, useMemo, useState, useEffect, useCallback } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { toast } from "sonner"
 
@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { Search } from "lucide-react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -62,15 +63,31 @@ export function DataTable<TData, TValue>({
   const especialidadeFilter = searchParams.get("esp") || "todas"
   const onlyMandados = searchParams.get("judicial") === "true"
   const searchTerm = searchParams.get("q") || ""
+  const [inputValue, setInputValue] = useState(searchTerm)
 
-  const setUrlParams = (paramsToUpdate: Record<string, string | null | undefined>) => {
+  // 1. Sincronização externa
+  useEffect(() => {
+    setInputValue(searchTerm)
+  }, [searchTerm])
+
+  const setUrlParams = useCallback((paramsToUpdate: Record<string, string | null | undefined>) => {
     const params = new URLSearchParams(searchParams.toString())
     Object.entries(paramsToUpdate).forEach(([key, value]) => {
       if (value) params.set(key, value)
       else params.delete(key)
     })
     router.replace(`${pathname}?${params.toString()}`)
-  }
+  }, [searchParams, router, pathname])
+
+  // 2. Debounce para URL
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (inputValue !== searchTerm) {
+        setUrlParams({ q: inputValue || null })
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [inputValue, searchTerm, setUrlParams])
 
   // Obter lista única de especialidades para o filtro
   const especialidadesUnicas = useMemo(() => {
@@ -127,8 +144,7 @@ export function DataTable<TData, TValue>({
       columnFilters,
     },
     meta: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onOpenSheet: (paciente: any) => handleRowClick(paciente),
+      onOpenSheet: (paciente: PacienteFila) => handleRowClick(paciente),
       onAlterarStatus: (filaId: string, novoStatus: "Aguardando" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Alta") => {
         startTransition(async () => {
           const res = await alterarStatusFila({ fila_id: filaId, novo_status: novoStatus })
@@ -166,12 +182,15 @@ export function DataTable<TData, TValue>({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          <Input
-            placeholder="Buscar paciente (Nome ou CNS)..."
-            value={searchTerm}
-            onChange={(event) => setUrlParams({ q: event.target.value })}
-            className="flex-1 min-w-[200px]"
-          />
+          <div className="relative flex-1 min-w-[200px] group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Input
+              placeholder="Buscar paciente (Nome ou CNS)..."
+              value={inputValue}
+              onChange={(event) => setInputValue(event.target.value)}
+              className="pl-9 w-full"
+            />
+          </div>
           <Select value={especialidadeFilter} onValueChange={(val) => setUrlParams({ esp: val })}>
             <SelectTrigger className="w-full sm:w-[250px] bg-card">
               <SelectValue placeholder="Todas Especialidades" />

@@ -1,14 +1,14 @@
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { CommandMenu } from "@/components/command-menu";
-import { getMeusDados } from "@/actions";
+import { getMeuPerfil } from "@/actions";
 
 export default async function AuthenticatedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const dados = await getMeusDados();
+  const dados = await getMeuPerfil();
 
   return (
     <SidebarProvider>

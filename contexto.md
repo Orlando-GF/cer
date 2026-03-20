@@ -179,6 +179,62 @@ Ordem obrigatória de blocos: `imports externos` → `imports internos` →
 - RLS ativado em todas as tabelas
 - Nunca usar `useEffect` em client para chamar Server Actions — usar `startTransition` ou eventos
 
+### 3.11 Queries Supabase — Padrões Obrigatórios
+
+```ts
+// ❌ Proibido — carrega todos os campos de todas as linhas
+supabase.from('pacientes').select('*')
+
+// ✅ Correto — selecionar apenas os campos usados na UI
+supabase
+  .from('pacientes')
+  .select('id, nome_completo, cns, data_nascimento, status_cadastro')
+```
+
+- **Nunca usar `select('*')`** em tabelas grandes — listar explicitamente os campos necessários
+- **FK de usuário autenticado** é sempre `.eq('id', user.id)` — a tabela `profissionais` usa a UUID do Supabase Auth como PK, **não email**
+- Queries independentes na mesma page devem usar `Promise.all([])` — nunca `await` sequencial
+- Usar `{ count: 'exact', head: true }` para contagens — nunca buscar linhas só para contar
+
+### 3.12 React.cache para Dados de Sessão
+
+Funções que buscam dados do usuário logado (perfil, permissões) devem usar `cache` do React
+para evitar round-trips duplicados dentro do mesmo render tree (layout + page):
+
+```ts
+import { cache } from 'react'
+
+// ✅ Correto — executa 1x por request, mesmo chamado em layout E page
+export const getMeuPerfil = cache(async (): Promise<DadosUsuario | null> => {
+  // ...
+})
+```
+
+### 3.13 Input de Busca com Debounce
+
+Inputs de busca que atualizam URL **não devem** chamar `router.replace()` diretamente no `onChange`.
+Isso causa re-render a cada tecla, perda de foco e letras puladas.
+
+Padrão obrigatório para inputs de busca com URL:
+
+```tsx
+// ❌ Proibido — re-render a cada tecla
+<Input value={searchTerm} onChange={(e) => setUrlParams({ q: e.target.value })} />
+
+// ✅ Correto — estado local + debounce de 300ms
+const [inputValue, setInputValue] = useState(searchTerm)
+
+useEffect(() => {
+  const timer = setTimeout(() => setUrlParams({ q: inputValue || null }), 300)
+  return () => clearTimeout(timer)
+}, [inputValue])
+
+<Input value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
+```
+
+> Inputs que filtram dados locais em memória (ex: `MeusPacientesList`) podem usar
+> `useState` diretamente sem debounce — o re-render é local e não causa navegação.
+
 ---
 
 ## 4. Design System
@@ -837,97 +893,89 @@ export const StatusComparecimentoEnum = z.enum([
 
 ---
 
-### 13. Auditoria do Código Atual
+## 13. Estado Atual do Sistema
 
-> Análise do código-fonte real em `/src`. Última revisão: **19/03/2026 — v7**.
+> Última revisão: **19/03/2026 — v7**. Reflete o código real em `/src`.
 
-### 13.1 Implementado e Correto ✅
+### 13.1 Módulos Implementados e Estáveis 🔒
 
-| Item                               | Detalhe                                                                                                                         |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| **Auth completa**                  | `login/page.tsx`, `auth-actions.ts` (signIn/signOut), route group `(authenticated)`, `AuthenticatedLayout` com sidebar e header |
-| **`/profissionais`**               | Server Component real, tabela com profissionais, `NovoProfissionalSheet` recebendo `especialidades` como prop server-side       |
-| **`/judiciais`**                   | `JudiciaisList` com colunas específicas e ação `buscarFilaJudicial`                                                             |
-| **`/meus-atendimentos`**           | `AtendimentosDia` — cards de vagas pendentes e histórico do dia                                                                 |
-| **`/meus-pacientes`**              | `MeusPacientesList` — carteira de pacientes com busca local                                                                     |
-| **Prontuário completo**            | `HistoricoClinico` (timeline de atendimentos) + `AvaliacaoSocialForm` (RHF + Zod) no `paciente-sheet-master.tsx`                |
-| **`nova-especialidade-sheet.tsx`** | `formRef.current?.reset()` após sucesso, opções "Acolhimento" e "Pedagógico" adicionadas                                        |
-| **`novo-prontuario-sheet.tsx`**    | `toast.success()` ao inserir na fila                                                                                            |
-| **`paciente-form.tsx`**            | `<input>` HTML nativo com `min="1900-01-01"` e `max={hoje}`, `autoFocus` no campo nome, `toast.success()`, CNS com `required`   |
-| **`novo-paciente-sheet.tsx`**      | `buscarPacientePorDocumento` conectado — stub removido, `autoFocus` na busca                                                    |
-| **`fila/columns.tsx`**             | `confirm()` substituído por `AlertDialog` do shadcn                                                                             |
-| **`alert()` nativo**               | Zero ocorrências                                                                                                                |
-| **`confirm()` nativo**             | Zero ocorrências (removido com AlertDialog)                                                                                     |
-| **Enum `StatusComparecimento`**    | `"Falta Nao Justificada"` consistente em schema, types e actions                                                                |
-| **Sidebar e Perfil (v7)**          | `getMeusDados` com objeto rico, card de usuário no footer, avatar de iniciais e botão de logout síncrono                        |
-| **Middleware de Segurança**        | Simplificado: redireciona para `/login` se não houver usuário, protegendo todas as rotas de forma "fail-closed"                 |
-| **Componente `EmBreve`**           | Padronizado: sem `italic`, sem tag `main`, seguindo `p-6 space-y-8` do design system                                            |
+Os itens abaixo estão corretos. **Não alterar sem necessidade explícita.**
 
-### 13.2 Dívidas Técnicas Remanescentes ⚠️
+| Módulo                      | O que está correto — não mexer                                                                                                                     |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Auth**                    | `login/page.tsx`, `auth-actions.ts` (signIn/signOut), route group `(authenticated)`, `src/middleware.ts` simplificado                              |
+| **Sidebar**                 | Footer com avatar (iniciais de `nome_completo`), nome, perfil e `LogoutButton` com `useTransition` + spinner                                       |
+| **`getMeuPerfil()`**        | Retorna `DadosUsuario { perfil_acesso, nome_completo, email }`, wrappado com `React.cache` — executa 1× por request mesmo chamado em layout + page |
+| **`getMeuPerfil()` FK**     | Usa `.eq('id', user.id)` — **nunca trocar para `.eq('email', ...)`**                                                                               |
+| **`buscarPacientes()`**     | `select('id, nome_completo, cns, data_nascimento, status_cadastro')` — sem `select('*')`                                                           |
+| **Painel Geral**            | `Promise.all([...])` nas 3 queries de contagem — paralelas                                                                                         |
+| **`loading.tsx`**           | Em `app/(authenticated)/` — skeleton global para todas as rotas                                                                                    |
+| **`/pacientes`**            | DataTable com busca debounce 300ms + estado local — digitação fluida                                                                               |
+| **`/fila`**                 | DataTable com busca debounce 300ms + `AlertDialog` para Alta/Desistência                                                                           |
+| **`/agendamentos`**         | 4 views (Recepção, Profissional, Coordenação, Logística) com `Suspense`                                                                            |
+| **`/profissionais`**        | Server Component com tabela, `NovoProfissionalSheet` recebendo especialidades como prop                                                            |
+| **`/especialidades`**       | Server Component com tabela e `NovaEspecialidadeSheet`                                                                                             |
+| **`/judiciais`**            | `JudiciaisList` com colunas específicas                                                                                                            |
+| **`/meus-atendimentos`**    | `AtendimentosDia` com cards de vagas e histórico                                                                                                   |
+| **`/meus-pacientes`**       | `MeusPacientesList` com busca local em memória                                                                                                     |
+| **`/absenteismo`**          | Alertas de absenteísmo com processamento de desligamento                                                                                           |
+| **Prontuário**              | `HistoricoClinico` (timeline) + `AvaliacaoSocialForm` (RHF + Zod) no `paciente-sheet-master.tsx`                                                   |
+| **`paciente-form.tsx`**     | `<input type="date">` nativo com `min`/`max`, `autoFocus`, `toast.success`, CNS `required`, insert com `...data`                                   |
+| **Enums**                   | `"Falta Nao Justificada"` consistente em schema, types e actions                                                                                   |
+| **`alert()` / `confirm()`** | Zero ocorrências — substituídos por `toast` e `AlertDialog`                                                                                        |
 
-**CRÍTICO — Viola regras do projeto:**
+### 13.2 Dívidas Técnicas Abertas ⚠️
 
-| #   | Arquivo                                | Problema                                                                                  | Solução                                                                                                            |
-| --- | -------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| 1   | `actions/index.ts` linha 908           | `(data as any[])` em `buscarFilaJudicial`                                                 | Criar interface `FilaJudicialRow` tipada igual ao padrão `FilaEsperaRow`                                           |
-| 2   | `fila/columns.tsx` linha 34            | `CellActions({ row: any, table: any })`                                                   | Usar `Row<PacienteFila>` e `Table<PacienteFila>` do TanStack                                                       |
-| 3   | `profissional/atendimentos-dia.tsx`    | `useEffect` + função `loadData` duplicada (mesma lógica em dois lugares). Viola regra 3.2 | `MeusAtendimentosPage` busca server-side e passa `initialData` como prop; botão "Atualizar" usa `router.refresh()` |
-| 4   | `profissional/meus-pacientes-list.tsx` | `useEffect` para fetch inicial — viola regra 3.2                                          | `MeusPacientesPage` busca server-side e passa `pacientes` como prop                                                |
-| 5   | `judiciais/judiciais-list.tsx`         | `useEffect` para fetch inicial — viola regra 3.2                                          | `JudiciaisPage` busca server-side e passa `data` como prop                                                         |
+| #   | Prioridade | Arquivo                                                 | Problema                                                        | Solução                                                               |
+| --- | ---------- | ------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------- |
+| 1   | 🟢         | `actions/index.ts`                       | `(data as any[])` em `buscarFilaJudicial`                       | **Resolvido** — Interface `FilaJudicialRow` implementada      |
+| 2   | 🟢         | `fila/columns.tsx`                       | `row: any, table: any` em `CellActions`                         | **Resolvido** — Tipado com generic `Row<T>` e `Table<T>`      |
+| 3   | 🟢         | `avaliacao-social-form.tsx`               | `any` em erros de validação e submit                            | **Resolvido** — `AvaliacaoServicoSocialInput` aplicado       |
+| 4   | 🔴         | `AtendimentosDia`, `MeusPacientesList`, `JudiciaisList` | `useEffect` de fetch — viola regra 3.2                          | Pages buscam server-side e passam como prop                   |
+| 5   | 🟡         | `atendimentos-dia.tsx`                   | `bg-green-500/10` e `bg-red-500/10`                             | Tokens `alert-success-*` e `alert-danger-*`                   |
+| 6   | 🟡         | `atendimentos-dia.tsx`                   | `as unknown as Paciente`                                        | Ampliar `Pick<>` em `AgendamentoHistoricoComJoins`            |
+| 7   | 🟢         | `view-configuracao.tsx`                   | `confirm()` ainda presente                                      | **Resolvido** — Substituído por `AlertDialog`                 |
+| 8   | 🟡         | `novo-paciente-sheet.tsx`                               | 2 `text-slate-*` residuais                                      | `text-white/60` e `text-muted-foreground`                             |
+| 9   | 🟡         | `app/prontuarios/page.tsx`                              | `text-slate-900` e `text-slate-500`                             | `text-foreground` e `text-muted-foreground`                           |
+| 10  | 🟢         | `next.config.js`                                        | `viacep.com.br` pode ser bloqueado em produção                  | Adicionar à allowlist ou criar Server Action proxy                    |
+| 11  | 🟢         | `/relatorios`                                           | Página `EmBreve`                                                | Pós-MVP                                                               |
 
-**MÉDIO — Design e comportamento:**
+**Exceções documentadas — estas inconsistências são intencionais:**
 
-| #   | Arquivo                                             | Problema                                                                                                                                              | Solução                                                                                                                                                             |
-| --- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 6   | `profissional/atendimentos-dia.tsx` linhas 91–92    | `bg-green-500/10 text-green-600 border-green-200` e `bg-red-500/10 text-red-600 border-red-200`                                                       | Substituir por `bg-alert-success-bg text-alert-success-text border-alert-success-text/20` e `bg-alert-danger-bg text-alert-danger-text border-alert-danger-text/20` |
-| 7   | `profissional/atendimentos-dia.tsx` linhas 115, 163 | `atend.pacientes as unknown as Paciente`                                                                                                              | Ampliar `Pick<>` em `AgendamentoHistoricoComJoins.pacientes` para incluir os campos que `PacienteSheetMaster` usa                                                   |
-| 8   | `utils/supabase/middleware.ts`                      | Lista negativa manual com todas as rotas — VULNERABILIDADE: qualquer rota não listada é desprotegida, e as listadas ficam acessíveis sem autenticação | Simplificar: `if (!user && !pathname.startsWith('/login') && !pathname.startsWith('/auth')) { redirect('/login') }`                                                 |
-| 9   | `profissionais/page.tsx` linha 41                   | `hover:bg-muted/50` — inconsistente com padrão `hover:bg-muted`                                                                                       | Substituir por `hover:bg-muted`                                                                                                                                     |
+| Arquivo                                            | Por que é aceitável                                                                       |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `login/page.tsx`                                   | Página de auth tem identidade visual própria — blur e rounded-full decorativos permitidos |
+| `paciente-sheet-master.tsx`                        | `text-white/50`, `bg-white/10` dentro do SheetHeader escuro — correto por definição       |
+| `historico-clinico.tsx`, `fila/paciente-sheet.tsx` | `useEffect` lazy load disparado por interação do usuário — exceção válida à regra 3.2     |
+| `string-utils.ts`, `fila/paciente-sheet.tsx`       | `console.error` para erros de rede internos — aceitável                                   |
 
-**BAIXO — Exceções documentadas e aceitáveis:**
+### 13.3 CRUD por Entidade — Status Atual
 
-| #   | Observação                                                                                                                                                                                |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 10  | `login/page.tsx` — `bg-clinico-900` como fundo, `bg-white/10`, `blur-[120px]`, `rounded-full` decorativos são **exceções aceitas** — página de autenticação tem identidade visual própria |
-| 11  | `paciente-sheet-master.tsx` — `text-white/50`, `bg-white/10`, `hover:bg-white/20` são **corretos** — dentro do `SheetHeader` escuro                                                       |
-| 12  | `pacientes/historico-clinico.tsx` — `useEffect` para lazy load via prop `pacienteId` dentro de Sheet é **aceitável**                                                                      |
-| 13  | `fila/paciente-sheet.tsx` — `useEffect` para histórico de faltas ao abrir é **aceitável**                                                                                                 |
-| 14  | `string-utils.ts` e `fila/paciente-sheet.tsx` — `console.error` para erros de rede internos são **aceitáveis**                                                                            |
+Sequência obrigatória de operação: Especialidades → Profissionais → Grades → Pacientes → Fila → Vagas Fixas.
 
-### 13.3 Funcionalidades Pendentes 🔲
-
-| Prioridade | Módulo                                               | Observação                                                                                         |
-| ---------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| 🔴 ALTA    | Middleware simplificado                              | Vulnerabilidade de segurança — lista negativa deixa rotas acessíveis sem auth                      |
-| 🔴 ALTA    | `any` em `buscarFilaJudicial` e `CellActions`        | Dois `any` restantes no projeto                                                                    |
-| 🔴 ALTA    | `useEffect` em 3 novos componentes                   | `AtendimentosDia`, `MeusPacientesList`, `JudiciaisList` — fetch deve ser server-side               |
-| 🟡 MÉDIA   | `view-configuracao.tsx` — `confirm()` ainda presente | Substituir por `AlertDialog`                                                                       |
-| 🟡 MÉDIA   | CEP em `paciente-form.tsx`                           | Verificar `next.config.js` — `viacep.com.br` precisa estar na allowlist para funcionar em produção |
-| 🟢 BAIXA   | Página `/relatorios` e exportação BPA                | Alta complexidade, pós-MVP                                                                         |
+| Entidade        | Listar    | Criar         | Editar                   | Ativar/Desativar     | Observação                         |
+| --------------- | --------- | ------------- | ------------------------ | -------------------- | ---------------------------------- |
+| Especialidades  | ✅        | ✅            | ✅            | ✅                    | —                                  |
+| Profissionais   | ✅        | ✅            | ✅            | ✅                    | —                                  |
+| Grades Horárias | ✅ action | ✅ action     | ✅ action     | —                     | ✅ Página UI operacional.          |
+| Vagas Fixas     | ✅        | ✅ via agenda | ✅ encerrar              | —                    | Sem gestão dedicada fora da agenda |
+| Pacientes       | ✅        | ✅            | ✅ via sheet             | ❌ sem atalho rápido | —                                  |
+| Fila de Espera  | ✅        | ✅            | ❌ sem editar prioridade | ✅ Alta/Desistência  | —                                  |
 
 ---
 
 ## 14. Documentos Físicos Mapeados
 
-> Fotografias dos formulários reais usados atualmente no CER II (17/03/2026).
-> O sistema deve digitalizar integralmente estes documentos.
+> Fotografias dos formulários físicos reais do CER II (17/03/2026).
 
-| Documento                             | Status de Digitalização                                                                                                          |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **Ficha de Acolhimento**              | ✅ Parcialmente — campos `equipe_tecnica`, `tipo_reabilitacao`, `opms_solicitadas`, `eletivo` adicionados ao modelo (seção 11.3) |
-| **Folha de Evolução**                 | ✅ Coberta por `agendamentos_historico.evolucao_clinica`                                                                         |
-| **Controle de Frequência Individual** | ✅ Coberto pela view Recepção + materialização de sessões                                                                        |
-| **Avaliação: Serviço Social**         | 🔲 Pendente — tabela `avaliacoes_servico_social` modelada (seção 11.12)                                                          |
+| Documento                         | Status                                                                                             |
+| --------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Ficha de Acolhimento              | ✅ Parcial — campos `equipe_tecnica`, `tipo_reabilitacao`, `opms_solicitadas`, `eletivo` no modelo |
+| Folha de Evolução                 | ✅ `agendamentos_historico.evolucao_clinica`                                                       |
+| Controle de Frequência Individual | ✅ View Recepção + materialização de sessões                                                       |
+| Avaliação: Serviço Social         | ✅ Tabela modelada + `AvaliacaoSocialForm` implementado                                            |
 
-**Campos confirmados pelos documentos físicos e incorporados ao modelo:**
-
-- `numero_prontuario` — Nº sequencial interno do CER
-- `equipe_tecnica` — Estimulação Precoce / Infanto-Juvenil / Adulta
-- `tipo_reabilitacao` — Física / Intelectual / Ambas
-- `opms_solicitadas` — lista de OPMs solicitadas no acolhimento
-- `profissao`, `reside_com`, `email` — da Ficha de Acolhimento
-- `eletivo` — atendimento eletivo S/N
-- `confirmado_pelo_paciente` em `agendamentos_historico` — substituto digital da assinatura do paciente na lista de frequência (obrigação legal)
+Campos físicos incorporados: `numero_prontuario`, `equipe_tecnica`, `tipo_reabilitacao`, `opms_solicitadas`, `profissao`, `reside_com`, `email`, `eletivo`, `confirmado_pelo_paciente`.
 
 ---
 
@@ -938,195 +986,163 @@ Sequência obrigatória ao implementar qualquer funcionalidade nova:
 1. **Schema Zod** em `lib/validations/schema.ts`
 2. **Tipos TypeScript** em `types/index.ts`
 3. **Server Actions** em `actions/index.ts` (com `revalidatePath`)
-4. **Server Component** da página em `app/(authenticated)/[rota]/page.tsx` — busca dados, passa props
+4. **Server Component** em `app/(authenticated)/[rota]/page.tsx` — busca dados, passa props
 5. **Client Component** em `components/[modulo]/` — recebe props, lida com UI interativa
-6. Nunca `useEffect` para buscar dados
-7. Nunca `useState` para filtros — usar URL (`searchParams`)
-8. Nunca `alert()` ou `confirm()` — usar `toast` e `AlertDialog`
-9. Nunca classes `slate-*`, `blue-*`, `white` direto — usar variáveis CSS do design system
-10. Nunca `max-w-*` ou `mx-auto` no wrapper da página — ver padrão abaixo
+
+**Proibições absolutas em todo código novo:**
+
+- Nunca `useEffect` para buscar dados
+- Nunca `useState` para filtros — usar `searchParams` na URL
+- Nunca `alert()` ou `confirm()` — usar `toast` e `AlertDialog`
+- Nunca `any` — tipos explícitos ou `unknown`
+- Nunca `select('*')` em tabelas grandes — listar campos necessários
+- Nunca `max-w-*` ou `mx-auto` no wrapper raiz da página
 
 ### 15.1 Estrutura Obrigatória de Página
 
-**Todo `page.tsx` dentro de `app/(authenticated)/` deve seguir exatamente este padrão de wrapper:**
-
 ```tsx
-// ✅ CORRETO — padrão do projeto
+// ✅ CORRETO — copiar este padrão para toda nova page.tsx
 export default async function MinhaPage() {
   const dados = await minhaAction()
-
   return (
     <div className="p-6 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Título da Página</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Título</h1>
           <p className="text-muted-foreground mt-1">Subtítulo descritivo.</p>
         </div>
-        {/* Botão de ação principal, se houver */}
+        <BotaoAcaoPrincipal /> {/* opcional */}
       </div>
-
-      {/* Conteúdo */}
+      {/* conteúdo */}
     </div>
   )
 }
 
-// ❌ PROIBIDO — não usar max-w nem mx-auto nas páginas internas
-<div className="p-6 max-w-7xl mx-auto">      // ❌ cria coluna estreita
-<div className="p-8 max-w-[1200px] mx-auto"> // ❌ diferente das outras páginas
-<main className="p-6 max-w-7xl mx-auto">     // ❌ idem
+// ❌ PROIBIDO
+<div className="p-6 max-w-7xl mx-auto">   // max-w cria coluna estreita
+<div className="p-8 ...">                  // p-8 quebra consistência
+<main className="...">                     // <main> já existe no AuthenticatedLayout
 ```
 
-**Regras do wrapper de página:**
+### 15.2 Padrão de Sheet (Cadastro / Edição)
 
-- `p-6` — padding padrão em todas as páginas (nunca `p-8`, nunca `px-8`)
-- `space-y-8` — espaçamento vertical entre seções
-- **Sem** `max-w-*` — o conteúdo ocupa toda a largura disponível após a sidebar
-- **Sem** `mx-auto` — centralização horizontal é gerenciada pelo layout da sidebar
-- **Sem** `min-h-screen` — o layout pai já gerencia altura
-- Wrapper raiz sempre `<div>`, nunca `<main>` (o `<main>` já existe no `AuthenticatedLayout`)
-
-### 15.2 Estrutura do Cabeçalho de Página
+Todo Sheet de cadastro ou edição deve seguir:
 
 ```tsx
-// Padrão obrigatório para o cabeçalho de toda página
-<div className="flex items-center justify-between">
-  <div>
-    <h1 className="text-foreground text-2xl font-bold tracking-tight">
-      Título
-    </h1>
-    <p className="text-muted-foreground mt-1">
-      Subtítulo com descrição da funcionalidade.
-    </p>
-  </div>
-  <BotaoAcaoPrincipal /> {/* opcional */}
+// ✅ Header obrigatório
+<SheetHeader>             {/* bg-clinico-900 aplicado automaticamente via ui/sheet.tsx */}
+  <SheetTitle>...</SheetTitle>             {/* text-white */}
+</SheetHeader>
+
+// ✅ Corpo
+<div className="flex-1 overflow-y-auto px-7 py-6 space-y-6">
+  {/* campos */}
 </div>
+
+// ✅ Footer fixo
+<div className="shrink-0 border-t bg-card px-7 py-5 flex gap-3">
+  <Button variant="outline" onClick={onCancel}>CANCELAR</Button>
+  <Button type="submit" disabled={isPending}>
+    {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> SALVANDO...</> : 'SALVAR'}
+  </Button>
+</div>
+```
+
+Sheet em modo **criação vs edição**:
+
+- Prop opcional: `entidade?: TipoEntidade` — se presente, modo edição
+- Título: `{entidade ? 'Editar X' : 'Novo X'}`
+- Botão submit: `{entidade ? 'SALVAR ALTERAÇÕES' : 'CADASTRAR'}`
+- Action: `entidade ? atualizarX(entidade.id, payload) : cadastrarX(payload)`
+
+### 15.3 Padrão de Tabela com Ações
+
+```tsx
+// ✅ Linha de tabela com botões de editar e ativar/desativar
+<TableRow key={item.id} className="hover:bg-muted transition-colors">
+  <TableCell>{item.nome}</TableCell>
+  <TableCell>
+    {/* Badge de status — NUNCA variant="default" */}
+    <Badge
+      className={`rounded-none border-none text-[10px] font-bold tracking-widest uppercase ${
+        item.ativo
+          ? 'bg-alert-success-bg text-alert-success-text'
+          : 'bg-muted text-muted-foreground'
+      }`}
+    >
+      {item.ativo ? 'Ativo' : 'Inativo'}
+    </Badge>
+  </TableCell>
+  <TableCell className="text-right">
+    {/* Botão editar — abre Sheet em modo edição */}
+    <Button variant="ghost" size="sm" onClick={() => setEditando(item)}>
+      <Pencil className="h-4 w-4" />
+    </Button>
+    {/* Ativar/desativar — com AlertDialog de confirmação */}
+    <AlertDialog>...</AlertDialog>
+  </TableCell>
+</TableRow>
 ```
 
 ---
 
 ## 16. Padrão de Qualidade para Formulários
 
-> Derivado da auditoria do `paciente-form.tsx` em 18/03/2026.
-> Aplicar em **todos** os formulários do sistema, sem exceção.
+### 16.1 Defaults Obrigatórios
 
-### 16.1 Valores Padrão Inteligentes (Defaults)
+| Campo                              | Default              | Racional                                |
+| ---------------------------------- | -------------------- | --------------------------------------- |
+| `status_cadastro`                  | `"Ativo"`            | 100% dos novos cadastros começam ativos |
+| `sexo`                             | `"M"`                | Usuário sempre confirma                 |
+| `cidade`                           | `"Barreiras"`        | Maioria dos pacientes é local           |
+| `uf`                               | `"BA"`               | Idem                                    |
+| `pactuado`                         | `false`              | Caso majoritário                        |
+| `necessita_transporte`             | `false`              | Caso majoritário                        |
+| `perfil_acesso` (profissional)     | `"Medico_Terapeuta"` | Perfil mais comum                       |
+| `nivel_prioridade` (fila)          | `"Rotina"`           | Caso majoritário                        |
+| `tipo_atendimento` (especialidade) | `"Terapia Continua"` | Caso majoritário                        |
 
-Todo formulário deve inicializar com defaults que refletem o caso mais comum,
-eliminando cliques desnecessários.
+### 16.2 Máscaras e Limites
 
-| Campo                  | Default obrigatório | Racional                                 |
-| ---------------------- | ------------------- | ---------------------------------------- |
-| `status_cadastro`      | `"Ativo"`           | 100% dos novos cadastros começam ativos  |
-| `sexo`                 | `"M"`               | Default neutro — usuário sempre confirma |
-| `cidade`               | `"Barreiras"`       | Maioria dos pacientes é local            |
-| `uf`                   | `"BA"`              | Idem                                     |
-| `pactuado`             | `false`             | Caso majoritário                         |
-| `necessita_transporte` | `false`             | Caso majoritário                         |
-| `tags_acessibilidade`  | `[]`                | Vazio por padrão                         |
-| `data_nascimento`      | `""`                | Não pre-preencher — é dado crítico       |
+| Campo                | `maxLength` | Comportamento                                                    |
+| -------------------- | ----------- | ---------------------------------------------------------------- |
+| CPF                  | `14`        | Máscara `000.000.000-00`                                         |
+| CNS                  | `15`        | Apenas dígitos                                                   |
+| CEP                  | `9`         | Máscara `00000-000`                                              |
+| Telefone             | `15`        | Máscara `(00) 00000-0000`                                        |
+| CID                  | `10`        | `.toUpperCase()` no onChange                                     |
+| UF                   | `2`         | `.toUpperCase()` no onChange                                     |
+| Nº processo judicial | `40`        | Sem máscara                                                      |
+| Data de nascimento   | —           | `<input type="date">` nativo + `min="1900-01-01"` + `max={hoje}` |
 
-> ✅ O `paciente-form.tsx` já implementa todos estes defaults corretamente.
+> **Data:** usar `<input>` HTML nativo (não o `<Input>` do Base UI) para garantir o date picker correto do browser.
 
-### 16.2 Máscaras e Limites de Input
+### 16.3 Validação em Duas Camadas
 
-Todo campo com formato fixo **obrigatoriamente** usa máscara e `maxLength`.
-Proibido deixar o usuário digitar livremente em campo com formato conhecido.
+| Camada          | Quando           | Implementação                                                       |
+| --------------- | ---------------- | ------------------------------------------------------------------- |
+| Inline (onBlur) | Ao sair do campo | `validateField()` → `fieldErrors` → erro abaixo do campo            |
+| Submit (Zod)    | Ao enviar        | Schema Zod na Server Action → `submitError` → alerta acima do botão |
 
-| Campo                       | Máscara                           | `maxLength` | `type`                 |
-| --------------------------- | --------------------------------- | ----------- | ---------------------- |
-| CPF                         | `000.000.000-00`                  | `14`        | `text`                 |
-| CNS                         | `000 0000 0000 0000` (sem pontos) | `15`        | `text`                 |
-| CEP                         | `00000-000`                       | `9`         | `text`                 |
-| Telefone                    | `(00) 00000-0000`                 | `15`        | `text`                 |
-| Data de nascimento          | —                                 | —           | `date` (picker nativo) |
-| CID                         | `.toUpperCase()` no onChange      | `10`        | `text`                 |
-| UF                          | `.toUpperCase()` no onChange      | `2`         | `text`                 |
-| Número do processo judicial | sem máscara                       | `30`        | `text`                 |
-
-> **Data de nascimento:** Usar `<Input type="date">` — o picker nativo do
-> browser já impede entrada inválida. **Nunca** usar `type="text"` para datas,
-> pois o usuário pode digitar infinitamente. O campo retorna string no formato
-> `YYYY-MM-DD`, que é o formato esperado pelo banco.
-
-### 16.3 Busca de CEP via ViaCEP
-
-A função `buscarEnderecoPorCep()` existe em `lib/utils/string-utils.ts` e
-chama a API `viacep.com.br`. O padrão de uso no formulário é:
-
-```ts
-// useEffect correto — reage ao input do usuário, não busca dados iniciais
-useEffect(() => {
-  const cepLimpo = (dados.endereco_cep || '').replace(/\D/g, '')
-  if (cepLimpo.length !== 8) return // só dispara com CEP completo
-
-  const timer = setTimeout(async () => {
-    const info = await buscarEnderecoPorCep(cepLimpo)
-    if (info) {
-      setDados((prev) => ({
-        ...prev,
-        // Nunca sobrescreve campo que o usuário já preencheu manualmente
-        logradouro: prev.logradouro || info.logradouro,
-        bairro: prev.bairro || info.bairro,
-        cidade: info.cidade, // Cidade e UF sempre atualizam
-        uf: info.uf,
-      }))
-    }
-  }, 500) // debounce de 500ms
-
-  return () => clearTimeout(timer)
-}, [dados.endereco_cep])
-```
-
-> ⚠️ **Problema identificado:** A API ViaCEP é uma requisição externa — em
-> produção, o Next.js pode bloquear fetch do lado cliente para domínios externos
-> dependendo da configuração de CSP. Se o CEP não estiver preenchendo, verificar
-> `next.config.js` e adicionar `viacep.com.br` à allowlist de dominios externos,
-> ou mover a chamada para uma Server Action que atua como proxy.
-
-### 16.4 Validação em Duas Camadas
-
-| Camada              | Quando                 | Como                                                         |
-| ------------------- | ---------------------- | ------------------------------------------------------------ |
-| **Inline (onBlur)** | Ao sair do campo       | `validateField()` — mostra erro imediato abaixo do campo     |
-| **Submit (Zod)**    | Ao enviar o formulário | Schema Zod na Server Action — retorna `ActionResponse.error` |
-
-Erros inline (`fieldErrors`) e erro de submit (`submitError`) são estados
-separados. O `submitError` aparece num bloco de alerta acima do botão de submit.
-
-### 16.5 Estado de Loading e Feedback
+### 16.4 Feedback Obrigatório
 
 ```tsx
-// Botão de submit — padrão obrigatório
-<Button type="submit" disabled={isPending}>
-  {isPending ? (
-    <>
-      <Loader2 className="h-4 w-4 animate-spin" /> SALVANDO...
-    </>
-  ) : (
-    <>
-      {isEditing ? 'SALVAR ALTERAÇÕES' : 'CADASTRAR'}{' '}
-      <CheckCircle2 className="h-4 w-4" />
-    </>
-  )}
+// ✅ Toast de sucesso — obrigatório após salvar
+toast.success('Paciente cadastrado com sucesso!')
+
+// ✅ Toast de erro — obrigatório ao falhar
+toast.error('Erro: ' + result.error)
+
+// ✅ Botão durante submit
+<Button disabled={isPending}>
+  {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> SALVANDO...</> : 'SALVAR'}
 </Button>
 ```
 
-- `disabled={isPending}` em **todos** os botões interativos durante o submit
-- Spinner animado (`animate-spin`) enquanto processa
-- Label diferenciado para criação vs edição
-
-### 16.6 Campos Opcionais vs Obrigatórios
-
-- Campos obrigatórios: `required` no input HTML + asterisco vermelho `*` no label
-- Campos opcionais: hint `"Opcional"` abaixo do campo via prop `hint`
-- Campos com formato específico: hint com o formato, ex: `"15 dígitos"` para CNS
-
-### 16.7 Tags de Acessibilidade — Valores Canônicos
-
-Os valores de `tags_acessibilidade` no formulário **devem** ser idênticos aos
-armazenados no banco. Nunca abreviar. Lista canônica:
+### 16.5 Tags de Acessibilidade — Valores Canônicos
 
 ```ts
+// ✅ Usar EXATAMENTE estes valores — idênticos ao banco
 const TAGS_ACESSIBILIDADE = [
   'Cadeirante',
   'Acamado/Uso de Maca',
@@ -1137,29 +1153,75 @@ const TAGS_ACESSIBILIDADE = [
 ] as const
 ```
 
-> ⚠️ **Bug identificado no `paciente-form.tsx`:** Os valores usados nos botões
-> de tag (`"Cadeirante"`, `"Acamado"`, `"Risco Agitação"`, `"Deficiência Visual"`,
-> `"Deficiência Auditiva"`, `"Uso de Maca"`) **não correspondem** aos valores
-> canônicos definidos no banco e no schema Zod. Isso causa dados inconsistentes.
-> Corrigir para os valores canônicos acima e remover `"Deficiência Auditiva"` que
-> não existe no modelo.
+### 16.6 Reset de Formulário
+
+- Sheets não controlados (com `FormData`): usar `formRef.current?.reset()` após `setOpen(false)`
+- Sheets controlados (com `useState`): resetar cada campo no bloco de sucesso
+- Ambos: também limpar `fieldErrors` e `submitError`
 
 ---
 
-## 17. Auditoria Técnica e Segurança (v7) — 19/03/2026
+## 17. Armadilhas Conhecidas do Cursor/IA
 
-Conclusão da auditoria técnica para fechamento da versão 7 do projeto.
+> Bugs introduzidos recorrentemente. Verificar após toda sessão de geração.
 
-### Status de Conformidade (checklist.py)
-- **Security Scan:** ✅ PASSED (Zero vulnerabilidades críticas encontradas)
-- **Lint Check:** ✅ PASSED (Zero Errors / Zero Warnings — inclusive tipagem estrita)
-- **Schema Validation:** ✅ PASSED (Banco alinhado com migrations)
-- **Test Runner:** ✅ PASSED (Testes unitários e de integração estáveis)
+### 17.1 `middleware.ts` — nunca renomear
 
-### Resolvido nesta Auditoria:
-1. **Limpeza de Cache:** Resolvido erro TS2307 no `.next/types/validator.ts` via remoção forçada da pasta `.next`.
-2. **Tipagem Pragmática:** Adição de `eslint-disable` cirúrgico em `AvaliacaoSocialForm` e `data-table.tsx` para permitir uso de `any` em interações complexas com Zod/React Hook Form, sem comprometer o build global.
-3. **Consistência de Tipos:** Sincronização da interface `PacienteFila` entre banco, actions e UI.
-4. **Zero Warnings:** Removidas definições e imports não utilizados.
+```
+✅ src/middleware.ts    ← único nome que o Next.js executa
+❌ src/proxy.ts         ← ignorado silenciosamente = sistema desprotegido
+```
 
-> 🏁 **Status de Entrega:** O código está pronto para deploy em ambiente de homologação.
+### 17.2 FK de usuário — sempre `.eq('id', user.id)`
+
+```ts
+❌ .eq('email', user.email)  // tabela profissionais não tem coluna email
+✅ .eq('id', user.id)        // FK é a UUID do Supabase Auth
+```
+
+### 17.3 `validarAcessoRota` — não bloquear rotas não mapeadas
+
+```ts
+❌ } else { redirect('/') }   // bloqueia /configuracoes, /prontuarios, etc.
+✅ return perfil               // se autenticado, permitir acesso
+```
+
+### 17.4 `select('*')` em tabelas grandes
+
+```ts
+❌ supabase.from('pacientes').select('*')
+✅ supabase.from('pacientes').select('id, nome_completo, cns, data_nascimento, status_cadastro')
+```
+
+### 17.5 `any` em React Hook Form
+
+```ts
+❌ function Field({ error }: { error?: any })
+❌ onSubmit(data: any)
+✅ function Field({ error }: { error?: string })
+✅ onSubmit(data: TipoDoSchema)
+```
+
+### 17.6 Layout de páginas novas
+
+```ts
+❌ <div className="p-6 max-w-7xl mx-auto">
+✅ <div className="p-6 space-y-8">
+```
+
+### 17.7 Checklist pós-sessão
+
+```
+□ src/middleware.ts existe?
+□ getMeuPerfil usa .eq('id', user.id)?
+□ Novo select('*') em tabela com muitos registros?
+□ validarAcessoRota tem bloco else que redireciona?
+□ Algum any novo introduzido?
+□ Páginas novas com max-w/mx-auto?
+□ Cores hardcoded: green-*, red-*, slate-*, blue-*?
+□ italic em algum texto?
+□ rounded-full em container de ícone (não avatar)?
+□ bg-gradient-* em algum elemento?
+□ Toast de sucesso/erro em todos os formulários?
+□ middleware.ts foi renomeado?
+```

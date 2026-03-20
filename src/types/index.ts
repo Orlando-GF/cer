@@ -94,7 +94,8 @@ export interface GradeHoraria {
   dia_semana: number
   horario_inicio: string
   horario_fim: string
-  capacidade?: number
+  capacidade_atendimentos: number
+  data_inicio_vigencia?: string | null
   ativo: boolean
   profissional?: {
     nome_completo: string

@@ -113,7 +113,7 @@ function maskCEP(value: string): string {
 function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
   return (
     <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border">
-      <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary/10 shrink-0">
+      <div className="flex items-center justify-center w-7 h-7 rounded-none bg-muted shrink-0">
         <Icon className="w-4 h-4 text-primary" />
       </div>
       <span className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">{title}</span>
@@ -256,6 +256,13 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
     e.preventDefault()
     setSubmitError(null)
 
+    const cnsLimpo = onlyDigits(dados.cns || "")
+    if (cnsLimpo.length !== 15) {
+      setFieldErrors(prev => ({ ...prev, cns: "CNS deve ter exatamente 15 dígitos" }))
+      document.getElementById("campo-cns")?.scrollIntoView({ behavior: "smooth", block: "center" })
+      return
+    }
+
     const payload = {
       ...dados,
       cns: onlyDigits(dados.cns || ""),
@@ -348,6 +355,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
             <div className="grid grid-cols-3 gap-4">
               <Field label="CNS" hint="15 dígitos" error={fieldErrors.cns}>
                 <Input
+                  id="campo-cns"
                   value={dados.cns || ""}
                   onChange={(e) => setField("cns")(maskCNS(e.target.value))}
                   onBlur={(e) => validateField("cns", e.target.value)}
@@ -527,7 +535,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
 
             <div className="flex items-center justify-between rounded-none border border-border bg-card p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-none">
+                <div className="p-2 bg-muted rounded-none">
                   <Truck className="w-4 h-4 text-primary" />
                 </div>
                 <div>

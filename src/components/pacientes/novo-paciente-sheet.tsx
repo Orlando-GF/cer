@@ -97,10 +97,10 @@ export function NovoPacienteSheet() {
       </Button>
 
       <Sheet open={open} onOpenChange={handleOpen}>
-        <SheetContent side="right" className="p-0 overflow-hidden flex flex-col">
+        <SheetContent side="right" className="p-0 overflow-hidden flex flex-col bg-background">
 
           {/* HEADER */}
-          <SheetHeader className="mb-0 border-b border-white/10 shrink-0">
+          <SheetHeader className="mb-0 shadow-none shrink-0 border-b border-white/10">
             <SheetTitle className="flex items-center gap-2">
               <User className="w-4 h-4 text-white/70" />
               CADASTRO BASE DE PACIENTE
@@ -126,9 +126,9 @@ export function NovoPacienteSheet() {
 
           {/* ── ETAPA 0: BUSCA ─────────────────────────────────────────────── */}
           {etapa === "busca" && (
-            <div className="flex-1 flex flex-col items-center justify-center px-10 gap-8">
+            <div className="flex-1 flex flex-col items-center justify-center px-10 gap-8 bg-background">
               <div className="flex flex-col items-center gap-3 text-center">
-                <div className="w-16 h-16 rounded-none bg-muted/40 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-none bg-muted/30 flex items-center justify-center border border-border shadow-inner">
                   <Search className="w-7 h-7 text-primary" />
                 </div>
                 <p className="text-muted-foreground text-sm max-w-xs">
@@ -147,7 +147,7 @@ export function NovoPacienteSheet() {
                     }}
                     onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
                     placeholder="CNS OU CPF"
-                    className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs tracking-wider"
+                    className="rounded-none border-border h-12 font-black bg-card uppercase text-xs tracking-wider focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10"
                     maxLength={15}
                     autoFocus
                   />

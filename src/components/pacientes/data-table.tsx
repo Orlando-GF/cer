@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useEffect, useState } from "react"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -46,6 +47,22 @@ export function DataTable<TData, TValue>({
 
   // Sincronizar Termo de Busca com URL
   const searchTerm = searchParams.get("q") || ""
+  const [inputValue, setInputValue] = useState(searchTerm)
+
+  // 1. Sincronização externa (se a URL mudar por outro motivo)
+  useEffect(() => {
+    setInputValue(searchTerm)
+  }, [searchTerm])
+
+  // 2. Debounce para atualizar a URL apenas após 300ms sem digitar
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (inputValue !== searchTerm) {
+        setUrlParams({ q: inputValue || null })
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [inputValue, searchTerm])
 
   const setUrlParams = (paramsToUpdate: Record<string, string | null | undefined>) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -91,13 +108,13 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4">
       {/* Barra de Busca - Visual Minimalista */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-card p-3 rounded-none border border-border">
-        <div className="relative w-full sm:w-[350px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative w-full sm:w-[350px] group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
           <Input
             placeholder="Buscar por Nome ou Prontuário (CNS)..."
-            value={searchTerm}
-            onChange={(event) => setUrlParams({ q: event.target.value })}
-            className="pl-9 h-10 w-full bg-card border-transparent focus-visible:bg-card transition-colors"
+            value={inputValue}
+            onChange={(event) => setInputValue(event.target.value)}
+            className="pl-9 h-10 w-full bg-card border-border border-opacity-50 focus-visible:border-primary transition-all"
           />
         </div>
       </div>

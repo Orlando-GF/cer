@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server"
 import { revalidatePath } from "next/cache"
+import { cache as reactCache } from 'react'
 import { 
   agendamentoHistoricoSchema,
   especialidadeSchema,
@@ -28,33 +29,24 @@ import {
   type DadosUsuario
 } from "@/types"
 
+// --- PACIENTES ---
+
 export async function buscarPacientes(): Promise<ActionResponse<Paciente[]>> {
   const supabase = await createClient()
-
   const { data, error } = await supabase
     .from('pacientes')
-    .select('*')
+    .select('id, nome_completo, cns, data_nascimento, status_cadastro')
     .order('id', { ascending: false })
 
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao buscar pacientes: ${error.message}`,
-    }
-  }
-
-  return { success: true, data }
+  if (error) return { success: false, error: `Erro ao buscar pacientes: ${error.message}` }
+  return { success: true, data: data as unknown as Paciente[] }
 }
 
 export async function buscarPacientesPorBusca(termo: string): Promise<ActionResponse<Paciente[]>> {
   const supabase = await createClient()
-
-  if (!termo || termo.trim().length < 3) {
-    return { success: true, data: [] }
-  }
+  if (!termo || termo.trim().length < 3) return { success: true, data: [] }
 
   const apenasNumeros = termo.replace(/\D/g, '')
-  
   let query = supabase.from('pacientes').select('*').limit(30)
 
   if (apenasNumeros.length > 0) {
@@ -64,150 +56,87 @@ export async function buscarPacientesPorBusca(termo: string): Promise<ActionResp
   }
 
   const { data, error } = await query
-
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao buscar pacientes: ${error.message}`,
-    }
-  }
-
+  if (error) return { success: false, error: `Erro ao buscar pacientes: ${error.message}` }
   return { success: true, data }
 }
 
-export async function cadastrarPaciente(
-  rawData: unknown,
-): Promise<ActionResponse> {
+export async function cadastrarPaciente(rawData: unknown): Promise<ActionResponse> {
   const supabase = await createClient()
-
   const validation = pacienteSchema.safeParse(rawData)
   if (!validation.success) {
-    const errorMsg = validation.error.issues
-      .map((i: { message: string }) => i.message)
-      .join(', ')
-    return { success: false, error: errorMsg }
+    return { success: false, error: validation.error.issues.map(i => i.message).join(', ') }
   }
 
   const { data } = validation
   const { error } = await supabase.from('pacientes').insert({
-    cns: data.cns,
+    ...data,
     cpf: data.cpf || null,
-    nome_completo: data.nome_completo,
-    data_nascimento: data.data_nascimento,
-    sexo: data.sexo,
-    nome_mae: data.nome_mae,
-    nome_pai: data.nome_pai || null,
-    pactuado: data.pactuado,
     municipio_pactuado: data.municipio_pactuado || null,
-    cidade: data.cidade,
-    uf: data.uf,
     cid_principal: data.cid_principal || null,
     cid_secundario: data.cid_secundario || null,
-    necessita_transporte: data.necessita_transporte,
-    tags_acessibilidade: data.tags_acessibilidade,
+    nome_pai: data.nome_pai || null,
+    id_legado_vba: data.id_legado_vba || null,
   })
 
   if (error) {
-    if (error.code === '23505') {
-      return { success: false, error: 'Conflito: CNS ou CPF já cadastrado.' }
-    }
-    return {
-      success: false,
-      error: `Erro ao cadastrar paciente: ${error.message}`,
-    }
+    if (error.code === '23505') return { success: false, error: 'Conflito: CNS ou CPF ja cadastrado.' }
+    return { success: false, error: `Erro ao cadastrar paciente: ${error.message}` }
   }
 
   revalidatePath('/pacientes')
   return { success: true }
 }
 
-export async function atualizarPaciente(
-  id: string,
-  rawData: unknown,
-): Promise<ActionResponse> {
+export async function atualizarPaciente(id: string, rawData: unknown): Promise<ActionResponse> {
   const supabase = await createClient()
-
   const validation = pacienteSchema.safeParse(rawData)
   if (!validation.success) {
-    const errorMsg = validation.error.issues
-      .map((i: { message: string }) => i.message)
-      .join(', ')
-    return { success: false, error: errorMsg }
+    return { success: false, error: validation.error.issues.map(i => i.message).join(', ') }
   }
 
   const { data } = validation
   const { error } = await supabase
     .from('pacientes')
     .update({
-      cns: data.cns,
+      ...data,
       cpf: data.cpf || null,
-      nome_completo: data.nome_completo,
-      data_nascimento: data.data_nascimento,
-      sexo: data.sexo,
-      nome_mae: data.nome_mae,
-      nome_pai: data.nome_pai || null,
-      pactuado: data.pactuado,
       municipio_pactuado: data.municipio_pactuado || null,
-      cidade: data.cidade,
-      uf: data.uf,
       cid_principal: data.cid_principal || null,
       cid_secundario: data.cid_secundario || null,
-      necessita_transporte: data.necessita_transporte,
-      tags_acessibilidade: data.tags_acessibilidade,
+      nome_pai: data.nome_pai || null,
+      id_legado_vba: data.id_legado_vba || null,
     })
     .eq('id', id)
 
   if (error) {
-    if (error.code === '23505') {
-      return {
-        success: false,
-        error: 'Conflito: CNS ou CPF já cadastrado num outro paciente.',
-      }
-    }
-    return {
-      success: false,
-      error: `Erro ao atualizar paciente: ${error.message}`,
-    }
+    if (error.code === '23505') return { success: false, error: 'Conflito: CNS ou CPF ja cadastrado.' }
+    return { success: false, error: `Erro ao atualizar paciente: ${error.message}` }
   }
 
   revalidatePath('/pacientes')
   return { success: true }
 }
 
-export async function buscarPacientePorDocumento(
-  documento: string,
-): Promise<ActionResponse<Paciente>> {
+export async function buscarPacientePorDocumento(documento: string): Promise<ActionResponse<Paciente>> {
   const supabase = await createClient()
   const docLimpo = documento.replace(/\D/g, '')
-
   const query = supabase.from('pacientes').select('*')
 
-  if (docLimpo.length === 11) {
-    query.eq('cpf', docLimpo)
-  } else {
-    query.eq('cns', docLimpo)
-  }
+  if (docLimpo.length === 11) query.eq('cpf', docLimpo)
+  else query.eq('cns', docLimpo)
 
   const { data, error } = await query.single()
-
-  if (error || !data) {
-    return { success: false, error: 'Paciente não encontrado' }
-  }
-
+  if (error || !data) return { success: false, error: 'Paciente nao encontrado' }
   return { success: true, data }
 }
 
-export async function incluirPacienteNaFila(
-  rawData: unknown,
-): Promise<ActionResponse> {
-  const supabase = await createClient()
+// --- FILA DE ESPERA ---
 
+export async function incluirPacienteNaFila(rawData: unknown): Promise<ActionResponse> {
+  const supabase = await createClient()
   const validation = incluirNaFilaSchema.safeParse(rawData)
   if (!validation.success) {
-    const errorMsg = validation.error.issues
-      .map((i: { message: string }) => i.message)
-      .join(', ')
-    return { success: false, error: errorMsg }
+    return { success: false, error: validation.error.issues.map(i => i.message).join(', ') }
   }
 
   const { data } = validation
@@ -215,43 +144,29 @@ export async function incluirPacienteNaFila(
     paciente_id: data.paciente_id,
     especialidade_id: data.especialidade_id,
     nivel_prioridade: data.nivel_prioridade,
-    numero_processo_judicial:
-      data.nivel_prioridade === 'Mandado Judicial'
-        ? data.numero_processo_judicial
-        : null,
+    numero_processo_judicial: data.nivel_prioridade === 'Mandado Judicial' ? data.numero_processo_judicial : null,
     origem_encaminhamento: data.origem_encaminhamento,
     frequencia_recomendada: data.frequencia_recomendada,
     status_fila: 'Aguardando',
   })
 
   if (error) {
-    if (error.code === '23505') {
-      return {
-        success: false,
-        error: 'Este paciente já se encontra aguardando fila para esta especialidade.',
-      }
-    }
-    return {
-      success: false,
-      error: `Erro ao inserir na fila: ${error.message}`,
-    }
+    if (error.code === '23505') return { success: false, error: 'Este paciente ja se encontra aguardando fila para esta especialidade.' }
+    return { success: false, error: `Erro ao inserir na fila: ${error.message}` }
   }
 
   revalidatePath('/')
   return { success: true }
 }
 
-export async function registrarFaltaPaciente(
-  rawData: unknown,
-): Promise<ActionResponse> {
+export async function registrarFaltaPaciente(rawData: unknown): Promise<ActionResponse> {
   const supabase = await createClient()
-
   const validation = faltaFilaSchema.safeParse(rawData)
-  if (!validation.success) return { success: false, error: 'Dados de falta inválidos.' }
+  if (!validation.success) return { success: false, error: 'Dados de falta invalidos.' }
 
   const { data } = validation
-  const authUser = await supabase.auth.getUser()
-  const usuarioId = authUser.data.user?.id || null
+  const { data: { user } } = await supabase.auth.getUser()
+  const usuarioId = user?.id || null
 
   const { data: filaAtual, error: errFila } = await supabase
     .from('fila_espera')
@@ -259,7 +174,7 @@ export async function registrarFaltaPaciente(
     .eq('id', data.fila_id)
     .single()
 
-  if (errFila) return { success: false, error: 'Paciente não encontrado na fila.' }
+  if (errFila) return { success: false, error: 'Paciente nao encontrado na fila.' }
 
   const novasFaltas = (filaAtual.faltas_consecutivas || 0) + 1
 
@@ -270,56 +185,29 @@ export async function registrarFaltaPaciente(
     registrado_por: usuarioId,
   })
 
-  if (errRegistro) {
-    return {
-      success: false,
-      error: `Erro ao salvar registro de falta: ${errRegistro.message}`,
-    }
-  }
+  if (errRegistro) return { success: false, error: `Erro ao salvar registro de falta: ${errRegistro.message}` }
 
-  const { error: errUpdate } = await supabase
-    .from('fila_espera')
-    .update({ faltas_consecutivas: novasFaltas })
-    .eq('id', data.fila_id)
-
-  if (errUpdate) {
-    return {
-      success: false,
-      error: `Erro ao atualizar contagem de faltas: ${errUpdate.message}`,
-    }
-  }
+  await supabase.from('fila_espera').update({ faltas_consecutivas: novasFaltas }).eq('id', data.fila_id)
 
   revalidatePath('/')
   return { success: true }
 }
 
-export async function alterarStatusFila(
-  rawData: unknown,
-): Promise<ActionResponse> {
+export async function alterarStatusFila(rawData: unknown): Promise<ActionResponse> {
   const supabase = await createClient()
-
   const validation = statusFilaSchema.safeParse(rawData)
-  if (!validation.success) return { success: false, error: 'Status inválido.' }
+  if (!validation.success) return { success: false, error: 'Status invalido.' }
 
   const { data } = validation
-  const { error } = await supabase
-    .from('fila_espera')
-    .update({ status_fila: data.novo_status })
-    .eq('id', data.fila_id)
-
-  if (error) {
-    return { success: false, error: `Erro ao atualizar status: ${error.message}` }
-  }
+  const { error } = await supabase.from('fila_espera').update({ status_fila: data.novo_status }).eq('id', data.fila_id)
+  if (error) return { success: false, error: `Erro ao atualizar status: ${error.message}` }
 
   revalidatePath('/')
   return { success: true }
 }
 
-export async function buscarHistoricoFaltas(
-  filaId: string,
-): Promise<ActionResponse<FaltaRegistro[]>> {
+export async function buscarHistoricoFaltas(filaId: string): Promise<ActionResponse<FaltaRegistro[]>> {
   const supabase = await createClient()
-
   const { data, error } = await supabase
     .from('faltas_registros')
     .select('id, data_falta, justificada, observacao, criado_em')
@@ -327,66 +215,40 @@ export async function buscarHistoricoFaltas(
     .order('data_falta', { ascending: false })
     .limit(10)
 
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao buscar histórico: ${error.message}`,
-    }
-  }
-
+  if (error) return { success: false, error: `Erro ao buscar historico: ${error.message}` }
   return { success: true, data }
 }
+
+// --- AGENDA E VAGAS FIXAS ---
 
 export async function salvarVagaFixa(rawData: unknown): Promise<ActionResponse> {
   const supabase = await createClient()
   const val = vagaFixaSchema.safeParse(rawData)
-  if (!val.success) return { success: false, error: 'Dados inválidos para Vaga Fixa.' }
+  if (!val.success) return { success: false, error: 'Dados invalidos para Vaga Fixa.' }
 
   const { error } = await supabase.from('vagas_fixas').upsert(val.data)
-  if (error) {
-    return { success: false, error: `Erro ao salvar vaga: ${error.message}` }
-  }
+  if (error) return { success: false, error: `Erro ao salvar vaga: ${error.message}` }
 
   revalidatePath('/agenda')
   return { success: true }
 }
 
-export async function registrarSessaoHistorico(
-  rawData: unknown,
-): Promise<ActionResponse> {
+export async function registrarSessaoHistorico(rawData: unknown): Promise<ActionResponse> {
   const supabase = await createClient()
   const val = agendamentoHistoricoSchema.safeParse(rawData)
   if (!val.success) {
-    const msg = val.error.issues
-      .map((i: { message: string }) => i.message)
-      .join(', ')
-    return { success: false, error: `Dados inválidos: ${msg}` }
+    return { success: false, error: `Dados invalidos: ${val.error.issues.map(i => i.message).join(', ')}` }
   }
 
   let dadosAnteriores = null
-  const arg = val.data as { id?: string }
-  const id = arg.id
+  const id = (val.data as any).id
   if (id) {
-    const { data: existing } = await supabase
-      .from('agendamentos_historico')
-      .select('*')
-      .eq('id', id)
-      .single()
+    const { data: existing } = await supabase.from('agendamentos_historico').select('*').eq('id', id).single()
     dadosAnteriores = existing
   }
 
-  const { data: novo, error } = await supabase
-    .from('agendamentos_historico')
-    .upsert(val.data)
-    .select()
-    .single()
-
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao materializar sessão: ${error.message}`,
-    }
-  }
+  const { data: novo, error } = await supabase.from('agendamentos_historico').upsert(val.data).select().single()
+  if (error) return { success: false, error: `Erro ao materializar sessao: ${error.message}` }
 
   await registrarLogAuditoria({
     agendamento_id: novo.id,
@@ -406,9 +268,7 @@ async function registrarLogAuditoria(params: {
   dados_novos: unknown
 }) {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   await supabase.from('agendamentos_logs').insert({
     agendamento_id: params.agendamento_id,
@@ -419,592 +279,358 @@ async function registrarLogAuditoria(params: {
   })
 }
 
-export async function buscarAgendaData(
-  profissionalId: string,
-  startDate: string,
-  endDate: string,
-): Promise<ActionResponse<{ vagas: VagaFixaComJoins[]; hist: AgendamentoHistoricoComJoins[] }>> {
+export async function buscarAgendaData(profissionalId: string, startDate: string, endDate: string) {
   const supabase = await createClient()
-
-  const { data: vagas, error: errVagas } = await supabase
-    .from('vagas_fixas')
-    .select(
-      `
-      *,
-      pacientes (id, nome_completo, data_nascimento, cns, criado_em),
-      profissionais (id, nome_completo),
-      linhas_cuidado_especialidades (id, nome_especialidade)
-    `,
-    )
-    .eq('profissional_id', profissionalId)
-    .eq('status_vaga', 'Ativa')
+  const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
+    *,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    profissionais (id, nome_completo),
+    linhas_cuidado_especialidades (id, nome_especialidade)
+  `).eq('profissional_id', profissionalId).eq('status_vaga', 'Ativa')
 
   if (errVagas) return { success: false, error: errVagas.message }
 
-  const { data: hist, error: errHist } = await supabase
-    .from('agendamentos_historico')
-    .select(
-      `
-      *,
-      pacientes (id, nome_completo, data_nascimento, cns, criado_em),
-      profissionais (id, nome_completo),
-      linhas_cuidado_especialidades (id, nome_especialidade)
-    `,
-    )
-    .eq('profissional_id', profissionalId)
-    .gte('data_hora_inicio', startDate)
-    .lte('data_hora_inicio', endDate)
+  const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
+    *,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    profissionais (id, nome_completo),
+    linhas_cuidado_especialidades (id, nome_especialidade)
+  `).eq('profissional_id', profissionalId).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate)
 
   if (errHist) return { success: false, error: errHist.message }
-
   return { success: true, data: { vagas: vagas || [], hist: hist || [] } }
 }
 
-export async function buscarAgendaLogistica(
-  startDate: string,
-  endDate: string,
-): Promise<ActionResponse<{ vagas: VagaFixaComJoins[]; hist: AgendamentoHistoricoComJoins[] }>> {
+export async function buscarAgendaLogistica(startDate: string, endDate: string) {
   const supabase = await createClient()
-
-  const { data: vagas, error: errVagas } = await supabase
-    .from('vagas_fixas')
-    .select(
-      `
-      *,
-      pacientes (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em),
-      profissionais (id, nome_completo),
-      linhas_cuidado_especialidades (id, nome_especialidade)
-    `,
-    )
-    .eq('status_vaga', 'Ativa')
-    .filter('pacientes.necessita_transporte', 'eq', true)
+  const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
+    *,
+    pacientes (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em),
+    profissionais (id, nome_completo),
+    linhas_cuidado_especialidades (id, nome_especialidade)
+  `).eq('status_vaga', 'Ativa').filter('pacientes.necessita_transporte', 'eq', true)
 
   if (errVagas) return { success: false, error: errVagas.message }
 
-  const { data: hist, error: errHist } = await supabase
-    .from('agendamentos_historico')
-    .select(
-      `
-      *,
-      pacientes (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em),
-      profissionais (id, nome_completo),
-      linhas_cuidado_especialidades (id, nome_especialidade)
-    `,
-    )
-    .gte('data_hora_inicio', startDate)
-    .lte('data_hora_inicio', endDate)
-    .filter('pacientes.necessita_transporte', 'eq', true)
+  const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
+    *,
+    pacientes (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em),
+    profissionais (id, nome_completo),
+    linhas_cuidado_especialidades (id, nome_especialidade)
+  `).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate).filter('pacientes.necessita_transporte', 'eq', true)
 
   if (errHist) return { success: false, error: errHist.message }
-
   return { success: true, data: { vagas: vagas || [], hist: hist || [] } }
 }
 
-export async function buscarProfissionais(): Promise<ActionResponse<Profissional[]>> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('profissionais')
-    .select('*, especialidades_permitidas')
-    .eq('ativo', true)
-    .order('nome_completo')
-
-  if (error) return { success: false, error: error.message }
-  return { success: true, data }
-}
+// --- CONFIGURACOES: ESPECIALIDADES ---
 
 export async function buscarEspecialidades(): Promise<ActionResponse<Especialidade[]>> {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('linhas_cuidado_especialidades')
-    .select('*')
-    .order('nome_especialidade')
-
+  const { data, error } = await supabase.from('linhas_cuidado_especialidades').select('*').order('nome_especialidade')
   if (error) return { success: false, error: error.message }
   return { success: true, data }
 }
 
-export async function cadastrarEspecialidade(
-  rawData: unknown,
-): Promise<ActionResponse<Especialidade>> {
+export async function cadastrarEspecialidade(rawData: unknown): Promise<ActionResponse<Especialidade>> {
   const supabase = await createClient()
   const val = especialidadeSchema.safeParse(rawData)
-  if (!val.success) return { success: false, error: 'Dados inválidos para especialidade.' }
+  if (!val.success) return { success: false, error: 'Dados invalidos.' }
 
-  const { data, error } = await supabase
-    .from('linhas_cuidado_especialidades')
-    .insert([val.data])
-    .select()
-
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao cadastrar especialidade: ${error.message}`,
-    }
-  }
+  const { data, error } = await supabase.from('linhas_cuidado_especialidades').insert([val.data]).select().single()
+  if (error) return { success: false, error: error.message }
 
   revalidatePath('/especialidades')
-  return { success: true, data: data?.[0] }
-}
-
-export async function buscarGradesHorarias(): Promise<ActionResponse<GradeHoraria[]>> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('grade_horaria')
-    .select(
-      `
-      *,
-      profissional:profissionais(nome_completo)
-    `,
-    )
-    .order('dia_semana')
-    .order('horario_inicio')
-
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao buscar grades horárias: ${error.message}`,
-    }
-  }
   return { success: true, data }
 }
 
-export async function salvarGradeHoraria(
-  rawData: unknown,
-): Promise<ActionResponse<GradeHoraria>> {
+export async function atualizarEspecialidade(id: string, rawData: unknown): Promise<ActionResponse<Especialidade>> {
   const supabase = await createClient()
-  const val = gradeHorariaSchema.safeParse(rawData)
-  if (!val.success) return { success: false, error: 'Dados inválidos para grade horária.' }
+  const val = especialidadeSchema.safeParse(rawData)
+  if (!val.success) return { success: false, error: "Dados inválidos." }
 
-  const { data, error } = await supabase
-    .from('grade_horaria')
-    .upsert([val.data])
-    .select()
+  const { data, error } = await supabase.from("linhas_cuidado_especialidades").update(val.data).eq("id", id).select().single()
+  if (error) return { success: false, error: error.message }
 
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao salvar grade horária: ${error.message}`,
-    }
-  }
-
-  revalidatePath('/grades')
-  return { success: true, data: data?.[0] }
+  revalidatePath("/especialidades")
+  return { success: true, data }
 }
 
-export async function cadastrarProfissional(
-  rawData: unknown,
-): Promise<ActionResponse> {
+export async function toggleAtivaEspecialidade(id: string, ativo: boolean): Promise<ActionResponse> {
   const supabase = await createClient()
-  const validation = profissionalSchema.safeParse(rawData)
-
-  if (!validation.success) {
-    const errorMsg = validation.error.issues
-      .map((i: { message: string }) => i.message)
-      .join(', ')
-    return { success: false, error: errorMsg }
-  }
-
-  const { error } = await supabase.from('profissionais').insert(validation.data)
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao cadastrar profissional: ${error.message}`,
-    }
-  }
-
-  revalidatePath('/configuracoes')
+  const { error } = await supabase.from("linhas_cuidado_especialidades").update({ ativo }).eq("id", id)
+  if (error) return { success: false, error: error.message }
+  revalidatePath("/especialidades")
   return { success: true }
 }
 
-export async function getMeusDados(): Promise<DadosUsuario | null> {
+// --- CONFIGURACOES: GRADES HORARIAS ---
+
+export async function buscarGradesHorarias(): Promise<ActionResponse<GradeHoraria[]>> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('grade_horaria').select('*, profissional:profissionais(nome_completo)').order('dia_semana').order('horario_inicio')
+  if (error) return { success: false, error: error.message }
+  return { success: true, data: data as unknown as GradeHoraria[] }
+}
+
+export async function salvarGradeHoraria(rawData: unknown): Promise<ActionResponse<GradeHoraria>> {
+  const supabase = await createClient()
+  const val = gradeHorariaSchema.safeParse(rawData)
+  if (!val.success) return { success: false, error: 'Dados invalidos.' }
+
+  const { data, error } = await supabase.from('grade_horaria').upsert([val.data]).select().single()
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/grades')
+  return { success: true, data: data as unknown as GradeHoraria }
+}
+
+export async function toggleAtivaGradeHoraria(id: string, ativo: boolean): Promise<ActionResponse> {
+  const supabase = await createClient()
+  const { error } = await supabase.from('grade_horaria').update({ ativo }).eq('id', id)
+  if (error) return { success: false, error: error.message }
+  revalidatePath('/grades')
+  return { success: true }
+}
+
+// --- CONFIGURACOES: PROFISSIONAIS ---
+
+export async function buscarProfissionais(): Promise<ActionResponse<Profissional[]>> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('profissionais').select('*, especialidades_permitidas').order('nome_completo')
+  if (error) return { success: false, error: error.message }
+  return { success: true, data }
+}
+
+export async function cadastrarProfissional(rawData: unknown): Promise<ActionResponse> {
+  const supabase = await createClient()
+  const val = profissionalSchema.safeParse(rawData)
+  if (!val.success) return { success: false, error: 'Dados invalidos.' }
+
+  const { error } = await supabase.from('profissionais').insert(val.data)
+  if (error) return { success: false, error: error.message }
+  revalidatePath('/profissionais')
+  return { success: true }
+}
+
+export async function atualizarProfissional(id: string, rawData: unknown): Promise<ActionResponse> {
+  const supabase = await createClient()
+  const val = profissionalSchema.safeParse(rawData)
+  if (!val.success) return { success: false, error: 'Dados invalidos.' }
+
+  const { error } = await supabase.from('profissionais').update(val.data).eq('id', id)
+  if (error) return { success: false, error: error.message }
+  revalidatePath('/profissionais')
+  return { success: true }
+}
+
+export async function toggleAtivoProfissional(id: string, ativo: boolean): Promise<ActionResponse> {
+  const supabase = await createClient()
+  const { error } = await supabase.from('profissionais').update({ ativo }).eq('id', id)
+  if (error) return { success: false, error: error.message }
+  revalidatePath('/profissionais')
+  return { success: true }
+}
+
+// --- PERFIL E SESSAO ---
+
+export const getMeuPerfil = reactCache(async (): Promise<DadosUsuario | null> => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    // Fallback para desenvolvimento local se não houver sessão
     if (process.env.NODE_ENV === 'development') {
-      return {
-        perfil_acesso: 'Administracao',
-        nome_completo: 'Dev Local',
-        email: 'dev@cer2.local'
-      }
+      return { perfil_acesso: 'Administracao', nome_completo: 'Dev Local', email: 'dev@cer2.local' }
     }
     return null
   }
 
-  const { data: prof } = await supabase
-    .from('profissionais')
-    .select('perfil_acesso, nome_completo')
-    .eq('email', user.email)
-    .single()
+  const { data: prof } = await supabase.from('profissionais').select('perfil_acesso, nome_completo').eq('id', user.id).single()
+  if (!prof) return { perfil_acesso: 'Administracao', nome_completo: 'Administrador', email: user.email ?? '' }
 
-  if (!prof) {
-    // Se o usuário está no Auth mas não na tabela de profissionais,
-    // tratamos como Admin para que ele possa se cadastrar/configurar.
-    return {
-      perfil_acesso: 'Administracao',
-      nome_completo: 'Administrador',
-      email: user.email ?? ''
-    }
-  }
+  return { perfil_acesso: prof.perfil_acesso, nome_completo: prof.nome_completo, email: user.email ?? '' }
+})
 
-  return {
-    perfil_acesso: prof.perfil_acesso,
-    nome_completo: prof.nome_completo,
-    email: user.email ?? ''
-  }
-}
+// --- COORDENACAO E ANALISES ---
 
-export async function buscarAgendaCoordenação(
-  startDate: string,
-  endDate: string,
-): Promise<ActionResponse<{ vagas: VagaFixaComJoins[]; hist: AgendamentoHistoricoComJoins[] }>> {
+export async function buscarAgendaCoordenacao(startDate: string, endDate: string) {
   const supabase = await createClient()
-
-  const { data: vagas, error: errVagas } = await supabase
-    .from('vagas_fixas')
-    .select(
-      `
-      *,
-      pacientes (id, nome_completo, data_nascimento, cns, criado_em),
-      profissionais (id, nome_completo),
-      linhas_cuidado_especialidades (id, nome_especialidade)
-    `,
-    )
-    .eq('status_vaga', 'Ativa')
+  const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
+    *,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    profissionais (id, nome_completo),
+    linhas_cuidado_especialidades (id, nome_especialidade)
+  `).eq('status_vaga', 'Ativa')
 
   if (errVagas) return { success: false, error: errVagas.message }
 
-  const { data: hist, error: errHist } = await supabase
-    .from('agendamentos_historico')
-    .select(
-      `
-      *,
-      pacientes (id, nome_completo, data_nascimento, cns, criado_em),
-      profissionais (id, nome_completo),
-      linhas_cuidado_especialidades (id, nome_especialidade)
-    `,
-    )
-    .gte('data_hora_inicio', startDate)
-    .lte('data_hora_inicio', endDate)
+  const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
+    *,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    profissionais (id, nome_completo),
+    linhas_cuidado_especialidades (id, nome_especialidade)
+  `).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate)
 
   if (errHist) return { success: false, error: errHist.message }
-
   return { success: true, data: { vagas: vagas || [], hist: hist || [] } }
 }
 
-export async function buscarAlertasAbsenteismo(): Promise<
-  ActionResponse<AlertaAbsenteismo[]>
-> {
+export async function buscarAlertasAbsenteismo(): Promise<ActionResponse<AlertaAbsenteismo[]>> {
   const supabase = await createClient()
-
-  const { data: vagas, error: errVagas } = await supabase
-    .from('vagas_fixas')
-    .select(
-      `
-      paciente_id,
-      pacientes (id, nome_completo, cns, telefone_principal),
-      linhas_cuidado_especialidades (nome_especialidade),
-      profissionais (nome_completo)
-    `,
-    )
-    .eq('status_vaga', 'Ativa')
+  const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
+    paciente_id,
+    pacientes (id, nome_completo, cns, telefone_principal),
+    linhas_cuidado_especialidades (nome_especialidade),
+    profissionais (nome_completo)
+  `).eq('status_vaga', 'Ativa')
 
   if (errVagas) return { success: false, error: errVagas.message }
 
-  const pacientesUnicos = Array.from(new Set(vagas.map((v) => v.paciente_id)))
+  const pacientesUnicos = Array.from(new Set(vagas.map(v => v.paciente_id)))
   const alertas = []
 
   for (const pId of pacientesUnicos) {
-    const { data: hist } = await supabase
-      .from('agendamentos_historico')
-      .select('status_comparecimento, data_hora_inicio')
-      .eq('paciente_id', pId)
-      .order('data_hora_inicio', { ascending: false })
-      .limit(3)
-
+    const { data: hist } = await supabase.from('agendamentos_historico').select('status_comparecimento, data_hora_inicio').eq('paciente_id', pId).order('data_hora_inicio', { ascending: false }).limit(3)
     if (!hist || hist.length < 3) continue
 
-    const todasFaltas = hist.every(
-      (h) => h.status_comparecimento === 'Falta Nao Justificada',
-    )
-
+    const todasFaltas = hist.every(h => h.status_comparecimento === 'Falta Nao Justificada')
     if (todasFaltas) {
-      const rawVaga = vagas.find((v) => v.paciente_id === pId)
+      const rawVaga = vagas.find(v => v.paciente_id === pId)
       if (rawVaga) {
-        // Supabase joins can return arrays for some relations
         const paciente = Array.isArray(rawVaga.pacientes) ? rawVaga.pacientes[0] : rawVaga.pacientes
-        const especialidade = Array.isArray(rawVaga.linhas_cuidado_especialidades) ? rawVaga.linhas_cuidado_especialidades?.[0] : rawVaga.linhas_cuidado_especialidades
-        const profissional = Array.isArray(rawVaga.profissionais) ? rawVaga.profissionais?.[0] : rawVaga.profissionais
+        const especialidade = (Array.isArray(rawVaga.linhas_cuidado_especialidades) ? rawVaga.linhas_cuidado_especialidades?.[0] : rawVaga.linhas_cuidado_especialidades) as any
+        const profissional = (Array.isArray(rawVaga.profissionais) ? rawVaga.profissionais?.[0] : rawVaga.profissionais) as any
 
         if (paciente) {
           alertas.push({
-            paciente: paciente as Partial<Paciente>,
+            paciente: paciente as any,
             especialidade: especialidade?.nome_especialidade || 'N/A',
             profissional: profissional?.nome_completo || 'N/A',
-            ultimas_faltas: hist.map((h) => h.data_hora_inicio),
+            ultimas_faltas: hist.map(h => h.data_hora_inicio),
           })
         }
       }
     }
   }
-
   return { success: true, data: alertas }
 }
 
-export async function processarDesligamentoPorAbandono(
-  pacienteId: string,
-): Promise<ActionResponse> {
+export async function processarDesligamentoPorAbandono(pacienteId: string): Promise<ActionResponse> {
   const supabase = await createClient()
-
-  const { error: errPac } = await supabase
-    .from('pacientes')
-    .update({ status_cadastro: 'Alta' })
-    .eq('id', pacienteId)
-
-  if (errPac) return { success: false, error: errPac.message }
-
-  const { error: errVagas } = await supabase
-    .from('vagas_fixas')
-    .update({
-      status_vaga: 'Encerrada',
-      data_fim_contrato: new Date().toISOString(),
-    })
-    .eq('paciente_id', pacienteId)
-    .eq('status_vaga', 'Ativa')
-
-  if (errVagas) return { success: false, error: errVagas.message }
-
+  await supabase.from('pacientes').update({ status_cadastro: 'Alta' }).eq('id', pacienteId)
+  await supabase.from('vagas_fixas').update({ status_vaga: 'Encerrada', data_fim_contrato: new Date().toISOString() }).eq('paciente_id', pacienteId).eq('status_vaga', 'Ativa')
   revalidatePath('/absenteismo')
   revalidatePath('/pacientes')
-
   return { success: true }
 }
 
-export async function buscarVagasFixas(
-  profissionalId: string
-): Promise<ActionResponse<VagaFixaComJoins[]>> {
+export async function buscarVagasFixas(profissionalId: string): Promise<ActionResponse<VagaFixaComJoins[]>> {
   const supabase = await createClient()
+  const { data, error } = await supabase.from('vagas_fixas').select(`
+    *,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    profissionais (id, nome_completo),
+    linhas_cuidado_especialidades (id, nome_especialidade)
+  `).eq('profissional_id', profissionalId).eq('status_vaga', 'Ativa')
 
-  const { data, error } = await supabase
-    .from('vagas_fixas')
-    .select(`
-      *,
-      pacientes (id, nome_completo, data_nascimento, cns, criado_em),
-      profissionais (id, nome_completo),
-      linhas_cuidado_especialidades (id, nome_especialidade)
-    `)
-    .eq('profissional_id', profissionalId)
-    .eq('status_vaga', 'Ativa')
-
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao buscar vagas fixas: ${error.message}`,
-    }
-  }
-
+  if (error) return { success: false, error: error.message }
   return { success: true, data: data as VagaFixaComJoins[] }
 }
 
-export async function encerrarVagaFixa(
-  vagaId: string
-): Promise<ActionResponse> {
+export async function encerrarVagaFixa(vagaId: string): Promise<ActionResponse> {
   const supabase = await createClient()
-
-  const { error } = await supabase
-    .from('vagas_fixas')
-    .update({ 
-      status_vaga: 'Encerrada',
-      data_fim_contrato: new Date().toISOString()
-    })
-    .eq('id', vagaId)
-
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao encerrar vaga: ${error.message}`,
-    }
-  }
-
+  await supabase.from('vagas_fixas').update({ status_vaga: 'Encerrada', data_fim_contrato: new Date().toISOString() }).eq('id', vagaId)
   revalidatePath('/configuracoes')
   revalidatePath('/agenda')
   return { success: true }
 }
 
-export async function buscarHistoricoClinicoPaciente(
-  pacienteId: string
-): Promise<ActionResponse<AgendamentoHistoricoComJoins[]>> {
+export async function buscarHistoricoClinicoPaciente(pacienteId: string): Promise<ActionResponse<AgendamentoHistoricoComJoins[]>> {
   const supabase = await createClient()
+  const { data, error } = await supabase.from('agendamentos_historico').select(`
+    *,
+    pacientes (id, nome_completo, data_nascimento, cns, criado_em),
+    profissionais (id, nome_completo),
+    linhas_cuidado_especialidades (id, nome_especialidade)
+  `).eq('paciente_id', pacienteId).order('data_hora_inicio', { ascending: false })
 
-  const { data, error } = await supabase
-    .from('agendamentos_historico')
-    .select(`
-      *,
-      pacientes (id, nome_completo, data_nascimento, cns, criado_em),
-      profissionais (id, nome_completo),
-      linhas_cuidado_especialidades (id, nome_especialidade)
-    `)
-    .eq('paciente_id', pacienteId)
-    .order('data_hora_inicio', { ascending: false })
-
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao buscar histórico clínico: ${error.message}`,
-    }
-  }
-
+  if (error) return { success: false, error: error.message }
   return { success: true, data: data as AgendamentoHistoricoComJoins[] }
 }
 
-export async function buscarMeusAtendimentos(
-  data: string
-): Promise<ActionResponse<{ vagas: VagaFixaComJoins[]; hist: AgendamentoHistoricoComJoins[] }>> {
+export async function buscarMeusAtendimentos(data: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) return { success: false, error: 'Usuário não autenticado' }
-
-  // Se for dev e não tiver user, buscarAgendaData vai lidar (retornando Admin se simularmos)
-  // Mas aqui usamos o ID real do profissional logado
+  if (!user) return { success: false, error: 'Usuario nao autenticado' }
   return buscarAgendaData(user.id, `${data}T00:00:00Z`, `${data}T23:59:59Z`)
 }
 
 export async function buscarMeusPacientesVagaFixa(): Promise<ActionResponse<Paciente[]>> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Usuario nao autenticado' }
 
-  if (!user) return { success: false, error: 'Usuário não autenticado' }
-
-  // Buscamos as vagas fixas desse profissional
-  const { data, error } = await supabase
-    .from('vagas_fixas')
-    .select(`
-      pacientes (*)
-    `)
-    .eq('profissional_id', user.id)
-    .eq('status_vaga', 'Ativa')
-
+  const { data, error } = await supabase.from('vagas_fixas').select('pacientes(*)').eq('profissional_id', user.id).eq('status_vaga', 'Ativa')
   if (error) return { success: false, error: error.message }
 
-  // Extrair pacientes únicos a partir das vagas
   const listaPacientes: Paciente[] = []
   const idsVistos = new Set<string>()
-
   if (data) {
-    for (const item of data) {
-      const p = item.pacientes as unknown as Paciente
+    data.forEach((v: any) => {
+      const p = v.pacientes
       if (p && !idsVistos.has(p.id)) {
-        listaPacientes.push(p)
         idsVistos.add(p.id)
+        listaPacientes.push(p)
       }
-    }
+    })
   }
 
   return { success: true, data: listaPacientes }
 }
 
-interface FilaJudicialRow {
-  id: string
-  nivel_prioridade: string
-  status_fila: string
-  data_entrada_fila: string
-  faltas_consecutivas: number | null
-  numero_processo_judicial: string | null
-  pacientes: { nome_completo: string; cns: string } | { nome_completo: string; cns: string }[] | null
-  linhas_cuidado_especialidades: { nome_especialidade: string } | { nome_especialidade: string }[] | null
-}
+// --- FILA JUDICIAL ---
 
 export async function buscarFilaJudicial(): Promise<ActionResponse<PacienteFila[]>> {
   const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('fila_espera')
-    .select(`
-      id,
-      data_entrada_fila,
-      nivel_prioridade,
-      status_fila,
-      faltas_consecutivas,
-      numero_processo_judicial,
-      pacientes ( nome_completo, cns ),
-      linhas_cuidado_especialidades ( nome_especialidade )
-    `)
-    .eq('nivel_prioridade', 'Mandado Judicial')
+  const { data, error } = await supabase.from('fila_espera').select(`
+    id, data_entrada_fila, nivel_prioridade, status_fila, numero_processo_judicial, faltas_consecutivas,
+    pacientes (nome_completo, cns),
+    linhas_cuidado_especialidades (nome_especialidade)
+  `).eq('nivel_prioridade', 'Mandado Judicial')
+    .in('status_fila', ['Aguardando', 'Em Atendimento', 'Em Risco'])
     .order('data_entrada_fila', { ascending: true })
 
   if (error) return { success: false, error: error.message }
 
-  const filaMapped: PacienteFila[] = (data as unknown as FilaJudicialRow[] || []).map((r) => {
-    const p = Array.isArray(r.pacientes) ? r.pacientes[0] : r.pacientes;
-    const e = Array.isArray(r.linhas_cuidado_especialidades) ? r.linhas_cuidado_especialidades[0] : r.linhas_cuidado_especialidades;
-
-    const dataEntrada = new Date(r.data_entrada_fila)
-    const hoje = new Date()
-    const diffTime = Math.abs(hoje.getTime() - dataEntrada.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
+  const hoje = new Date()
+  const filaMapped = (data as any[] || []).map(r => {
+    const diffDays = Math.ceil(Math.abs(hoje.getTime() - new Date(r.data_entrada_fila).getTime()) / (1000 * 60 * 60 * 24))
     return {
       id: r.id,
-      nome: p?.nome_completo || "Desconhecido",
-      cns: p?.cns || "S/N",
-      prioridade: r.nivel_prioridade as PacienteFila["prioridade"],
-      status: r.status_fila as PacienteFila["status"],
-      especialidade: e?.nome_especialidade || "Sem Especialidade",
+      nome: r.pacientes?.nome_completo || 'Desconhecido',
+      cns: r.pacientes?.cns || 'S/N',
+      prioridade: r.nivel_prioridade,
+      status: r.status_fila,
+      especialidade: r.linhas_cuidado_especialidades?.nome_especialidade || 'N/A',
       data_encaminhamento: r.data_entrada_fila,
       dias_espera: diffDays,
       profissional_nome: null,
       faltas: r.faltas_consecutivas || 0,
-      numeroProcesso: r.numero_processo_judicial
+      numeroProcesso: r.numero_processo_judicial,
     }
   })
-
   return { success: true, data: filaMapped }
 }
 
+// --- SOCIAL ---
 
-
-
-
-
-export async function cadastrarAvaliacaoSocial(
-  rawData: unknown,
-): Promise<ActionResponse> {
+export async function cadastrarAvaliacaoSocial(rawData: unknown): Promise<ActionResponse> {
   const supabase = await createClient()
+  const val = avaliacaoServicoSocialSchema.safeParse(rawData)
+  if (!val.success) return { success: false, error: val.error.issues.map(i => i.message).join(', ') }
 
-  const validation = avaliacaoServicoSocialSchema.safeParse(rawData)
-  if (!validation.success) {
-    const errorMsg = validation.error.issues
-      .map((i: { message: string }) => i.message)
-      .join(', ')
-    return { success: false, error: errorMsg }
-  }
-
-  const { data } = validation
-  const { error } = await supabase.from('avaliacoes_servico_social').insert({
-    paciente_id: data.paciente_id,
-    profissional_id: data.profissional_id,
-    quantidade_membros_familia: data.quantidade_membros_familia,
-    renda_familiar_total: data.renda_familiar_total,
-    recebe_beneficio: data.recebe_beneficio,
-    tipo_beneficio: data.tipo_beneficio,
-    tipo_moradia: data.tipo_moradia,
-    tem_saneamento_basico: data.tem_saneamento_basico,
-    tem_energia_eletrica: data.tem_energia_eletrica,
-    descricao_barreiras_arquitetonicas: data.descricao_barreiras_arquitetonicas,
-    impacto_incapacidade_trabalho: data.impacto_incapacidade_trabalho,
-    relatorio_social: data.relatorio_social,
-    parecer_final: data.parecer_final,
-    data_avaliacao: data.data_avaliacao,
-  })
-
-  if (error) {
-    return {
-      success: false,
-      error: `Erro ao salvar avaliação social: ${error.message}`,
-    }
-  }
+  const { error } = await supabase.from('avaliacoes_servico_social').insert(val.data)
+  if (error) return { success: false, error: error.message }
 
   revalidatePath('/pacientes')
   return { success: true }

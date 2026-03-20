@@ -5,7 +5,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation"
 // 2. Internos
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { buscarAgendaCoordenação } from "@/actions"
+import { buscarAgendaCoordenacao } from "@/actions"
 import { projectAgendaSessions } from "@/lib/agenda-utils"
 import { cn } from "@/lib/utils"
 
@@ -21,7 +21,7 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
   const searchParams = useSearchParams()
   const pathname = usePathname()
 
-  const [sessões, setSessões] = useState<AgendaSession[]>([])
+  const [sessoes, setSessoes] = useState<AgendaSession[]>([])
   const [profissionais] = useState<Profissional[]>(profissionaisIniciais)
   const [loading, setLoading] = useState(false)
 
@@ -51,7 +51,7 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
       const start = startOfDay(dataSelecionada).toISOString()
       const end = endOfDay(dataSelecionada).toISOString()
       
-      const res = await buscarAgendaCoordenação(start, end)
+      const res = await buscarAgendaCoordenacao(start, end)
       if (res.success && res.data) {
         const projetadas = projectAgendaSessions(
           res.data.vagas, 
@@ -59,7 +59,7 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
           dataSelecionada, 
           dataSelecionada
         )
-        setSessões(projetadas)
+        setSessoes(projetadas)
       }
       setLoading(false)
     }
@@ -125,7 +125,7 @@ export function ViewCoordenacao({ profissionaisIniciais }: ViewCoordenacaoProps)
 
             {/* Linhas por Profissional */}
             {profissionais.map((prof) => {
-              const sessoesProf = sessões.filter(s => s.profissional_id === prof.id)
+              const sessoesProf = sessoes.filter(s => s.profissional_id === prof.id)
               
               return (
                 <div key={prof.id} className="flex border-b hover:bg-muted transition-colors group w-full">

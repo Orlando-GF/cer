@@ -6,19 +6,17 @@ export default async function PainelGeral() {
   await validarAcessoRota("/")
   const supabase = await createClient()
 
-  const { count: filaAtivos } = await supabase
-    .from("fila_espera")
-    .select("*", { count: "exact", head: true })
-    .in("status_fila", ["Aguardando", "Em Atendimento", "Em Risco"])
-
-  const { count: filaEmRisco } = await supabase
-    .from("fila_espera")
-    .select("*", { count: "exact", head: true })
-    .eq("status_fila", "Em Risco")
-
-  const { count: totalPacientes } = await supabase
-    .from("pacientes")
-    .select("*", { count: "exact", head: true })
+  const [
+    { count: filaAtivos },
+    { count: filaEmRisco },
+    { count: totalPacientes }
+  ] = await Promise.all([
+    supabase.from("fila_espera").select("*", { count: "exact", head: true })
+      .in("status_fila", ["Aguardando", "Em Atendimento", "Em Risco"]),
+    supabase.from("fila_espera").select("*", { count: "exact", head: true })
+      .eq("status_fila", "Em Risco"),
+    supabase.from("pacientes").select("*", { count: "exact", head: true })
+  ])
 
   return (
     <div className="p-6 space-y-8">
