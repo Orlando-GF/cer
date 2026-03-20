@@ -31,40 +31,51 @@ import {
 
 // --- PACIENTES ---
 
-export async function buscarPacientes(page: number = 1, pageSize: number = 20): Promise<ActionResponse<{ data: Paciente[], total: number }>> {
-  const supabase = await createClient()
-  const from = (page - 1) * pageSize
-  const to = from + pageSize - 1
+export async function buscarPacientes(params: {
+  page?: number;
+  pageSize?: number;
+  busca?: string;
+} = {}): Promise<ActionResponse<{ data: Paciente[], total: number }>> {
+  const { page = 1, pageSize = 20, busca = '' } = params;
+  const supabase = await createClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
 
-  const { data, error, count } = await supabase
+  // 1. Inicia a query base com a contagem exata e os campos estritos
+  let query = supabase
     .from('pacientes')
-    .select('id, nome_completo, cns, data_nascimento, status_cadastro', { count: 'exact' })
-    .order('nome_completo', { ascending: true })
-    .range(from, to)
+    .select('id, nome_completo, cns, cpf, data_nascimento, status_cadastro', { count: 'exact' });
 
-  if (error) return { success: false, error: `Erro ao buscar pacientes: ${error.message}` }
-  return { success: true, data: { data: data as unknown as Paciente[], total: count || 0 } }
-}
-
-export async function buscarPacientesPorBusca(termo: string): Promise<ActionResponse<Paciente[]>> {
-  const supabase = await createClient()
-  if (!termo || termo.trim().length < 3) return { success: true, data: [] }
-
-  const apenasNumeros = termo.replace(/\D/g, '')
-  let query = supabase.from('pacientes')
-    .select('id, nome_completo, cns, cpf, data_nascimento, status_cadastro')
-    .limit(30)
-
-  if (apenasNumeros.length > 0) {
-    query = query.or(`cpf.ilike.%${apenasNumeros}%,cns.ilike.%${apenasNumeros}%`)
-  } else {
-    query = query.ilike('nome_completo', `%${termo}%`)
+  // 2. Aplica o filtro de busca dinamicamente (se existir)
+  const termo = busca.trim();
+  if (termo.length >= 3) {
+    const apenasNumeros = termo.replace(/\D/g, '');
+    // Se o usuário digitou números, busca em CPF ou CNS. Se não, busca no Nome.
+    if (apenasNumeros.length > 0) {
+      query = query.or(`cpf.ilike.%${apenasNumeros}%,cns.ilike.%${apenasNumeros}%`);
+    } else {
+      query = query.ilike('nome_completo', `%${termo}%`);
+    }
   }
 
-  const { data, error } = await query
-  if (error) return { success: false, error: `Erro ao buscar pacientes: ${error.message}` }
-  return { success: true, data: data as unknown as Paciente[] }
+  // 3. Aplica ordenação e paginação (.range é OBRIGATÓRIO para escalar para 8000+ prontuários)
+  const { data, error, count } = await query
+    .order('nome_completo', { ascending: true })
+    .range(from, to);
+
+  if (error) {
+    return { success: false, error: `Erro ao buscar pacientes: ${error.message}` };
+  }
+
+  return { 
+    success: true, 
+    data: { 
+      data: data as Paciente[], 
+      total: count || 0 
+    } 
+  };
 }
+
 
 export async function cadastrarPaciente(rawData: unknown): Promise<ActionResponse> {
   const supabase = await createClient()

@@ -1,9 +1,8 @@
-import { buscarPacientes, buscarPacientesPorBusca } from "@/actions"
+import { buscarPacientes } from "@/actions"
 import { DataTable } from "@/components/pacientes/data-table"
 import { columns } from "@/components/pacientes/columns"
 import { NovoPacienteSheet } from "@/components/pacientes/novo-paciente-sheet"
 import { validarAcessoRota } from "@/lib/access-control"
-import { Paciente } from "@/types"
 
 export default async function PacientesPage({
   searchParams,
@@ -15,29 +14,18 @@ export default async function PacientesPage({
   const page = Number(searchParams?.page) || 1
   const query = searchParams?.q || ""
 
-  // Busca os dados (paginados ou por busca)
-  let response;
-  if (query.trim().length >= 3) {
-    response = await buscarPacientesPorBusca(query)
-  } else {
-    response = await buscarPacientes(page)
-  }
+  // SSoT v7.4.4: Chamada única para busca + paginação integrada
+  const response = await buscarPacientes({
+    page,
+    busca: query
+  })
 
-  const data = response.success ? response.data : null
-  
   // Normalização do retorno para o DataTable
-  let pacientes: Paciente[] = []
-  let total = 0
-
-  if (data) {
-    if ('data' in (data as any) && Array.isArray((data as any).data)) {
-      pacientes = (data as any).data as Paciente[]
-      total = (data as any).total
-    } else if (Array.isArray(data)) {
-      pacientes = data as Paciente[]
-      total = pacientes.length
-    }
-  }
+  const { data: pacientesRes, total: rowCount } = response.success && response.data 
+    ? response.data 
+    : { data: [], total: 0 }
+  
+  const pacientes = pacientesRes || []
 
   return (
     <main className="min-h-screen bg-background p-6 space-y-8">
@@ -52,7 +40,6 @@ export default async function PacientesPage({
           </p>
         </div>
         <div className="shrink-0 flex gap-2">
-          {/* O Modal de Cadastro Independente importado e injetado */}
           <NovoPacienteSheet />
         </div>
       </div>
@@ -66,7 +53,7 @@ export default async function PacientesPage({
 
       {/* DATA TABLE */}
       {response.success && (
-        <DataTable columns={columns} data={pacientes} rowCount={total} />
+        <DataTable columns={columns} data={pacientes} rowCount={rowCount} />
       )}
     </main>
   )
