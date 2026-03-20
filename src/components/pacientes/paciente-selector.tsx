@@ -5,7 +5,7 @@ import { Search, Loader2, User } from "lucide-react"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
-import { buscarPacientesPorBusca } from "@/actions"
+import { buscarPacientes } from "@/actions"
 import { type Paciente } from "@/types"
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -46,9 +46,9 @@ export function PacienteSelector({ onSelect, value }: PacienteSelectorProps) {
       }
 
       setLoading(true)
-      const res = await buscarPacientesPorBusca(debouncedSearchTerm)
+      const res = await buscarPacientes({ busca: debouncedSearchTerm })
       if (res.success && res.data) {
-        setPacientes(res.data)
+        setPacientes(res.data.data)
       }
       setLoading(false)
     }

@@ -112,7 +112,7 @@ export function GradeHorariaSheet({
           <Field label="Dia da Semana" required>
             <Select 
               value={dados.dia_semana} 
-              onValueChange={(v) => setDados({...dados, dia_semana: v})}
+              onValueChange={(v: string | null) => setDados({...dados, dia_semana: v || "1"})}
             >
               <SelectTrigger className="w-full h-12 rounded-none border-border font-bold focus:ring-primary bg-card uppercase text-xs tracking-wider">
                 <SelectValue placeholder="SELECIONE O DIA" />
