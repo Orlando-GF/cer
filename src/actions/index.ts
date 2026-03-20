@@ -259,7 +259,7 @@ export async function registrarSessaoHistorico(rawData: unknown): Promise<Action
   }
 
   let dadosAnteriores = null
-  const id = (val.data as any).id
+  const id = (val.data as { id?: string }).id
   if (id) {
     const { data: existing } = await supabase.from('agendamentos_historico')
       .select('id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id')
@@ -299,7 +299,11 @@ async function registrarLogAuditoria(params: {
   })
 }
 
-export async function buscarAgendaData(profissionalId: string, startDate: string, endDate: string) {
+export async function buscarAgendaData(
+  profissionalId: string, 
+  startDate: string, 
+  endDate: string
+): Promise<ActionResponse<{ vagas: VagaFixaComJoins[], hist: AgendamentoHistoricoComJoins[] }>> {
   const supabase = await createClient()
   const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
     id, horario_inicio, horario_fim, dia_semana, status_vaga, especialidade_id, profissional_id, paciente_id, data_inicio_contrato,
@@ -318,10 +322,19 @@ export async function buscarAgendaData(profissionalId: string, startDate: string
   `).eq('profissional_id', profissionalId).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate)
 
   if (errHist) return { success: false, error: errHist.message }
-  return { success: true, data: { vagas: (vagas as any) || [], hist: (hist as any) || [] } }
+  return { 
+    success: true, 
+    data: { 
+      vagas: (vagas as unknown as VagaFixaComJoins[]) || [], 
+      hist: (hist as unknown as AgendamentoHistoricoComJoins[]) || [] 
+    } 
+  }
 }
 
-export async function buscarAgendaLogistica(startDate: string, endDate: string) {
+export async function buscarAgendaLogistica(
+  startDate: string, 
+  endDate: string
+): Promise<ActionResponse<{ vagas: VagaFixaComJoins[], hist: AgendamentoHistoricoComJoins[] }>> {
   const supabase = await createClient()
   const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
     id, horario_inicio, horario_fim, dia_semana, status_vaga, data_inicio_contrato,
@@ -340,7 +353,13 @@ export async function buscarAgendaLogistica(startDate: string, endDate: string) 
   `).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate).filter('pacientes.necessita_transporte', 'eq', true)
 
   if (errHist) return { success: false, error: errHist.message }
-  return { success: true, data: { vagas: (vagas as any) || [], hist: (hist as any) || [] } }
+  return { 
+    success: true, 
+    data: { 
+      vagas: (vagas as unknown as VagaFixaComJoins[]) || [], 
+      hist: (hist as unknown as AgendamentoHistoricoComJoins[]) || [] 
+    } 
+  }
 }
 
 // --- CONFIGURACOES: ESPECIALIDADES ---
@@ -479,7 +498,10 @@ export const getMeuPerfil = reactCache(async (): Promise<DadosUsuario | null> =>
 
 // --- COORDENACAO E ANALISES ---
 
-export async function buscarAgendaCoordenacao(startDate: string, endDate: string) {
+export async function buscarAgendaCoordenacao(
+  startDate: string, 
+  endDate: string
+): Promise<ActionResponse<{ vagas: VagaFixaComJoins[], hist: AgendamentoHistoricoComJoins[] }>> {
   const supabase = await createClient()
   const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
     id, horario_inicio, horario_fim, dia_semana, status_vaga, especialidade_id, profissional_id, paciente_id, data_inicio_contrato,
@@ -498,7 +520,13 @@ export async function buscarAgendaCoordenacao(startDate: string, endDate: string
   `).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate)
 
   if (errHist) return { success: false, error: errHist.message }
-  return { success: true, data: { vagas: (vagas as any) || [], hist: (hist as any) || [] } }
+  return { 
+    success: true, 
+    data: { 
+      vagas: (vagas as unknown as VagaFixaComJoins[]) || [], 
+      hist: (hist as unknown as AgendamentoHistoricoComJoins[]) || [] 
+    } 
+  }
 }
 
 export async function buscarAlertasAbsenteismo(): Promise<ActionResponse<AlertaAbsenteismo[]>> {
@@ -524,12 +552,12 @@ export async function buscarAlertasAbsenteismo(): Promise<ActionResponse<AlertaA
       const rawVaga = vagas.find(v => v.paciente_id === pId)
       if (rawVaga) {
         const paciente = Array.isArray(rawVaga.pacientes) ? rawVaga.pacientes[0] : rawVaga.pacientes
-        const especialidade = (Array.isArray(rawVaga.linhas_cuidado_especialidades) ? rawVaga.linhas_cuidado_especialidades?.[0] : rawVaga.linhas_cuidado_especialidades) as any
-        const profissional = (Array.isArray(rawVaga.profissionais) ? rawVaga.profissionais?.[0] : rawVaga.profissionais) as any
+        const especialidade = (Array.isArray(rawVaga.linhas_cuidado_especialidades) ? rawVaga.linhas_cuidado_especialidades?.[0] : rawVaga.linhas_cuidado_especialidades) as { nome_especialidade: string } | undefined
+        const profissional = (Array.isArray(rawVaga.profissionais) ? rawVaga.profissionais?.[0] : rawVaga.profissionais) as { nome_completo: string } | undefined
 
         if (paciente) {
           alertas.push({
-            paciente: paciente as any,
+            paciente: paciente as Partial<Paciente>,
             especialidade: especialidade?.nome_especialidade || 'N/A',
             profissional: profissional?.nome_completo || 'N/A',
             ultimas_faltas: hist.map(h => h.data_hora_inicio),
@@ -606,7 +634,7 @@ export async function buscarMeusPacientesVagaFixa(): Promise<ActionResponse<Paci
   const listaPacientes: Paciente[] = []
   const idsVistos = new Set<string>()
   if (data) {
-    data.forEach((v: any) => {
+    (data as unknown as { pacientes: Paciente }[]).forEach((v) => {
       const p = v.pacientes
       if (p && !idsVistos.has(p.id)) {
         idsVistos.add(p.id)
@@ -689,38 +717,6 @@ export async function buscarFilaEspera(params: {
   })
 
   return { success: true, data: { data: filaMapped, total: count || 0 } }
-}
-
-export async function buscarFilaJudicial(): Promise<ActionResponse<PacienteFila[]>> {
-  const supabase = await createClient()
-  const { data, error } = await supabase.from('fila_espera').select(`
-    id, data_entrada_fila, nivel_prioridade, status_fila, numero_processo_judicial, faltas_consecutivas,
-    pacientes (nome_completo, cns),
-    linhas_cuidado_especialidades (nome_especialidade)
-  `).eq('nivel_prioridade', 'Mandado Judicial')
-    .in('status_fila', ['Aguardando', 'Em Atendimento', 'Em Risco'])
-    .order('data_entrada_fila', { ascending: true })
-
-  if (error) return { success: false, error: error.message }
-
-  const hoje = new Date()
-  const filaMapped = (data as any[] || []).map(r => {
-    const diffDays = Math.ceil(Math.abs(hoje.getTime() - new Date(r.data_entrada_fila).getTime()) / (1000 * 60 * 60 * 24))
-    return {
-      id: r.id,
-      nome: r.pacientes?.nome_completo || 'Desconhecido',
-      cns: r.pacientes?.cns || 'S/N',
-      prioridade: r.nivel_prioridade,
-      status: r.status_fila,
-      especialidade: r.linhas_cuidado_especialidades?.nome_especialidade || 'N/A',
-      data_encaminhamento: r.data_entrada_fila,
-      dias_espera: diffDays,
-      profissional_nome: null,
-      faltas: r.faltas_consecutivas || 0,
-      numeroProcesso: r.numero_processo_judicial,
-    }
-  })
-  return { success: true, data: filaMapped }
 }
 
 // --- SOCIAL ---

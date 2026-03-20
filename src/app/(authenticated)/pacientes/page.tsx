@@ -21,8 +21,8 @@ export default async function PacientesPage({
   const response = await buscarPacientes({ page, pageSize: 20, busca: query })
 
   // Fim da aberração do "as any". Tipagem garantida pela ActionResponse
-  const pacientes = response.success ? response.data.data : []
-  const total = response.success ? response.data.total : 0
+  const pacientes = (response.success && response.data) ? response.data.data : []
+  const total = (response.success && response.data) ? response.data.total : 0
 
   return (
     // Removido o min-h-screen (Regra 4.4)

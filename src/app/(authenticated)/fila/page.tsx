@@ -44,8 +44,8 @@ export default async function Dashboard({
   const espResponse = await buscarEspecialidades();
   const especialidades = espResponse.success ? espResponse.data || [] : [];
 
-  const filaReal: PacienteFila[] = response.success ? response.data.data : [];
-  const totalFilaReal = response.success ? response.data.total : 0;
+  const filaReal: PacienteFila[] = (response.success && response.data) ? response.data.data : [];
+  const totalFilaReal = (response.success && response.data) ? response.data.total : 0;
 
   // KPIs baseados nos dados filtrados do servidor
   const totalAguardando = totalFilaReal; 
