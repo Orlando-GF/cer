@@ -699,7 +699,16 @@ export async function buscarFilaEspera(params: {
   if (error) return { success: false, error: error.message }
 
   const hoje = new Date()
-  const filaMapped = (data as any[] || []).map(r => {
+  const filaMapped = (data as unknown as { 
+    id: string; 
+    data_entrada_fila: string; 
+    nivel_prioridade: string; 
+    status_fila: string; 
+    numero_processo_judicial: string | null; 
+    faltas_consecutivas: number | null; 
+    pacientes: { id: string, nome_completo: string, cns: string } | null; 
+    linhas_cuidado_especialidades: { id: string, nome_especialidade: string } | null;
+  }[] || []).map(r => {
     const diffDays = Math.ceil(Math.abs(hoje.getTime() - new Date(r.data_entrada_fila).getTime()) / (1000 * 60 * 60 * 24))
     return {
       id: r.id,
