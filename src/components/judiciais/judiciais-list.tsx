@@ -2,37 +2,8 @@
 
 import { PacienteFila } from "@/types"
 import { DataTable } from "@/components/fila/data-table"
-import { columns } from "@/components/fila/columns"
-import { ColumnDef } from "@tanstack/react-table"
+import { judicialColumns } from "@/components/fila/judicial-columns"
 import { Scale, AlertCircle } from "lucide-react"
-
-// Estendemos as colunas da fila para incluir o número do processo
-// Reusamos as configurações de renderização das colunas originais mas garantimos a tipagem
-const judicialColumns: ColumnDef<PacienteFila>[] = [
-  {
-    accessorKey: "nome",
-    header: "Paciente",
-  },
-  {
-    accessorKey: "cns",
-    header: "CNS",
-  },
-  {
-    accessorKey: "especialidade",
-    header: "Especialidade",
-  },
-  {
-    accessorKey: "numeroProcesso",
-    header: "Nº Processo Judicial",
-    cell: ({ row }) => (
-      <span className="font-mono text-xs text-primary font-bold tabular-nums">
-        {row.getValue("numeroProcesso") || "NÃO INFORMADO"}
-      </span>
-    ),
-  },
-  columns[4] as ColumnDef<PacienteFila>, // Status
-  columns[5] as ColumnDef<PacienteFila>, // Actions
-]
 
 interface JudiciaisListProps {
   initialData: PacienteFila[]
