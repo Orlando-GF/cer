@@ -7,28 +7,26 @@ import { validarAcessoRota } from "@/lib/access-control"
 export default async function PacientesPage({
   searchParams,
 }: {
-  searchParams: { page?: string; q?: string }
+  // CORREÇÃO CRÍTICA NEXT.JS 15: searchParams agora é uma Promise
+  searchParams: Promise<{ page?: string; q?: string }>
 }) {
   await validarAcessoRota("/pacientes")
   
-  const page = Number(searchParams?.page) || 1
-  const query = searchParams?.q || ""
+  // Resolução da Promise obrigatória no Next 15
+  const resolvedParams = await searchParams;
+  const page = Number(resolvedParams?.page) || 1
+  const query = resolvedParams?.q || ""
 
-  // SSoT v7.4.4: Chamada única para busca + paginação integrada
-  const response = await buscarPacientes({
-    page,
-    busca: query
-  })
+  // SSoT: Uma única chamada limpa, unificando paginação e busca no backend
+  const response = await buscarPacientes({ page, pageSize: 20, busca: query })
 
-  // Normalização do retorno para o DataTable
-  const { data: pacientesRes, total: rowCount } = response.success && response.data 
-    ? response.data 
-    : { data: [], total: 0 }
-  
-  const pacientes = pacientesRes || []
+  // Fim da aberração do "as any". Tipagem garantida pela ActionResponse
+  const pacientes = response.success ? response.data.data : []
+  const total = response.success ? response.data.total : 0
 
   return (
-    <main className="min-h-screen bg-background p-6 space-y-8">
+    // Removido o min-h-screen (Regra 4.4)
+    <div className="p-6 space-y-8">
       {/* CABEÇALHO */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -44,17 +42,17 @@ export default async function PacientesPage({
         </div>
       </div>
 
-      {/* ERROR HANDLER */}
+      {/* ERROR HANDLER - Usando tokens semânticos corretos (Regra 4.2) */}
       {!response.success && (
-        <div className="p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-none text-sm">
+        <div className="p-4 bg-alert-danger-bg border border-alert-danger-text text-alert-danger-text text-sm">
           <strong>Houve um problema ao carregar os dados:</strong> {response.error}
         </div>
       )}
 
       {/* DATA TABLE */}
       {response.success && (
-        <DataTable columns={columns} data={pacientes} rowCount={rowCount} />
+        <DataTable columns={columns} data={pacientes} rowCount={total} />
       )}
-    </main>
+    </div>
   )
 }
