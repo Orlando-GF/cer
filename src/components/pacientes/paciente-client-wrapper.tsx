@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { DataTable } from "./data-table"
+import { DataTable } from "@/components/ui/data-table"
 import { PacienteSheetMaster } from "./paciente-sheet-master"
 import { Paciente } from "./columns"
 import { ColumnDef } from "@tanstack/react-table"

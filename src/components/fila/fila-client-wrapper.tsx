@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { DataTable } from "./data-table"
+// IMPORTAÇÃO CORRETA: Aponta para a tabela mestra da UI
+import { DataTable } from "@/components/ui/data-table"
 import { PacienteSheetMaster } from "../pacientes/paciente-sheet-master"
 import { PacienteFila } from "@/types"
 import { ColumnDef } from "@tanstack/react-table"
@@ -9,7 +10,6 @@ import { ColumnDef } from "@tanstack/react-table"
 interface FilaClientWrapperProps {
   data: PacienteFila[]
   total: number
-  // Correção SSoT: Substituição do 'any' proibido pelo 'unknown' seguro
   columns: ColumnDef<PacienteFila, unknown>[]
 }
 
@@ -24,18 +24,16 @@ export function FilaClientWrapper({ data, total, columns }: FilaClientWrapperPro
 
   return (
     <>
-      {/* Tabela Genérica agora recebe a ação de clique do pai */}
       <DataTable
         columns={columns}
         data={data}
         rowCount={total}
         onRowClick={handleRowClick}
+        searchPlaceholder="Buscar na fila por Nome ou Prontuário..."
+        searchParamName="q" // Exemplo: Se houvesse 2 tabelas, poderíamos usar "qFila"
+        pageParamName="page"
       />
 
-      {/* Smart Sheet: 
-        Agora passamos APENAS o ID. O próprio Sheet é responsável 
-        por ir ao banco buscar a ficha completa do paciente. 
-      */}
       {selectedRow && (
         <PacienteSheetMaster
           pacienteId={selectedRow.paciente_id}
