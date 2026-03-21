@@ -249,6 +249,28 @@ export async function buscarHistoricoFaltas(filaId: string): Promise<ActionRespo
   return { success: true, data }
 }
 
+// ==========================================
+// FUNÇÃO AUXILIAR DE SEGURANÇA (TRANSFORMER)
+// ==========================================
+// Garante que os Joins do Supabase são sempre devolvidos como Objetos limpos
+// e nunca como Arrays acidentais que crashariam o Frontend.
+function extrairJoin<T>(relacionamento: unknown): T | null {
+  if (!relacionamento) return null;
+  if (Array.isArray(relacionamento)) return (relacionamento[0] as T) || null;
+  return relacionamento as T;
+}
+
+// Garante que as consultas da Agenda não sobrecarreguem o servidor
+function validarLimiteDias(startDate: string, endDate: string, limiteMaximoDias = 35) {
+  const inicio = new Date(startDate).getTime();
+  const fim = new Date(endDate).getTime();
+  const diffDias = Math.ceil((fim - inicio) / (1000 * 3600 * 24));
+  
+  if (diffDias > limiteMaximoDias) {
+    throw new Error(`Intervalo de datas muito longo (${diffDias} dias). O limite máximo de busca é de ${limiteMaximoDias} dias.`);
+  }
+}
+
 // --- AGENDA E VAGAS FIXAS ---
 
 export async function salvarVagaFixa(rawData: unknown): Promise<ActionResponse> {
@@ -271,6 +293,8 @@ export async function registrarSessaoHistorico(rawData: unknown): Promise<Action
   }
 
   let dadosAnteriores = null
+  // 🚨 ALERTA: Este cast { id?: string } é um sintoma de falha no Zod.
+  // O seu agendamentoHistoricoSchema DEVE incluir z.string().uuid().optional() para o ID.
   const id = (val.data as { id?: string }).id
   if (id) {
     const { data: existing } = await supabase.from('agendamentos_historico')
@@ -316,30 +340,53 @@ export async function buscarAgendaData(
   startDate: string, 
   endDate: string
 ): Promise<ActionResponse<{ vagas: VagaFixaComJoins[], hist: AgendamentoHistoricoComJoins[] }>> {
-  const supabase = await createClient()
-  const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
-    id, horario_inicio, horario_fim, dia_semana, status_vaga, especialidade_id, profissional_id, paciente_id, data_inicio_contrato,
-    pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
-    profissionais (id, nome_completo),
-    linhas_cuidado_especialidades (id, nome_especialidade)
-  `).eq('profissional_id', profissionalId).eq('status_vaga', 'Ativa')
+  try {
+    // Circuit Breaker: Bloqueia queries abusivas que podem derrubar o servidor
+    validarLimiteDias(startDate, endDate);
 
-  if (errVagas) return { success: false, error: errVagas.message }
+    const supabase = await createClient()
+    const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
+      id, horario_inicio, horario_fim, dia_semana, status_vaga, especialidade_id, profissional_id, paciente_id, data_inicio_contrato,
+      pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
+      profissionais (id, nome_completo),
+      linhas_cuidado_especialidades (id, nome_especialidade)
+    `).eq('profissional_id', profissionalId).eq('status_vaga', 'Ativa')
 
-  const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
-    id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id,
-    pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
-    profissionais (id, nome_completo),
-    linhas_cuidado_especialidades (id, nome_especialidade)
-  `).eq('profissional_id', profissionalId).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate)
+    if (errVagas) return { success: false, error: errVagas.message }
 
-  if (errHist) return { success: false, error: errHist.message }
-  return { 
-    success: true, 
-    data: { 
-      vagas: (vagas as unknown as VagaFixaComJoins[]) || [], 
-      hist: (hist as unknown as AgendamentoHistoricoComJoins[]) || [] 
-    } 
+    const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
+      id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id,
+      pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
+      profissionais (id, nome_completo),
+      linhas_cuidado_especialidades (id, nome_especialidade)
+    `).eq('profissional_id', profissionalId).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate)
+
+    if (errHist) return { success: false, error: errHist.message }
+
+    // Transformer Seguro: Erradicação dos 'unknowns' cegos.
+    const vagasMapeadas = (vagas || []).map((v) => {
+      const vaga = v as Record<string, unknown>; // Cast local seguro para o join
+      return {
+        ...vaga,
+        pacientes: extrairJoin(vaga.pacientes),
+        profissionais: extrairJoin(vaga.profissionais),
+        linhas_cuidado_especialidades: extrairJoin(vaga.linhas_cuidado_especialidades)
+      };
+    }) as VagaFixaComJoins[];
+
+    const histMapeado = (hist || []).map((h) => {
+      const agendamento = h as Record<string, unknown>; // Cast local seguro
+      return {
+        ...agendamento,
+        pacientes: extrairJoin(agendamento.pacientes),
+        profissionais: extrairJoin(agendamento.profissionais),
+        linhas_cuidado_especialidades: extrairJoin(agendamento.linhas_cuidado_especialidades)
+      };
+    }) as AgendamentoHistoricoComJoins[];
+
+    return { success: true, data: { vagas: vagasMapeadas, hist: histMapeado } }
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido na agenda' };
   }
 }
 
@@ -347,30 +394,51 @@ export async function buscarAgendaLogistica(
   startDate: string, 
   endDate: string
 ): Promise<ActionResponse<{ vagas: VagaFixaComJoins[], hist: AgendamentoHistoricoComJoins[] }>> {
-  const supabase = await createClient()
-  const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
-    id, horario_inicio, horario_fim, dia_semana, status_vaga, data_inicio_contrato,
-    pacientes (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em, data_ultimo_laudo, data_nascimento, cns),
-    profissionais (id, nome_completo),
-    linhas_cuidado_especialidades (id, nome_especialidade)
-  `).eq('status_vaga', 'Ativa').filter('pacientes.necessita_transporte', 'eq', true)
+  try {
+    validarLimiteDias(startDate, endDate, 7); // Logística geralmente busca intervalos menores (1 semana max)
 
-  if (errVagas) return { success: false, error: errVagas.message }
+    const supabase = await createClient()
+    const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
+      id, horario_inicio, horario_fim, dia_semana, status_vaga, data_inicio_contrato,
+      pacientes!inner (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em, data_ultimo_laudo, data_nascimento, cns),
+      profissionais (id, nome_completo),
+      linhas_cuidado_especialidades (id, nome_especialidade)
+    `).eq('status_vaga', 'Ativa').filter('pacientes.necessita_transporte', 'eq', true)
 
-  const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
-    id, data_hora_inicio, data_hora_fim, status_comparecimento,
-    pacientes (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em, data_ultimo_laudo, data_nascimento, cns),
-    profissionais (id, nome_completo),
-    linhas_cuidado_especialidades (id, nome_especialidade)
-  `).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate).filter('pacientes.necessita_transporte', 'eq', true)
+    if (errVagas) return { success: false, error: errVagas.message }
 
-  if (errHist) return { success: false, error: errHist.message }
-  return { 
-    success: true, 
-    data: { 
-      vagas: (vagas as unknown as VagaFixaComJoins[]) || [], 
-      hist: (hist as unknown as AgendamentoHistoricoComJoins[]) || [] 
-    } 
+    const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
+      id, data_hora_inicio, data_hora_fim, status_comparecimento,
+      pacientes!inner (id, nome_completo, endereco_cep, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte, criado_em, data_ultimo_laudo, data_nascimento, cns),
+      profissionais (id, nome_completo),
+      linhas_cuidado_especialidades (id, nome_especialidade)
+    `).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate).filter('pacientes.necessita_transporte', 'eq', true)
+
+    if (errHist) return { success: false, error: errHist.message }
+
+    const vagasMapeadas = (vagas || []).map((v) => {
+      const vaga = v as Record<string, unknown>; 
+      return {
+        ...vaga,
+        pacientes: extrairJoin(vaga.pacientes),
+        profissionais: extrairJoin(vaga.profissionais),
+        linhas_cuidado_especialidades: extrairJoin(vaga.linhas_cuidado_especialidades)
+      };
+    }) as VagaFixaComJoins[];
+
+    const histMapeado = (hist || []).map((h) => {
+      const agendamento = h as Record<string, unknown>;
+      return {
+        ...agendamento,
+        pacientes: extrairJoin(agendamento.pacientes),
+        profissionais: extrairJoin(agendamento.profissionais),
+        linhas_cuidado_especialidades: extrairJoin(agendamento.linhas_cuidado_especialidades)
+      };
+    }) as AgendamentoHistoricoComJoins[];
+
+    return { success: true, data: { vagas: vagasMapeadas, hist: histMapeado } }
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido na logistica' };
   }
 }
 
@@ -514,30 +582,51 @@ export async function buscarAgendaCoordenacao(
   startDate: string, 
   endDate: string
 ): Promise<ActionResponse<{ vagas: VagaFixaComJoins[], hist: AgendamentoHistoricoComJoins[] }>> {
-  const supabase = await createClient()
-  const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
-    id, horario_inicio, horario_fim, dia_semana, status_vaga, especialidade_id, profissional_id, paciente_id, data_inicio_contrato,
-    pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
-    profissionais (id, nome_completo),
-    linhas_cuidado_especialidades (id, nome_especialidade)
-  `).eq('status_vaga', 'Ativa')
+  try {
+    validarLimiteDias(startDate, endDate, 14); // Coordenação não deve carregar mais de 14 dias da clínica inteira
 
-  if (errVagas) return { success: false, error: errVagas.message }
+    const supabase = await createClient()
+    const { data: vagas, error: errVagas } = await supabase.from('vagas_fixas').select(`
+      id, horario_inicio, horario_fim, dia_semana, status_vaga, especialidade_id, profissional_id, paciente_id, data_inicio_contrato,
+      pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
+      profissionais (id, nome_completo),
+      linhas_cuidado_especialidades (id, nome_especialidade)
+    `).eq('status_vaga', 'Ativa')
 
-  const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
-    id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id,
-    pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
-    profissionais (id, nome_completo),
-    linhas_cuidado_especialidades (id, nome_especialidade)
-  `).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate)
+    if (errVagas) return { success: false, error: errVagas.message }
 
-  if (errHist) return { success: false, error: errHist.message }
-  return { 
-    success: true, 
-    data: { 
-      vagas: (vagas as unknown as VagaFixaComJoins[]) || [], 
-      hist: (hist as unknown as AgendamentoHistoricoComJoins[]) || [] 
-    } 
+    const { data: hist, error: errHist } = await supabase.from('agendamentos_historico').select(`
+      id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id,
+      pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
+      profissionais (id, nome_completo),
+      linhas_cuidado_especialidades (id, nome_especialidade)
+    `).gte('data_hora_inicio', startDate).lte('data_hora_inicio', endDate)
+
+    if (errHist) return { success: false, error: errHist.message }
+
+    const vagasMapeadas = (vagas || []).map((v) => {
+      const vaga = v as Record<string, unknown>;
+      return {
+        ...vaga,
+        pacientes: extrairJoin(vaga.pacientes),
+        profissionais: extrairJoin(vaga.profissionais),
+        linhas_cuidado_especialidades: extrairJoin(vaga.linhas_cuidado_especialidades)
+      };
+    }) as VagaFixaComJoins[];
+
+    const histMapeado = (hist || []).map((h) => {
+      const agendamento = h as Record<string, unknown>;
+      return {
+        ...agendamento,
+        pacientes: extrairJoin(agendamento.pacientes),
+        profissionais: extrairJoin(agendamento.profissionais),
+        linhas_cuidado_especialidades: extrairJoin(agendamento.linhas_cuidado_especialidades)
+      };
+    }) as AgendamentoHistoricoComJoins[];
+
+    return { success: true, data: { vagas: vagasMapeadas, hist: histMapeado } }
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido na coordenacao' };
   }
 }
 

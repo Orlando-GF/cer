@@ -152,6 +152,7 @@ export const vagaFixaSchema = z.object({
 })
 
 export const agendamentoHistoricoSchema = z.object({
+  id: z.string().uuid().optional(),
   paciente_id: z.string().uuid("Paciente inválido"),
   profissional_id: z.string().uuid("Profissional inválido"),
   especialidade_id: z.string().uuid("Especialidade inválida"),
