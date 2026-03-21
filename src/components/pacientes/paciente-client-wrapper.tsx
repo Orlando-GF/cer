@@ -1,25 +1,32 @@
 "use client"
 
 import { useState } from "react"
+// IMPORTAÇÃO CORRETA: Aponta para a tabela mestra da UI
 import { DataTable } from "@/components/ui/data-table"
 import { PacienteSheetMaster } from "./paciente-sheet-master"
-import { Paciente } from "./columns"
-import { ColumnDef } from "@tanstack/react-table"
+import { type Paciente } from "@/types"
+import { type ColumnDef } from "@tanstack/react-table"
 
 interface PacienteClientWrapperProps {
   data: Paciente[]
   total: number
-  // Correção SSoT: Substituição do 'any' proibido pelo 'unknown' seguro
   columns: ColumnDef<Paciente, unknown>[]
 }
 
 export function PacienteClientWrapper({ data, total, columns }: PacienteClientWrapperProps) {
-  const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(null)
+  const [selectedPacienteId, setSelectedPacienteId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
-  const handleRowClick = (paciente: Paciente) => {
-    setSelectedPaciente(paciente)
+  const handleRowClick = (row: Paciente) => {
+    setSelectedPacienteId(row.id)
     setSheetOpen(true)
+  }
+
+  const handleOpenChange = (open: boolean) => {
+    setSheetOpen(open)
+    if (!open) {
+      setTimeout(() => setSelectedPacienteId(null), 300) 
+    }
   }
 
   return (
@@ -29,15 +36,14 @@ export function PacienteClientWrapper({ data, total, columns }: PacienteClientWr
         data={data}
         rowCount={total}
         onRowClick={handleRowClick}
+        searchPlaceholder="Buscar na base geral por Nome ou CNS..."
       />
 
-      {selectedPaciente && (
-        <PacienteSheetMaster
-          pacienteId={selectedPaciente.id}
-          open={sheetOpen}
-          onOpenChange={setSheetOpen}
-        />
-      )}
+      <PacienteSheetMaster
+        pacienteId={selectedPacienteId}
+        open={sheetOpen}
+        onOpenChange={handleOpenChange}
+      />
     </>
   )
 }
