@@ -246,7 +246,7 @@ export async function buscarHistoricoFaltas(filaId: string): Promise<ActionRespo
     .limit(10)
 
   if (error) return { success: false, error: `Erro ao buscar historico: ${error.message}` }
-  return { success: true, data }
+  return { success: true, data: data }
 }
 
 // ==========================================
@@ -365,7 +365,7 @@ export async function buscarAgendaData(
 
     // Transformer Seguro: Erradicação dos 'unknowns' cegos.
     const vagasMapeadas = (vagas || []).map((v) => {
-      const vaga = v as Record<string, unknown>; // Cast local seguro para o join
+      const vaga = v as Record<string, unknown>;
       return {
         ...vaga,
         pacientes: extrairJoin(vaga.pacientes),
@@ -375,7 +375,7 @@ export async function buscarAgendaData(
     }) as VagaFixaComJoins[];
 
     const histMapeado = (hist || []).map((h) => {
-      const agendamento = h as Record<string, unknown>; // Cast local seguro
+      const agendamento = h as Record<string, unknown>;
       return {
         ...agendamento,
         pacientes: extrairJoin(agendamento.pacientes),
