@@ -1,5 +1,4 @@
 import { FilaClientWrapper } from "@/components/fila/fila-client-wrapper";
-import { columns } from "@/components/fila/columns";
 import { PacienteFila } from "@/types";
 import { NovoProntuarioSheet } from "@/components/fila/novo-prontuario-sheet";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -124,7 +123,7 @@ export default async function Dashboard({
       {/* Fila Real-time DataTable com Wrapper para Sheet */}
       <div className="space-y-3">
         <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Prontuários da fila</h3>
-        <FilaClientWrapper columns={columns} data={filaReal} total={totalFilaReal} />
+        <FilaClientWrapper data={filaReal} total={totalFilaReal} />
       </div>
     </div>
   );
