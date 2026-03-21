@@ -17,8 +17,9 @@ export default async function PacientesPage({
 
   const response = await buscarPacientes({ page, pageSize: 20, busca: query })
 
-  const pacientes = response.success ? response.data.data : []
-  const total = response.success ? response.data.total : 0
+  // 🚨 CORREÇÃO TS: Blindamos a leitura garantindo que response.data existe antes de tentar ler .data ou .total
+  const pacientes = (response.success && response.data) ? response.data.data : []
+  const total = (response.success && response.data) ? response.data.total : 0
 
   return (
     <div className="p-6 space-y-8">
