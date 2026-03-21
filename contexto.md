@@ -1,247 +1,118 @@
-Contexto do Projeto e Regras de Desenvolvimento (CER)
+Contexto do Projeto e Regras de Engenharia (CER)
 
-Arquivo mestre do projeto. Lido pela IA antes de qualquer geração de
-código. Contém stack, padrões, design system, banco de dados, regras de
-negócio e estado real da implementação. Atualizado em 20/03/2026.
+Arquivo mestre do projeto. Lido pela IA antes de qualquer geração de código. Contém stack, padrões, design system, banco de dados, regras de negócio e checklist de qualidade de software. Atualizado em Março/2026.
 
-1. Visão Geral
+1. Visão Geral do Sistema
 
-Sistema web para substituir software legado em VBA no CER 2 — Centro
-Especializado em Reabilitação Aníbal Barbora Filho, vinculado ao SUS em
-Barreiras/BA. Gerencia mais de 8.000 prontuários com foco em terapias
-contínuas (Autismo/TEA, Neurologia, Fonoaudiologia, Fisioterapia, Terapia
-Ocupacional, Serviço Social, Psicologia, Nutrição) e dispensação de OPM.
+Sistema web web-based (Next.js) para substituir software legado em VBA no CER 2 — Centro Especializado em Reabilitação Aníbal Barbora Filho, vinculado ao SUS.
+Foco: Gerir +8.000 prontuários, fila de espera transparente, agenda inteligente com vagas fixas recorrentes, e controlo rigoroso de absenteísmo. Sistema de missão crítica, exige alta disponibilidade, rastreabilidade e tolerância a falhas.
 
-Problema central: Crise de judicialização por falta de rastreabilidade
-da fila de espera e problemas de escalabilidade na base de dados antiga.
-O sistema deve provar, com logs auditáveis, a ordem de atendimento e escalar com performance para dezenas de milhares de registos futuros.
+2. Stack Tecnológica
 
-Objetivo do MVP:
+Framework: Next.js 15 (App Router) — Server-First Architecture.
 
-Fila de espera transparente e auditável com prioridade para mandados judiciais.
+Linguagem: TypeScript Estrito (Proibido any, estritamente tipado).
 
-Agenda inteligente com vagas fixas recorrentes (sem poluir o banco com registros futuros).
+UI/UX: Tailwind CSS v4 + Base UI + shadcn/ui.
 
-Controle de absenteísmo com alerta automático aos 3 faltas consecutivas.
+Banco de Dados: Supabase (PostgreSQL) — Região sa-east-1 (LGPD).
 
-Prontuário digital substituindo os formulários físicos.
+Validação de Dados e ENV: Zod (Backend, Frontend e Variáveis de Ambiente).
 
-2. Stack Tecnológica e Integração de Ecossistemas
+Qualidade e Testes: Vitest (Unitários) + Playwright (E2E) + ESLint/Prettier.
 
-Camada
+Backend Auxiliar: Python 3.12+ (Isolado, acionado via REST/Webhooks, nunca executado localmente pelo Node.js).
 
-Tecnologia
+Observabilidade: Integração nativa para logs de erro (ex: Sentry) no Global Error Handler.
 
-Observação
+3. Os Pilares Arquiteturais (Obrigatórios)
 
-Framework
+3.1. Single Source of Truth (SSoT) e DRY
 
-Next.js 15 (App Router)
+Zero Duplicação: Lógica de negócio, validações (Zod) e componentes de UI genéricos (DataTable) devem existir num único ficheiro.
 
-Server Components por padrão
+Estado na URL: Paginação, filtros e abas ativas DEVEM ser geridos via searchParams na URL. É proibido usar useState para ditar a navegação global.
 
-UI
+3.2. Performance e Escalabilidade (Server-First)
 
-React 19 + TypeScript estrito
+Paginação Obrigatória no BD: Todas as listagens devem usar .range(from, to) ou .limit(). Proibido carregar tabelas inteiras para a memória.
 
-Proibido any
+Inversão de Controlo (IoC): Server Components (page.tsx) buscam dados e injetam em Client Components puros. Proibido passar funções/JSX (ex: columns do TanStack) do Servidor para o Cliente via props (causa falha de serialização).
 
-Estilo
+Proibido useEffect para Fetching: Dados devem chegar hidratados do Servidor. O Cliente apenas renderiza e gere interatividade.
 
-Tailwind CSS v4
+3.3. UX Profissional (Streaming, a11y e Tratamento de Erros)
 
-Apenas variáveis semânticas do design system
+Suspense Boundaries: Todo carregamento pesado deve ter um loading.tsx ou <Suspense fallback={...}> com Skeletons (nunca spinners a bloquear o ecrã).
 
-Primitivas UI
+Tratamento Global: Falhas no Supabase devem ser apanhadas por error.tsx. O utilizador nunca deve ver um ecrã de erro cru.
 
-Base UI (@base-ui/react)
+Acessibilidade (WCAG): Foco em navegação por teclado (Enter/Esc), modais acessíveis e contraste de cores adequado a deficiências visuais.
 
-Tabs, Button
+3.4. Cache e Mutação de Dados
 
-Componentes
+Todas as operações de escrita (POST/PUT/DELETE) devem ser feitas via Server Actions ('use server').
 
-shadcn/ui
+Após o sucesso de uma Server Action, é obrigatório chamar revalidatePath('/rota') ou revalidateTag() para purgar o cache.
 
-Card, Table, Sheet, Dialog, Select, etc.
+3.5. Contratos de API (ActionResponse) e Tipagem
 
-Banco de dados
+Resposta Padronizada: Todas as Server Actions DEVEM retornar o tipo ActionResponse<T> ({ success: boolean; data?: T; error?: string }). O frontend DEVE validar if (res.success && res.data) antes de aceder aos dados.
 
-Supabase — PostgreSQL
+Sincronia com Supabase: É proibido tipar o retorno do banco de dados manualmente. Os tipos devem ser gerados/atualizados via Supabase CLI (supabase gen types typescript).
 
-Região obrigatória: sa-east-1 (São Paulo / LGPD)
+3.6. Segurança, RBAC e Auditoria (LGPD)
 
-Backend Auxiliar
+Soft Delete: É absolutamente PROIBIDO usar a instrução DELETE no banco de dados. Use status_cadastro = 'Inativo' ou Alta.
 
-Python 3.12+ (FastAPI / Scripts)
+Controlo de Acesso: Toda a page.tsx ou Server Action deve validar o perfil do utilizador (validarAcessoRota()) antes de executar queries.
 
-Isolado do Next.js (Ver Regra 2.1)
+Logs Auditáveis: Todas as ações críticas (agendar, faltar, evoluir) devem inserir um registo na tabela agendamentos_logs com snapshot de dados (Anteriores vs Novos).
 
-Validação
+4. Regras de Negócio Inegociáveis
 
-Zod
+Mandado Judicial: nivel_prioridade = 'Mandado Judicial' fura a fila automaticamente (ordem de query order('nivel_prioridade')).
 
-Formulários e Server Actions
+Absenteísmo (Regra 8): 3 faltas consecutivas sem justificação ativam alerta de desligamento automático (Busca em massa via array de IDs, nunca queries N+1).
 
-2.1 Contrato de Integração Next.js ↔ Python (OBRIGATÓRIO)
+Laudos: Laudo vencido emite alerta visual vermelho, não impede atendimento, mas bloqueia exportação para faturamento SUS.
 
-Como o repositório contém uma grande parcela de código Python (38%), a fronteira entre os dois mundos é estrita:
+Proteção de Corrida (Race Condition): Materialização de sessões exige verificação de concorrência para impedir double-booking.
 
-O Next.js é a única face pública. Ele serve a UI e lida com a autenticação.
+Geração On-The-Fly: Vagas fixas não geram lixo no BD. O sistema projeta-as na memória do servidor para o Frontend e só materializa o registo (id único) no ato do atendimento.
 
-O Python atua como Worker/Microsserviço. Ele lida com tarefas pesadas (geração de relatórios densos, scripts de migração do VBA antigo, crons de análise de absenteísmo).
+5. Padrão de Integração e Nomenclatura
 
-Comunicação: O código TypeScript nunca executa scripts Python localmente em produção via child_process. O Python deve expor endpoints REST (ex: FastAPI) protegidos ou ser acionado via Webhooks/Cron Jobs no Supabase. O banco de dados Supabase é o ponto de encontro de ambos, mas a UI só consome o TypeScript.
+Páginas: src/app/(authenticated)/[modulo]/page.tsx (Servidor).
 
-3. Regras de Código e Arquitetura — OBRIGATÓRIAS
+Componentes Exclusivos: src/components/[modulo]/[nome]-client.tsx (Cliente).
 
-A IA deve gerar código seguindo estas regras sem exceção. Violações devem ser corrigidas antes de qualquer entrega.
+Componentes Genéricos: src/components/ui/ (Apenas componentes altamente reutilizáveis, sem lógica de domínio).
 
-3.1 Single Source of Truth (SSoT) e DRY (Contra a "Síndrome do Copy-Paste")
+Ações: src/actions/index.ts (Servidor).
 
-REGRA CRÍTICA: Se uma regra de negócio for aplicada em mais de um lugar, ela deve virar uma função ou hook centralizado.
+Nomenclatura Supabase: Jamais faça JOINs complexos no Cliente; resolva as Relações Estrangeiras na string de query do Supabase (ex: pacientes!inner(nome_completo)). Se o retorno puder ser Array ou Objeto, use uma função Transformer no backend antes de devolver ao Cliente.
 
-Nunca repita a lógica de cálculo (ex: "saber se o laudo está vencido"). Isso deve viver em uma única função em lib/utils.ts ou lib/business-rules.ts.
+6. O CHECKLIST DE CÓDIGO "PRO" (Para IA e Devs)
 
-Se criar um layout novo, ele deve usar os componentes de UI já existentes em components/ui/. Nunca crie um <button> ou <table> do zero com classes do Tailwind soltas; importe o <Button> ou <Table> do Shadcn/UI.
+Pare e valide estes 10 pontos antes de concluir qualquer implementação ou PR:
 
-3.2 Paginação Server-Side Obrigatória (Regra de Escalabilidade)
+[ ] TypeScript Estrito: Erradiquei any? Fiz cast ou verifiquei undefined adequadamente (response.data?.xyz)?
 
-Com mais de 8.000 prontuários, é expressamente proibido carregar todos os dados de uma tabela para o cliente.
+[ ] Acoplamento Ser-Cli: Estou a passar objetos não serializáveis (Funções, Components, Datas cruas não-ISO) via props de um Server para um Client Component? (Se sim, pare e inverta a arquitetura).
 
-Todas as queries de listagem no Supabase devem usar paginação LIMIT e OFFSET através do método .range(from, to).
+[ ] Performance (N+1): A minha Server Action faz loops for que disparam múltiplas queries ao banco? (Se sim, refatore para usar .in() e arrays de IDs).
 
-A páginação deve ser controlada via URL (?page=1&per_page=20) usando os searchParams do Next.js.
+[ ] Estado & SSoT: A paginação ou aba ativa sobrevive a um F5 (Refresh)? (Deve estar na URL via searchParams, não em useState).
 
-3.3 TypeScript Estrito
+[ ] Feedback de UI: O botão de salvar tem feedback de carregamento (isPending via useTransition) para impedir cliques duplos fantasma?
 
-Proibido any — use tipos explícitos ou unknown.
+[ ] Cache de Mutação: Inseri um revalidatePath('/nome-da-rota-exata') ao final do sucesso da minha Server Action?
 
-Interfaces de props obrigatórias em todos os componentes.
+[ ] Tratamento de Exceções: Envolvi as chamadas de banco de dados em try/catch e devolvi um error.message polido no ActionResponse?
 
-3.4 Arquitetura Server-First (Next.js App Router)
+[ ] Ambiente: As variáveis de ambiente novas (process.env.XYZ) foram validadas no esquema do Zod no arranque da aplicação?
 
-Server Components por padrão. 'use client' apenas para interatividade.
+[ ] Design System: Usei as cores e espaçamentos padronizados (bg-muted, text-primary, border-border) em vez de magic numbers (ex: #ff0000)?
 
-Mutação de dados via Server Actions ('use server').
-
-Estado de UI (filtros, paginação, abas): searchParams na URL — nunca useState.
-
-Proibido useEffect para buscar dados.
-
-3.5 Supabase e Padrões de Queries
-
-Nunca usar select('\*'). Listar explicitamente os campos necessários.
-
-Queries independentes na mesma page devem usar Promise.all([]).
-
-FK de usuário: Sempre .eq('id', user.id) — usando UUID do Supabase Auth.
-
-4. Design System
-
-(As regras de design system permanecem as mesmas: Nunito Sans, Cores Blue-Clinico, Alertas Semânticos, e Proibições absolutas de "div soup" e gradientes).
-
-5. Fluxo Operacional e Regras de Negócio Inegociáveis
-
-Regra
-
-Detalhe
-
-Mandado Judicial fura a fila
-
-nivel_prioridade = 'Mandado Judicial' sempre no topo.
-
-3 faltas consecutivas = alerta
-
-faltas_consecutivas >= 3 dispara alerta de desligamento.
-
-Laudo vencido não bloqueia evolução
-
-Apenas bloqueia exportação BPA.
-
-Logs de auditoria imutáveis
-
-Toda alteração gera registro em agendamentos_logs.
-
-Proibido registros futuros em massa
-
-Apenas vagas_fixas como regra, sem instanciar slots no banco antes do fato.
-
-SOFT DELETE OBRIGATÓRIO (LGPD/SUS)
-
-Nenhum registo no banco de dados sofre a instrução SQL DELETE. Tudo é resolvido mudando a coluna de status (ex: ativo = false, status_cadastro = 'Inativo'). Apagar dados do SUS destrói o histórico de auditoria.
-
-Proteção contra Race Conditions
-
-Se duas recepcionistas marcarem a presença de um paciente exato no mesmo segundo, o banco de dados (via UNIQUE constraint de paciente_id + data_hora_inicio na materialização) ou um Lock Otimista deve rejeitar a segunda transação.
-
-6. Motor de Agendamento Dinâmico (lib/agenda-utils.ts)
-
-Como funciona:
-
-vagas_fixas armazena apenas a regra (dia da semana, horário, vigência).
-
-O motor gera sessões on-the-fly para exibição.
-
-Para cada slot: busca se já existe materialização em agendamentos_historico.
-
-Se existe → usa os dados reais.
-
-Se não existe → cria sessão virtual com status: 'Projetado'.
-
-Materialização: Ocorre APENAS ao registrar presença, falta, salvar evolução ou remarcar.
-
-7. Banco de Dados e Esquema de Tabelas
-
-(Todas as tabelas pacientes, linhas_cuidado_especialidades, profissionais, grade_horaria, fila_espera, vagas_fixas, agendamentos_historico, agendamentos_logs e avaliacoes_servico_social mantêm a estrutura atual detalhada na v7).
-
-Nota Arquitetural sobre o Banco: Qualquer trigger, função ou RLS alterado via código Python deve garantir que o Supabase Client do Next.js consiga ler a informação sem quebra de tipagem. Os Schemas do Zod (lib/validations/schema.ts) devem refletir 1:1 com as Views e Tabelas.
-
-8. Template para Nova Feature e Formulários
-
-Sequência obrigatória ao implementar qualquer funcionalidade nova (Aplicando a Regra de SSoT):
-
-Verifique se o componente visual já existe em components/ui. Não o recrie.
-
-Schema Zod em lib/validations/schema.ts (Validar a tipagem do BD).
-
-Server Actions em actions/index.ts (com revalidatePath e try/catch).
-
-Server Component em app/(authenticated)/[rota]/page.tsx (busca dados paginados via URL params, passa props).
-
-Client Component em components/[modulo]/ (recebe props, formulário com React Hook Form + validação).
-
-8.1 Padrão de Página Seguro
-
-// ✅ CORRETO — Recebe searchParams para Paginação e Filtros
-export default async function MinhaPage({ searchParams }: { searchParams: { page?: string, query?: string } }) {
-const page = Number(searchParams.page) || 1
-// Função que engloba o Supabase .range(from, to) internamente
-const { dados, totalCount } = await buscarDadosPaginados(page, searchParams.query)
-
-return (
-<div className="p-6 space-y-8">
-<div className="flex items-center justify-between">
-<div>
-<h1 className="text-2xl font-bold text-foreground">Título</h1>
-</div>
-</div>
-<DataTable data={dados} total={totalCount} currentPage={page} />
-</div>
-)
-}
-
-9. Armadilhas Conhecidas do Cursor/IA (Checklist Pós-Geração)
-
-Regras Absolutas. A IA deve parar e verificar isso antes de dar a resposta:
-
-Existe lógica de negócio repetida no componente que eu acabei de criar? (Se sim, extrair para um utilitário exportável).
-
-Eu usei um <input type="date"> padrão nativo? (Obrigatório, não usar customizações pesadas que quebram o mobile).
-
-A query do Supabase que escrevi tem .range() ou .limit()? (Proibido buscar milhares de registos sem limite).
-
-Eu usei um DELETE no backend/action? (Se sim, apagar e substituir por update({ status: 'Inativo' })).
-
-A FK do utilizador está a usar .eq('id', user.id)? (Proibido usar email).
-
-Eu introduzi algum any no TypeScript? (Reescrever tipando corretamente).
+[ ] Testabilidade: A minha lógica complexa de negócio (ex: projectAgendaSessions) está extraída num ficheiro /lib isolado, puro e testável sem precisar renderizar o React?

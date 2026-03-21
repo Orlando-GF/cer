@@ -81,7 +81,7 @@ export function PacienteSheetMaster({ pacienteId, open, onOpenChange }: Paciente
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent side="right" className="p-0 flex flex-col bg-background overflow-hidden text-foreground w-full sm:max-w-[820px] border-l border-border">
-        <SheetHeader className="mb-0 flex flex-row items-center justify-between shrink-0 p-6 bg-clinico-900 shadow-md border-b border-white/10">
+        <SheetHeader className="mb-0 flex flex-row items-center justify-between shrink-0 p-6 pr-14 bg-clinico-900 shadow-md border-b border-white/10">
           <div className="flex-1">
             <SheetTitle className="flex items-center gap-2 text-white font-black">
               <User className="w-5 h-5 text-white/70" />

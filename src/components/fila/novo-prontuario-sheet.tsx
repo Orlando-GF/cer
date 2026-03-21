@@ -186,7 +186,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
         <SheetContent side="right" className="p-0 overflow-hidden flex flex-col">
 
           {/* HEADER */}
-          <SheetHeader className="mb-0 border-b border-white/10 shrink-0">
+          <SheetHeader className="mb-0 border-b border-white/10 shrink-0 pr-14">
             <SheetTitle className="flex items-center gap-2">
               <Plus className="w-4 h-4 text-white/70" />
               Inserir na fila de espera
