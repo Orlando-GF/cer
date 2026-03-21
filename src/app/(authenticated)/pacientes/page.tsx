@@ -49,9 +49,13 @@ export default async function PacientesPage({
         </div>
       )}
 
-      {/* DATA TABLE COM WRAPPER */}
+      {/* DATA TABLE COM WRAPPER INTELIGENTE (Resgatado) */}
       {response.success && (
-        <PacienteClientWrapper columns={columns} data={pacientes} total={total} />
+        <PacienteClientWrapper 
+          columns={columns} 
+          data={pacientes} 
+          total={total} 
+        />
       )}
     </div>
   )
