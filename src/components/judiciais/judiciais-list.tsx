@@ -2,7 +2,6 @@
 
 import { PacienteFila } from "@/types"
 import { FilaClientWrapper } from "@/components/fila/fila-client-wrapper"
-import { judicialColumns } from "@/components/fila/judicial-columns"
 import { Scale, AlertCircle } from "lucide-react"
 
 interface JudiciaisListProps {
@@ -37,7 +36,7 @@ export function JudiciaisList({ initialData }: JudiciaisListProps) {
           </div>
         </div>
       ) : (
-        <FilaClientWrapper columns={judicialColumns} data={data} total={data.length} />
+        <FilaClientWrapper variant="judicial" data={data} total={data.length} />
       )}
     </div>
   )

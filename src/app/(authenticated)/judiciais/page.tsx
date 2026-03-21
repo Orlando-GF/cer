@@ -1,6 +1,5 @@
 import { buscarFilaEspera } from '@/actions'
 import { FilaClientWrapper } from '@/components/fila/fila-client-wrapper'
-import { judicialColumns } from '@/components/fila/judicial-columns'
 import { validarAcessoRota } from '@/lib/access-control'
 import { AlertTriangle } from 'lucide-react'
 
@@ -8,14 +7,14 @@ export default async function JudiciaisPage({
   searchParams,
 }: {
   // Obrigatório no Next.js 15
-  searchParams: Promise<{ page?: string; q?: string }>
+  searchParams: Promise<{ pageFila?: string; qFila?: string }>
 }) {
   // Apenas perfis com permissão podem ver mandados
   await validarAcessoRota('/judiciais')
 
   const resolvedParams = await searchParams
-  const page = Number(resolvedParams?.page) || 1
-  const query = resolvedParams?.q || ''
+  const page = Number(resolvedParams?.pageFila) || 1
+  const query = resolvedParams?.qFila || ''
 
   // SSoT: Reutilizamos a MESMA função da Fila, mas ativamos a flag `judicial: true`
   const response = await buscarFilaEspera({
@@ -51,9 +50,13 @@ export default async function JudiciaisPage({
         </div>
       )}
 
-      {/* DATA TABLE COM WRAPPER */}
+      {/* DATA TABLE & SHEET WRAPPER */}
       {response.success && (
-        <FilaClientWrapper columns={judicialColumns} data={mandados} total={total} />
+        <FilaClientWrapper 
+          data={mandados} 
+          total={total} 
+          variant="judicial" 
+        />
       )}
     </div>
   )
