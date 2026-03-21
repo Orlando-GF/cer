@@ -1,8 +1,8 @@
 "use client"
 
 // 1. Externos
-import { useState, useTransition, useMemo, useEffect, useCallback } from "react"
-import { format, startOfDay, endOfDay, parseISO, isValid } from "date-fns"
+import { useTransition, useMemo, useState } from "react"
+import { format, startOfDay, parseISO, isValid } from "date-fns"
 import { FileText, Send, History, AlertCircle } from "lucide-react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { toast } from "sonner"
@@ -16,28 +16,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { 
-  buscarAgendaData, 
-  registrarSessaoHistorico
-} from "@/actions"
-import { projectAgendaSessions } from "@/lib/agenda-utils"
+import { registrarSessaoHistorico } from "@/actions"
 
 // 3. Tipos
 import type { AgendaSession, Profissional } from "@/types"
 
 interface ViewProfissionalProps {
   profissionaisIniciais: Profissional[]
+  sessoes: AgendaSession[]
 }
 
-export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProps) {
+export function ViewProfissional({ profissionaisIniciais, sessoes }: ViewProfissionalProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
 
-  const [profissionais] = useState<Profissional[]>(profissionaisIniciais)
-  const [sessões, setSessões] = useState<AgendaSession[]>([])
   const [selectedSessao, setSelectedSessao] = useState<AgendaSession | null>(null)
-  const [loading, setLoading] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   // Sincronizar com URL
@@ -57,36 +51,17 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
   const setUrlParams = (paramsToUpdate: Record<string, string | null | undefined>): void => {
     const params = new URLSearchParams(searchParams.toString())
     Object.entries(paramsToUpdate).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value)
-      } else {
-        params.delete(key)
-      }
+      if (value) params.set(key, value)
+      else params.delete(key)
     })
     router.replace(`${pathname}?${params.toString()}`)
   }
 
-  const updateAgenda = useCallback(async (): Promise<void> => {
-    if (!selectedProf) return
-    setLoading(true)
-    const start = startOfDay(dataSelecionada).toISOString()
-    const end = endOfDay(dataSelecionada).toISOString()
-    
-    const res = await buscarAgendaData(selectedProf, start, end)
-    if (res.success && res.data) {
-      const projected = projectAgendaSessions(res.data.vagas, res.data.hist, dataSelecionada, dataSelecionada)
-      setSessões(projected)
-    } else {
-      toast.error("Erro ao carregar agenda: " + res.error)
-      setSessões([])
-    }
-    setLoading(false)
-  }, [selectedProf, dataSelecionada])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    updateAgenda()
-  }, [updateAgenda])
+  const handleRecarregar = () => {
+    startTransition(() => {
+      router.refresh()
+    })
+  }
 
   const handleOpenEvolucao = (sessao: AgendaSession): void => {
     setSelectedSessao(sessao)
@@ -118,7 +93,7 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
 
       toast.success("Evolução registrada com sucesso!")
       setSelectedSessao(null)
-      updateAgenda()
+      // O Next.js atualiza automaticamente via revalidatePath no servidor
     })
   }
 
@@ -134,11 +109,11 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
             >
               <SelectTrigger className="w-[320px] font-medium h-10 rounded-none h-10" aria-label="Selecione o profissional">
                 <SelectValue placeholder="Selecione o seu nome profissional">
-                  {profissionais.find(p => p.id === selectedProf)?.nome_completo}
+                  {profissionaisIniciais.find(p => p.id === selectedProf)?.nome_completo}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {profissionais.map(p => (
+                {profissionaisIniciais.map(p => (
                   <SelectItem key={p.id} value={p.id}>{p.nome_completo}</SelectItem>
                 ))}
               </SelectContent>
@@ -157,6 +132,16 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
         </div>
 
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="rounded-none border-border text-foreground hover:bg-muted gap-2"
+            onClick={handleRecarregar}
+            disabled={isPending}
+          >
+            <History className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
+            Recarregar
+          </Button>
           <Badge className="bg-primary/10 text-primary border-transparent px-3 py-1 rounded-none font-bold text-[10px] uppercase tracking-widest">
             Minha Agenda
           </Badge>
@@ -176,12 +161,12 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {loading ? (
-                  <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground">Carregando...</TableCell></TableRow>
-                ) : sessões.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground">Nenhum atendimento agendado para hoje.</TableCell></TableRow>
+                {!selectedProf ? (
+                  <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground uppercase font-bold text-[10px] tracking-widest">Selecione um profissional para ver a agenda.</TableCell></TableRow>
+                ) : sessoes.length === 0 ? (
+                  <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground">Nenhum atendimento agendado para este dia.</TableCell></TableRow>
                 ) : (
-                  sessões.map((sessao) => (
+                  sessoes.map((sessao) => (
                     <TableRow key={sessao.id} className="hover:bg-muted cursor-pointer transition-colors border-b border-border last:border-0 h-24" onClick={() => handleOpenEvolucao(sessao)}>
                       <TableCell className="font-bold tabular-nums text-primary text-[18px] pl-6">
                         {format(sessao.data_hora_inicio, 'HH:mm')}
@@ -237,7 +222,7 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
             </CardHeader>
             <CardContent className="p-6">
               <div className="text-3xl font-bold tabular-nums text-primary">
-                {sessões.filter(s => s.status === "Presente").length} / {sessões.length}
+                {sessoes.filter(s => s.status === "Presente").length} / {sessoes.length}
               </div>
               <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-1">Concluídos</p>
             </CardContent>
@@ -251,12 +236,12 @@ export function ViewProfissional({ profissionaisIniciais }: ViewProfissionalProp
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              {sessões.filter(s => s.laudo_vencido).map(s => (
+              {sessoes.filter(s => s.laudo_vencido).map(s => (
                 <div key={s.id} className="text-[11px] p-4 bg-alert-danger-bg border-b border-border text-alert-danger-text font-bold uppercase">
                   {s.paciente_nome}
                 </div>
               ))}
-              {sessões.filter(s => s.laudo_vencido).length === 0 && (
+              {sessoes.filter(s => s.laudo_vencido).length === 0 && (
                 <div className="flex justify-center p-8">
                   <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest text-center">Tudo em dia</p>
                 </div>
