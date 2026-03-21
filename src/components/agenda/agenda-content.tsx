@@ -10,7 +10,7 @@ import { ViewCoordenacao } from '@/components/agenda/view-coordenacao'
 import { ViewConfiguracao } from '@/components/agenda/view-configuracao'
 
 // 3. Tipos
-import type { Profissional, Especialidade, AgendaSession } from '@/types'
+import type { Profissional, Especialidade, AgendaSession, VagaFixaComJoins } from '@/types'
 
 interface AgendaContentProps {
   perfil: string | null
@@ -18,6 +18,7 @@ interface AgendaContentProps {
   especialidadesIniciais: Especialidade[]
   // 🚨 NOVA PROP: Recebemos as sessões prontas do servidor
   sessoesIniciais: AgendaSession[]
+  vagasConfiguracao: VagaFixaComJoins[]
 }
 
 export function AgendaContent({
@@ -25,6 +26,7 @@ export function AgendaContent({
   profissionaisIniciais,
   especialidadesIniciais,
   sessoesIniciais,
+  vagasConfiguracao,
 }: AgendaContentProps): React.ReactNode {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -140,6 +142,7 @@ export function AgendaContent({
           <ViewConfiguracao
             profissionaisIniciais={profissionaisIniciais}
             especialidadesIniciais={especialidadesIniciais}
+            vagasAtivas={vagasConfiguracao} // <-- Injected!
           />
         )}
       </TabsContent>

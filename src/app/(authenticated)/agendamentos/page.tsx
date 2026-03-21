@@ -7,15 +7,22 @@ import {
   buscarAgendaData,
   buscarAgendaLogistica,
   buscarAgendaCoordenacao,
+  buscarVagasFixas
 } from '@/actions'
 import { projectAgendaSessions } from '@/lib/agenda-utils'
 import { startOfDay, endOfDay, parseISO, isValid } from 'date-fns'
+import type { AgendaSession, VagaFixaComJoins } from '@/types'
 
 export default async function AgendamentosPage({
   searchParams,
 }: {
   // Obrigatório no Next.js 15: searchParams é uma Promise
-  searchParams: Promise<{ view?: string; date?: string; profId?: string }>
+  searchParams: Promise<{ 
+    view?: string; 
+    date?: string; 
+    profId?: string;
+    configProfId?: string;
+  }>
 }): Promise<React.ReactNode> {
   const params = await searchParams
   const view = params?.view || 'recepcao'
@@ -43,7 +50,7 @@ export default async function AgendamentosPage({
 
   // 3. O SEGREDO DA PERFORMANCE: Fetch Condicional Baseado na Aba Ativa
   // Em vez do navegador sofrer, o Servidor faz a query exata e projeta as sessões.
-  let sessoes = []
+  let sessoes: AgendaSession[] = []
 
   if ((view === 'recepcao' || view === 'profissional') && profId) {
     const resAgenda = await buscarAgendaData(profId, start, end)
@@ -77,6 +84,16 @@ export default async function AgendamentosPage({
     }
   }
 
+  // 4. Busca de Vagas Fixas (Configuração)
+  let vagasConfiguracao: VagaFixaComJoins[] = []
+  const configProfId = params?.configProfId
+  if (view === 'configuracao' && configProfId) {
+    const resVagas = await buscarVagasFixas(configProfId)
+    if (resVagas.success && resVagas.data) {
+      vagasConfiguracao = resVagas.data
+    }
+  }
+
   return (
     <div className="max-w-full space-y-8 overflow-hidden p-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -101,7 +118,8 @@ export default async function AgendamentosPage({
           perfil={perfil}
           profissionaisIniciais={profissionais}
           especialidadesIniciais={especialidades}
-          sessoesIniciais={sessoes} // <-- Injetamos os dados já mastigados!
+          sessoesIniciais={sessoes}
+          vagasConfiguracao={vagasConfiguracao} // <-- Injetamos as vagas fixas!
         />
       </Suspense>
     </div>
