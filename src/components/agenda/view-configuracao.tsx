@@ -66,6 +66,17 @@ interface VagasAtivasListProps {
   onRemove?: (id: string) => void
 }
 
+// Helper local para transformar '11:00:00+00' em hora do navegador (e.g. '08:00')
+function formatLocalTime(timetzStr: string | undefined | null) {
+  if (!timetzStr) return ''
+  // Adiciona uma data base (1970) para forçar o parse correto no fuso localizado do navegador
+  const isTimeTz = timetzStr.includes('+') || timetzStr.includes('-')
+  const timeString = isTimeTz ? timetzStr : `${timetzStr}Z`
+  const d = new Date(`1970-01-01T${timeString}`)
+  if (isNaN(d.getTime())) return timetzStr.substring(0, 5) // Fallback seguro
+  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+}
+
 function VagasAtivasList({ vagas, onRemove }: VagasAtivasListProps) {
   if (vagas.length === 0) {
     return (
@@ -92,11 +103,11 @@ function VagasAtivasList({ vagas, onRemove }: VagasAtivasListProps) {
               </Badge>
               <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-bold">
                 <Clock className="h-3 w-3" />
-                {vaga.horario_inicio} - {vaga.horario_fim}
+                {formatLocalTime(vaga.horario_inicio)} - {formatLocalTime(vaga.horario_fim)}
               </span>
             </div>
             {onRemove && (
-              <Button
+               <Button
                 variant="ghost"
                 size="icon"
                 className="text-muted-foreground hover:text-destructive h-8 w-8 transition-colors"
@@ -186,13 +197,21 @@ export function ViewConfiguracao({
     }
 
     startTransition(async () => {
+      // Padroniza as horas no fuso UTC antes de enviar para o banco
+      const buildUtcTime = (timeStr: string) => {
+        const [h, m] = timeStr.split(':')
+        const d = new Date()
+        d.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0)
+        return d.toISOString()
+      }
+
       const res = await salvarVagaFixa({
         paciente_id: pacienteId,
         profissional_id: configProfId,
         especialidade_id: especialidadeId,
         dia_semana: parseInt(diaSemana),
-        horario_inicio: horaInicio,
-        horario_fim: horaFim,
+        horario_inicio: buildUtcTime(horaInicio),
+        horario_fim: buildUtcTime(horaFim),
         data_inicio_contrato: new Date().toISOString().split('T')[0],
         status_vaga: 'Ativa',
       })

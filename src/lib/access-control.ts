@@ -42,14 +42,15 @@ export async function validarAcessoRota(
   // Verifica se a rota atual tem restrições definidas
   const rotaDefinida = Object.keys(PERMISSOES_ROTAS).find(rota => pathname.startsWith(rota))
 
-  if (rotaDefinida) {
-    const permitidos = PERMISSOES_ROTAS[rotaDefinida]
-    if (!permitidos.includes(perfil)) {
-      redirect("/") // Sem permissão para esta rota específica
-    }
-  } else {
-    // Se a rota não está mapeada e o usuário está autenticado, permitir acesso
-    return perfil
+  if (!rotaDefinida) {
+    // DEFAULT DENY: Se a rota não existe no mapeamento, ninguém acessa (exceto Admin se quiser flexibilizar)
+    console.warn(`[Acesso Negado] Rota ${pathname} não mapeada no RBAC.`);
+    redirect("/") 
+  }
+
+  const permitidos = PERMISSOES_ROTAS[rotaDefinida]
+  if (!permitidos.includes(perfil)) {
+    redirect("/") // Sem permissão para esta rota específica
   }
 
   return perfil

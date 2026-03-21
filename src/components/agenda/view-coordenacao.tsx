@@ -17,12 +17,12 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 // 3. Tipos
-import type { AgendaSession, Profissional } from '@/types'
+import type { SerializedAgendaSession, Profissional } from '@/types'
 
 interface ViewCoordenacaoProps {
   profissionaisIniciais: Profissional[]
-  // 🚨 NOVA PROP: Dados injetados
-  sessoes: AgendaSession[]
+  // 🚨 NOVA PROP: Dados injetados (Serializados)
+  sessoes: SerializedAgendaSession[]
 }
 
 export function ViewCoordenacao({
@@ -161,10 +161,10 @@ export function ViewCoordenacao({
 
                     {/* Cards de Sessão */}
                     {sessoesProf.map((sessao) => {
-                      const left = getPosition(sessao.data_hora_inicio)
+                      const left = getPosition(parseISO(sessao.data_hora_inicio))
                       const width = getWidth(
-                        sessao.data_hora_inicio,
-                        sessao.data_hora_fim,
+                        parseISO(sessao.data_hora_inicio),
+                        parseISO(sessao.data_hora_fim),
                       )
 
                       return (
@@ -189,7 +189,7 @@ export function ViewCoordenacao({
                             {sessao.especialidade_nome}
                           </div>
                           <div className="mt-1 font-mono tabular-nums">
-                            {format(sessao.data_hora_inicio, 'HH:mm')}
+                            {format(parseISO(sessao.data_hora_inicio), 'HH:mm')}
                           </div>
                         </div>
                       )

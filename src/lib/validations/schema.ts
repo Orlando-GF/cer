@@ -5,13 +5,13 @@ import { formatarNomeClinico } from "@/lib/utils/string-utils"
 
 export const SexoEnum = z.enum(["M", "F", "Outro"])
 export const NivelPrioridadeEnum = z.enum(["Rotina", "Urgencia Clinica", "Mandado Judicial"])
-export const StatusFilaEnum = z.enum(["Aguardando", "Em Atendimento", "Em Risco", "Desistencia", "Alta"])
+export const StatusFilaEnum = z.enum(["Aguardando", "Em Atendimento", "Em Risco", "Desistencia", "Alta", "Aguardando Vaga"])
 export const FrequenciaRecomendadaEnum = z.enum(["A definir", "Semanal", "Quinzenal", "Mensal"])
 export const PerfilAcessoEnum = z.enum(["Recepcao", "Enfermagem", "Medico_Terapeuta", "Administracao", "Motorista"])
 export const StatusVagaEnum = z.enum(["Ativa", "Suspensa", "Encerrada"])
 export const StatusCadastroEnum = z.enum(["Ativo", "Inativo", "Obito", "Alta"])
 export const TipoAtendimentoEnum = z.enum(["Consulta Medica", "Terapia Continua", "Dispensacao_OPM", "Avaliacao_Diagnostica"])
-export const StatusComparecimentoEnum = z.enum(["Agendado", "Presente", "Falta Nao Justificada", "Falta Justificada", "Cancelado"])
+export const StatusComparecimentoEnum = z.enum(["Agendado", "Presente", "Falta Nao Justificada", "Falta Injustificada", "Falta Justificada", "Cancelado"])
 export const CondutaEvolucaoEnum = z.enum([
   "Retorno", 
   "Alta por Melhoria", 
@@ -29,6 +29,12 @@ const digitsOnly = (val: string) => val.replace(/\D/g, "")
 
 /** Campo opcional que aceita string vazia ou null como "não informado". */
 const optionalStr = z.string().optional().nullable().transform((v) => v || null)
+
+/** Campo de telefone que limpa a formatação mantendo apenas os números */
+const phoneStr = z.preprocess(
+  (v) => (typeof v === "string" && v ? digitsOnly(v) : null),
+  z.string().nullable().optional()
+)
 
 // ─── schema do paciente ───────────────────────────────────────────────────────
 
@@ -72,11 +78,11 @@ export const pacienteSchema = z.object({
   uf: z.string().length(2).default("BA"),
   referencia: optionalStr,
 
-  // Contatos — aceita qualquer formato de telefone (máscara é do frontend)
-  telefone_principal: optionalStr,
-  telefone_secundario: optionalStr,
+  // Contatos — extrai apenas os números utilizando phoneStr
+  telefone_principal: phoneStr,
+  telefone_secundario: phoneStr,
   nome_responsavel: z.string().optional().nullable().transform(v => v ? formatarNomeClinico(v) : null),
-  telefone_responsavel: optionalStr,
+  telefone_responsavel: phoneStr,
 
   // Pactuação
   pactuado: z.boolean().default(false),
@@ -144,8 +150,8 @@ export const vagaFixaSchema = z.object({
   profissional_id: z.string().uuid("Profissional inválido"),
   especialidade_id: z.string().uuid("Especialidade inválida"),
   dia_semana: z.number().min(0).max(6),
-  horario_inicio: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Horário de início inválido (HH:mm)"),
-  horario_fim: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Horário de fim inválido (HH:mm)"),
+  horario_inicio: z.string().min(5, "Horário de início inválido"),
+  horario_fim: z.string().min(5, "Horário de fim inválido"),
   data_inicio_contrato: z.string().length(10, "Data inválida"),
   data_fim_contrato: optionalStr,
   status_vaga: StatusVagaEnum.default("Ativa"),
@@ -161,10 +167,18 @@ export const agendamentoHistoricoSchema = z.object({
   data_hora_fim: z.string().optional().nullable(),
   status_comparecimento: StatusComparecimentoEnum.default("Agendado"),
   evolucao_clinica: optionalStr,
-  conduta: CondutaEvolucaoEnum.optional().nullable(),
+  conduta: CondutaEvolucaoEnum.optional().nullable(), // Alterado para texto livre conforme requisito de Textarea
   tipo_vaga: z.string().default("Regular"),
   tipo_agendamento: z.string().default("Individual"),
   ordem_chegada: z.number().int().optional().nullable(),
+}).refine((data) => {
+  if (data.status_comparecimento === "Presente" && (!data.evolucao_clinica || data.evolucao_clinica.trim().length === 0)) {
+    return false
+  }
+  return true
+}, {
+  message: "A evolução clínica é obrigatória quando o paciente está Presente.",
+  path: ["evolucao_clinica"],
 })
 
 export const profissionalSchema = z.object({

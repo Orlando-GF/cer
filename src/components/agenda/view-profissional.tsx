@@ -37,12 +37,12 @@ import { Label } from '@/components/ui/label'
 import { registrarSessaoHistorico } from '@/actions'
 
 // 3. Tipos
-import type { AgendaSession, Profissional } from '@/types'
+import type { SerializedAgendaSession, Profissional } from '@/types'
 
 interface ViewProfissionalProps {
   profissionaisIniciais: Profissional[]
-  // 🚨 NOVA PROP: Sessões injetadas prontas pelo servidor
-  sessoes: AgendaSession[]
+  // 🚨 NOVA PROP: Sessões injetadas prontas pelo servidor (Serializadas)
+  sessoes: SerializedAgendaSession[]
 }
 
 export function ViewProfissional({
@@ -53,7 +53,7 @@ export function ViewProfissional({
   const searchParams = useSearchParams()
   const pathname = usePathname()
 
-  const [selectedSessao, setSelectedSessao] = useState<AgendaSession | null>(
+  const [selectedSessao, setSelectedSessao] = useState<SerializedAgendaSession | null>(
     null,
   )
   const [isPending, startTransition] = useTransition()
@@ -83,7 +83,7 @@ export function ViewProfissional({
     router.replace(`${pathname}?${params.toString()}`)
   }
 
-  const handleOpenEvolucao = (sessao: AgendaSession): void => {
+  const handleOpenEvolucao = (sessao: SerializedAgendaSession): void => {
     setSelectedSessao(sessao)
     setEvolucao('')
     setConduta('')
@@ -98,8 +98,8 @@ export function ViewProfissional({
         profissional_id: selectedSessao.profissional_id,
         especialidade_id: selectedSessao.especialidade_id,
         vaga_fixa_id: selectedSessao.vaga_fixa_id,
-        data_hora_inicio: selectedSessao.data_hora_inicio.toISOString(),
-        data_hora_fim: selectedSessao.data_hora_fim.toISOString(),
+        data_hora_inicio: selectedSessao.data_hora_inicio,
+        data_hora_fim: selectedSessao.data_hora_fim,
         status_comparecimento: 'Presente',
         evolucao_clinica: evolucao,
         conduta: conduta,
@@ -218,7 +218,7 @@ export function ViewProfissional({
                       onClick={() => handleOpenEvolucao(sessao)}
                     >
                       <TableCell className="text-primary pl-6 text-[18px] font-bold tabular-nums">
-                        {format(sessao.data_hora_inicio, 'HH:mm')}
+                        {format(parseISO(sessao.data_hora_inicio), 'HH:mm')}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -341,7 +341,7 @@ export function ViewProfissional({
                 <span className="mt-1 text-[10px] font-black tracking-widest text-white/70 uppercase">
                   {selectedSessao?.especialidade_nome} |{' '}
                   {selectedSessao &&
-                    format(selectedSessao.data_hora_inicio, 'dd/MM/yyyy HH:mm')}
+                    format(parseISO(selectedSessao.data_hora_inicio), 'dd/MM/yyyy HH:mm')}
                 </span>
               </div>
             </div>

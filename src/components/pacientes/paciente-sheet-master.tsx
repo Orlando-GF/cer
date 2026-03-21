@@ -26,20 +26,34 @@ import { Paciente } from "./columns"
 import { PacienteForm, PacienteFormData } from "./paciente-form"
 import { HistoricoClinico } from "./historico-clinico"
 import { AvaliacaoSocialForm } from "./avaliacao-social-form"
+import { RegistroAtendimentoForm } from "../profissional/registro-atendimento-form"
 import { buscarPacienteCompleto } from "@/actions"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
+import { PlusCircle } from "lucide-react"
 
 interface PacienteSheetMasterProps {
   pacienteId: string | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  defaultTab?: string
+  vagaFixaIdContext?: string
+  especialidadeIdContext?: string
+  profissionalIdContext?: string
 }
 
-export function PacienteSheetMaster({ pacienteId, open, onOpenChange }: PacienteSheetMasterProps) {
+export function PacienteSheetMaster({ 
+  pacienteId, 
+  open, 
+  onOpenChange,
+  defaultTab,
+  vagaFixaIdContext,
+  especialidadeIdContext,
+  profissionalIdContext
+}: PacienteSheetMasterProps) {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
-  const [activeTab, setActiveTab] = useState("clinico")
+  const [activeTab, setActiveTab] = useState(defaultTab || "clinico")
   const [paciente, setPaciente] = useState<Paciente | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -71,7 +85,7 @@ export function PacienteSheetMaster({ pacienteId, open, onOpenChange }: Paciente
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setIsEditing(false)
-      setActiveTab("clinico")
+      setActiveTab(defaultTab || "clinico")
       // Não limpamos o paciente aqui para evitar flicker ao fechar, 
       // mas o useEffect cuidará de atualizar ao abrir o próximo.
     }
@@ -169,6 +183,13 @@ export function PacienteSheetMaster({ pacienteId, open, onOpenChange }: Paciente
                 <TabsTrigger value="social" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary text-muted-foreground/80 hover:text-foreground rounded-none h-11 px-0 text-[10px] font-black uppercase tracking-widest transition-all">
                   Serviço Social
                 </TabsTrigger>
+                
+                {profissionalIdContext && especialidadeIdContext && (
+                  <TabsTrigger value="registrar" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary text-muted-foreground/80 hover:text-foreground rounded-none h-11 px-0 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                    <PlusCircle className="w-3 h-3" />
+                    Novo Registro
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -244,6 +265,31 @@ export function PacienteSheetMaster({ pacienteId, open, onOpenChange }: Paciente
                       </div>
                    </div>
                 </TabsContent>
+
+                {profissionalIdContext && especialidadeIdContext && (
+                  <TabsContent value="registrar" className="mt-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 px-6 py-6">
+                    <div className="bg-card border border-border/60 shadow-lg p-6">
+                      <div className="mb-6 space-y-1">
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                          <PlusCircle className="h-4 w-4" />
+                          Registrar Atendimento Clínico
+                        </h3>
+                        <p className="text-[10px] text-muted-foreground uppercase font-medium">Lançamento de evolução e conduta terapêutica</p>
+                      </div>
+                      
+                      <RegistroAtendimentoForm 
+                        pacienteId={paciente.id}
+                        profissionalId={profissionalIdContext}
+                        especialidadeId={especialidadeIdContext}
+                        vagaFixaId={vagaFixaIdContext}
+                        onSuccess={() => {
+                          setActiveTab("clinico")
+                          router.refresh()
+                        }}
+                      />
+                    </div>
+                  </TabsContent>
+                )}
               </div>
             </Tabs>
           )}

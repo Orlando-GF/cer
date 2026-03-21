@@ -20,6 +20,10 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
   const router = useRouter()
   const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [selectedVagaId, setSelectedVagaId] = useState<string | null>(null)
+  const [selectedEspecId, setSelectedEspecId] = useState<string | null>(null)
+  const [selectedProfId, setSelectedProfId] = useState<string | null>(null)
+  const [defaultTab, setDefaultTab] = useState<string>("clinico")
 
   const hoje = new Date().toISOString().split("T")[0]
 
@@ -94,6 +98,14 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
                   <Button 
                     variant="outline" 
                     className="flex-1 rounded-none text-[10px] h-9 font-bold uppercase tracking-widest border-primary/20 text-primary"
+                    onClick={() => {
+                      setSelectedPaciente(atend.pacientes as unknown as Paciente)
+                      setSelectedVagaId(atend.vaga_fixa_id || null)
+                      setSelectedEspecId(atend.especialidade_id)
+                      setSelectedProfId(atend.profissional_id)
+                      setDefaultTab(atend.status_comparecimento === 'Presente' ? 'clinico' : 'registrar')
+                      setSheetOpen(true)
+                    }}
                   >
                     {atend.status_comparecimento === 'Presente' ? 'Ver Evolução' : 'Registrar'}
                   </Button>
@@ -133,10 +145,14 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
                     className="w-full rounded-none text-[10px] h-9 font-bold uppercase tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white"
                     onClick={() => {
                         setSelectedPaciente(vaga.pacientes as unknown as Paciente)
+                        setSelectedVagaId(vaga.id)
+                        setSelectedEspecId(vaga.especialidade_id)
+                        setSelectedProfId(vaga.profissional_id)
+                        setDefaultTab('registrar')
                         setSheetOpen(true)
                     }}
                   >
-                    Registrar Atendimento / Abrir Prontuário
+                    Registrar Atendimento
                   </Button>
                 </div>
              </CardContent>
@@ -159,6 +175,10 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
           pacienteId={selectedPaciente.id} 
           open={sheetOpen} 
           onOpenChange={setSheetOpen} 
+          defaultTab={defaultTab}
+          vagaFixaIdContext={selectedVagaId || undefined}
+          especialidadeIdContext={selectedEspecId || undefined}
+          profissionalIdContext={selectedProfId || undefined}
         />
       )}
     </div>

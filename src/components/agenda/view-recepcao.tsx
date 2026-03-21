@@ -29,12 +29,12 @@ import {
 import { registrarSessaoHistorico } from '@/actions'
 
 // 3. Tipos
-import type { AgendaSession, Profissional } from '@/types'
+import type { SerializedAgendaSession, Profissional } from '@/types'
 
 interface ViewRecepcaoProps {
   profissionaisIniciais: Profissional[]
-  // 🚨 NOVA PROP: Os dados agora vêm injetados pelo Servidor!
-  sessoes: AgendaSession[]
+  // 🚨 NOVA PROP: Os dados agora vêm injetados pelo Servidor (Serializados)!
+  sessoes: SerializedAgendaSession[]
 }
 
 export function ViewRecepcao({
@@ -78,7 +78,7 @@ export function ViewRecepcao({
   }
 
   const handleMarcarPresenca = async (
-    sessao: AgendaSession,
+    sessao: SerializedAgendaSession,
     status: string,
   ): Promise<void> => {
     startTransition(async () => {
@@ -87,8 +87,8 @@ export function ViewRecepcao({
         profissional_id: sessao.profissional_id,
         especialidade_id: sessao.especialidade_id,
         vaga_fixa_id: sessao.vaga_fixa_id,
-        data_hora_inicio: sessao.data_hora_inicio.toISOString(),
-        data_hora_fim: sessao.data_hora_fim.toISOString(),
+        data_hora_inicio: sessao.data_hora_inicio, // Já é ISO string
+        data_hora_fim: sessao.data_hora_fim,       // Já é ISO string
         status_comparecimento: status as
           | 'Presente'
           | 'Falta Justificada'
@@ -226,7 +226,7 @@ export function ViewRecepcao({
                   className="group hover:bg-muted border-border h-20 border-b transition-colors last:border-0"
                 >
                   <TableCell className="text-primary pl-6 text-[16px] font-bold tabular-nums">
-                    {format(sessao.data_hora_inicio, 'HH:mm')}
+                    {format(parseISO(sessao.data_hora_inicio), 'HH:mm')}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">

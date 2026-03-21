@@ -1,92 +1,19 @@
 import { z } from "zod"
+import { Database } from "./database.types"
 
-export interface Profissional {
-  id: string
-  nome_completo: string
-  registro_conselho?: string
-  cbo?: string
-  perfil_acesso: PerfilAcesso
+export type PerfilAcesso = Database["public"]["Enums"]["perfil_acesso_enum"]
+export type StatusCadastro = Database["public"]["Enums"]["status_cadastro_enum"]
+export type TipoReabilitacao = Database["public"]["Enums"]["tipo_reabilitacao_enum"]
+export type EquipeTecnica = Database["public"]["Enums"]["equipe_tecnica_enum"]
+export type TipoAtendimento = Database["public"]["Enums"]["tipo_atendimento_enum"]
+export type StatusVaga = Database["public"]["Enums"]["status_vaga_enum"]
+export type StatusComparecimento = Database["public"]["Enums"]["status_presenca_enum"]
+export type PrioridadeFila = Database["public"]["Enums"]["nivel_prioridade_enum"]
+export type StatusFila = Database["public"]["Enums"]["status_fila_enum"]
+
+export type Profissional = Database["public"]["Tables"]["profissionais"]["Row"] & {
   especialidades_permitidas?: string[]
-  ativo?: boolean
 }
-
-export type PerfilAcesso =
-  | "Medico_Terapeuta"
-  | "Enfermagem"
-  | "Recepcao"
-  | "Administracao"
-  | "Motorista"
-
-export interface Paciente {
-  id: string
-  // Identificadores
-  numero_prontuario?: string | null
-  id_legado_vba?: string | null
-  cns: string
-  cpf: string | null
-  // Identificação pessoal
-  nome_completo: string
-  data_nascimento: string
-  sexo: string
-  nome_mae: string
-  nome_pai?: string | null
-  rg?: string | null
-  rg_orgao_exp?: string | null
-  estado_civil?: string | null
-  naturalidade?: string | null
-  profissao?: string | null
-  reside_com?: string | null
-  // Endereço
-  endereco_cep?: string | null
-  logradouro?: string | null
-  numero?: string | null
-  bairro?: string | null
-  cidade: string
-  uf: string
-  referencia?: string | null
-  // Contatos
-  telefone_principal: string | null
-  telefone_secundario?: string | null
-  telefone_responsavel?: string | null
-  email?: string | null
-  nome_responsavel?: string | null
-  // Clínico
-  cid_principal?: string | null
-  cid_secundario?: string | null
-  data_ultimo_laudo?: string | null
-  tipo_reabilitacao?: "Fisica" | "Intelectual" | "Ambas" | null
-  equipe_tecnica?: "Estimulacao_Precoce" | "Infanto_Juvenil" | "Adulta" | null
-  eletivo?: boolean
-  // Logística e Acessibilidade
-  necessita_transporte: boolean
-  pactuado: boolean
-  municipio_pactuado?: string | null
-  tags_acessibilidade: string[]
-  opms_solicitadas?: string[]
-  // Administrativo
-  status_cadastro?: "Ativo" | "Inativo" | "Obito" | "Alta"
-  observacao_acolhimento?: string | null
-  criado_em?: string
-  atualizado_em?: string
-}
-
-export interface Especialidade {
-  id: string
-  nome_especialidade: string
-  descricao?: string | null
-  equipe_responsavel?: string | null
-  linha_reabilitacao?: string | null
-  tipo_atendimento?: TipoAtendimento | null
-  ativo?: boolean
-}
-
-export type TipoAtendimento =
-  | "Consulta Medica"
-  | "Terapia Continua"
-  | "Dispensacao_OPM"
-  | "Avaliacao_Diagnostica"
-  | "Acolhimento"
-  | "Pedagogico"
 
 export interface GradeHoraria {
   id: string
@@ -102,27 +29,19 @@ export interface GradeHoraria {
   }
 }
 
-export interface FaltaRegistro {
-  id: string
-  data_falta: string
-  justificada: boolean
-  observacao?: string | null
-  criado_em?: string
+export type Paciente = Database["public"]["Tables"]["pacientes"]["Row"]
+
+export type Especialidade = Database["public"]["Tables"]["linhas_cuidado_especialidades"]["Row"]
+
+export type FaltaRegistro = Database["public"]["Tables"]["faltas_registros"]["Row"]
+
+export type VagaFixa = Database["public"]["Tables"]["vagas_fixas"]["Row"] & {
+  pacientes?: Paciente
+  profissionais?: Profissional
+  linhas_cuidado_especialidades?: Especialidade
 }
 
-export interface VagaFixa {
-  id: string
-  paciente_id: string
-  profissional_id: string
-  especialidade_id: string
-  dia_semana: number
-  horario_inicio: string
-  horario_fim: string
-  status_vaga: "Ativa" | "Suspensa" | "Encerrada"
-  data_inicio_contrato: string
-  data_fim_contrato?: string | null
-  criado_em?: string
-  // Joins
+export type AgendamentoHistorico = Database["public"]["Tables"]["agendamentos_historico"]["Row"] & {
   pacientes?: Paciente
   profissionais?: Profissional
   linhas_cuidado_especialidades?: Especialidade
@@ -134,47 +53,6 @@ export interface AlertaAbsenteismo {
   profissional: string
   ultimas_faltas: string[]
 }
-
-/**
- * ESTA INTERFACE GERENCIA O ATENDIMENTO NO DIA (CHECK-IN)
- * Utilizada pela recepção para registrar a chegada do paciente na clínica.
- */
-export interface AgendamentoHistorico {
-  id: string
-  paciente_id: string
-  profissional_id: string
-  especialidade_id: string
-  vaga_fixa_id?: string | null
-  data_hora_inicio: string // Horário agendado
-  data_hora_fim: string
-  
-  // --- GESTÃO DE FLUXO E ESPERA EM RECEPÇÃO ---
-  status_comparecimento: StatusComparecimento
-  horario_chegada?: string | null // Quando o paciente fez o check-in
-  ordem_chegada?: number | null
-  tempo_espera_minutos?: number | null // Calculado: início_atendimento - horário_chegada
-  // ------------------------------------------
-
-  evolucao_clinica?: string | null
-  conduta?: string | null
-  tipo_vaga?: string | null
-  confirmado_pelo_paciente?: boolean
-  criado_em?: string
-  atualizado_em?: string
-  // Joins
-  pacientes?: Paciente
-  profissionais?: Profissional
-  linhas_cuidado_especialidades?: Especialidade
-}
-
-// Enum canônico — usar SEMPRE esta forma, nunca 'Falta Injustificada'
-export type StatusComparecimento =
-  | "Agendado"
-  | "Presente" // Check-in realizado, aguardando na recepção
-  | "Em Atendimento" // O paciente entrou na sala com o terapeuta
-  | "Falta Justificada"
-  | "Falta Nao Justificada"
-  | "Cancelado"
 
 export interface DadosUsuario {
   perfil_acesso: PerfilAcesso
@@ -198,10 +76,10 @@ export const CriarAgendamentoSchema = z.object({
   status_comparecimento: z.enum([
     "Agendado",
     "Presente",
-    "Em Atendimento",
-    "Falta Justificada",
     "Falta Nao Justificada",
-    "Cancelado",
+    "Falta Injustificada",
+    "Falta Justificada",
+    "Cancelado"
   ]),
 })
 
@@ -229,6 +107,11 @@ export interface AgendaSession {
   paciente_bairro?: string
   paciente_cidade?: string
   tags_acessibilidade?: string[]
+}
+
+export interface SerializedAgendaSession extends Omit<AgendaSession, 'data_hora_inicio' | 'data_hora_fim'> {
+  data_hora_inicio: string
+  data_hora_fim: string
 }
 
 export interface VagaFixaComJoins
@@ -285,24 +168,17 @@ export interface AgendamentoHistoricoComJoins
   >
 }
 
-/**
- * ESTA FILA É PARA ESPERA DE TERAPIAS (DEMANDA REPRIMIDA)
- * Pacientes que já passaram pelo Acolhimento/Triagem e aguardam 
- * disponibilidade de vaga em especialidades específicas (ex: Fono, TO, Fisioterapia).
- */
 export type PacienteFilaTerapia = {
   id: string
   paciente_id: string 
   nome: string
   cns: string
-  // Prioridade baseada em gravidade clínica ou ordem judicial
-  prioridade: "Rotina" | "Urgencia Clinica" | "Mandado Judicial"
-  // Status do paciente dentro desta fila específica
-  status: "Aguardando Vaga" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Alta"
+  prioridade: PrioridadeFila
+  status: StatusFila
   especialidade: string
   data_encaminhamento: string
   dias_espera: number
-  profissional_nome: string | null // Profissional preferencial ou designado
+  profissional_nome: string | null
   faltas: number
   numeroProcesso: string | null
 }

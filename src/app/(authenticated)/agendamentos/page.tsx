@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import React from 'react'
 import { validarAcessoRota } from '@/lib/access-control'
 import { AgendaContent } from '@/components/agenda/agenda-content'
 import {
@@ -94,6 +94,13 @@ export default async function AgendamentosPage({
     }
   }
 
+  // 5. SERIALIZAÇÃO: Convertendo Datas para String (Segurança para Client Components)
+  const sessoesSerializadas = sessoes.map(sessao => ({
+    ...sessao,
+    data_hora_inicio: sessao.data_hora_inicio.toISOString(),
+    data_hora_fim: sessao.data_hora_fim.toISOString(),
+  }))
+
   return (
     <div className="max-w-full space-y-8 overflow-hidden p-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -107,21 +114,13 @@ export default async function AgendamentosPage({
         </div>
       </div>
 
-      <Suspense
-        fallback={
-          <div className="bg-muted text-muted-foreground flex h-96 w-full animate-pulse items-center justify-center rounded-none">
-            Carregando interface da agenda...
-          </div>
-        }
-      >
-        <AgendaContent
-          perfil={perfil}
-          profissionaisIniciais={profissionais}
-          especialidadesIniciais={especialidades}
-          sessoesIniciais={sessoes}
-          vagasConfiguracao={vagasConfiguracao} // <-- Injetamos as vagas fixas!
-        />
-      </Suspense>
+      <AgendaContent
+        perfil={perfil}
+        profissionaisIniciais={profissionais}
+        especialidadesIniciais={especialidades}
+        sessoesIniciais={sessoesSerializadas}
+        vagasConfiguracao={vagasConfiguracao} // <-- Injetamos as vagas fixas!
+      />
     </div>
   )
 }

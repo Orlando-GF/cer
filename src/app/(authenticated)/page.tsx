@@ -9,13 +9,18 @@ export default async function PainelGeral() {
   const [
     { count: filaAtivos },
     { count: filaEmRisco },
-    { count: totalPacientes }
+    { count: totalPacientes },
+    { count: agendamentosHoje }
   ] = await Promise.all([
     supabase.from("fila_espera").select("*", { count: "exact", head: true })
       .in("status_fila", ["Aguardando", "Em Atendimento", "Em Risco"]),
     supabase.from("fila_espera").select("*", { count: "exact", head: true })
       .eq("status_fila", "Em Risco"),
-    supabase.from("pacientes").select("*", { count: "exact", head: true })
+    supabase.from("pacientes").select("*", { count: "exact", head: true }),
+    supabase.from("agendamentos_historico")
+      .select("*", { count: "exact", head: true })
+      .gte("data_hora_inicio", new Date().toISOString().split('T')[0] + 'T00:00:00Z')
+      .lte("data_hora_inicio", new Date().toISOString().split('T')[0] + 'T23:59:59Z'),
   ])
 
   return (
@@ -52,13 +57,12 @@ export default async function PainelGeral() {
           <p className="text-xs text-muted-foreground mt-1">Acima de limite de faltas</p>
         </div>
 
-        <div className="bg-card border border-border rounded-none p-5 opacity-60">
+        <div className="bg-card border border-border rounded-none p-5">
           <div className="flex items-center gap-3 text-[var(--color-alert-success-text)] mb-2">
             <CalendarDays className="w-5 h-5" />
             <span className="font-semibold text-sm tracking-wider text-muted-foreground">Agendamentos hoje</span>
           </div>
-          <p className="text-3xl font-bold text-foreground tabular-nums">-</p>
-          <p className="text-xs text-muted-foreground mt-1">Em desenvolvimento</p>
+          <p className="text-3xl font-bold text-foreground tabular-nums">{agendamentosHoje || 0}</p>
         </div>
 
       </div>

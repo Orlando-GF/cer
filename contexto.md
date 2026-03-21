@@ -67,7 +67,7 @@ Soft Delete: É absolutamente PROIBIDO usar a instrução DELETE no banco de dad
 
 Controlo de Acesso: Toda a page.tsx ou Server Action deve validar o perfil do utilizador (validarAcessoRota()) antes de executar queries.
 
-Logs Auditáveis: Todas as ações críticas (agendar, faltar, evoluir) devem inserir um registo na tabela agendamentos_logs com snapshot de dados (Anteriores vs Novos).
+Logs Auditáveis: Todas as ações críticas (agendar, faltar, evoluir) devem inserir um registo na tabela logs_auditoria com snapshot de dados (Anteriores vs Novos).
 
 4. Regras de Negócio Inegociáveis
 
@@ -131,4 +131,4 @@ vagas_fixas: id, paciente_id, profissional_id, especialidade_id, dia_semana (0-6
 
 agendamentos_historico: id, paciente_id, profissional_id, vaga_fixa_id (opcional), data_hora_inicio, data_hora_fim, status_comparecimento (Projetado, Presente, Falta Justificada, Falta Nao Justificada, Cancelado), evolucao_clinica, conduta, tipo_vaga.
 
-agendamentos_logs: Tabela de auditoria (registro_id, tabela_afetada, acao, dados_anteriores, dados_novos, usuario_id).
+logs_auditoria: Tabela generalizada de auditoria (id, tabela_afetada, registro_id, acao, dados_antigos, dados_novos, autor_id, data_hora).

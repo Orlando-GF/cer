@@ -148,17 +148,27 @@ function checkLaudoVencido(lastLaudoDate: string | null): boolean {
 
 /**
  * Marca sessões onde o paciente está em dois lugares ao mesmo tempo
+ * Otimizado para O(N) usando Hash Map para suportar milhares de sessões sem travar o Event Loop do Node.
  */
 function markIntensiveConflicts(sessions: AgendaSession[]) {
-  // Agrupar por paciente e horário
-  for (let i = 0; i < sessions.length; i++) {
-    for (let j = i + 1; j < sessions.length; j++) {
-      const s1 = sessions[i]
-      const s2 = sessions[j]
-      
-      if (s1.paciente_id === s2.paciente_id && s1.data_hora_inicio.getTime() === s2.data_hora_inicio.getTime()) {
-        s1.conflito_intensivo = true
-        s2.conflito_intensivo = true
+  // Mapeia usando a combinação "PacienteID_HorarioTimestamp" como chave única
+  const mapaConflitos = new Map<string, AgendaSession[]>()
+
+  // Passo 1: Agrupa todos os agendamentos na memória (Passa pelo array apenas 1 vez)
+  for (const session of sessions) {
+    const chave = `${session.paciente_id}_${session.data_hora_inicio.getTime()}`
+    
+    if (!mapaConflitos.has(chave)) {
+      mapaConflitos.set(chave, [])
+    }
+    mapaConflitos.get(chave)!.push(session)
+  }
+
+  // Passo 2: Marca as sessões que caíram no mesmo grupo (conflito)
+  for (const grupo of mapaConflitos.values()) {
+    if (grupo.length > 1) { // Paciente tem mais de 1 sessão no mesmo horário exato
+      for (const session of grupo) {
+        session.conflito_intensivo = true
       }
     }
   }

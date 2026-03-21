@@ -10,14 +10,14 @@ import { ViewCoordenacao } from '@/components/agenda/view-coordenacao'
 import { ViewConfiguracao } from '@/components/agenda/view-configuracao'
 
 // 3. Tipos
-import type { Profissional, Especialidade, AgendaSession, VagaFixaComJoins } from '@/types'
+import type { Profissional, Especialidade, SerializedAgendaSession, VagaFixaComJoins } from '@/types'
 
 interface AgendaContentProps {
   perfil: string | null
   profissionaisIniciais: Profissional[]
   especialidadesIniciais: Especialidade[]
-  // 🚨 NOVA PROP: Recebemos as sessões prontas do servidor
-  sessoesIniciais: AgendaSession[]
+  // 🚨 NOVA PROP: Recebemos as sessões prontas do servidor (Serializadas)
+  sessoesIniciais: SerializedAgendaSession[]
   vagasConfiguracao: VagaFixaComJoins[]
 }
 
