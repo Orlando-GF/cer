@@ -4,16 +4,17 @@ import { useState } from "react"
 // IMPORTAÇÃO CORRETA: Aponta para a tabela mestra da UI
 import { DataTable } from "@/components/ui/data-table"
 import { PacienteSheetMaster } from "./paciente-sheet-master"
+// IMPORTAÇÃO MOVIDA PARA AQUI: O Cliente importa o que é do Cliente
+import { columns } from "./columns" 
 import { type Paciente } from "@/types"
-import { type ColumnDef } from "@tanstack/react-table"
 
+// A interface fica totalmente limpa, sem conflitos com o TanStack Table
 interface PacienteClientWrapperProps {
   data: Paciente[]
   total: number
-  columns: ColumnDef<Paciente, unknown>[]
 }
 
-export function PacienteClientWrapper({ data, total, columns }: PacienteClientWrapperProps) {
+export function PacienteClientWrapper({ data, total }: PacienteClientWrapperProps) {
   const [selectedPacienteId, setSelectedPacienteId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
@@ -32,7 +33,7 @@ export function PacienteClientWrapper({ data, total, columns }: PacienteClientWr
   return (
     <>
       <DataTable
-        columns={columns}
+        columns={columns} // Injeta diretamente aqui
         data={data}
         rowCount={total}
         onRowClick={handleRowClick}
