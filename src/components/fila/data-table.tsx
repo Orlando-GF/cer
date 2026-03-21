@@ -36,12 +36,14 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   rowCount?: number
+  onRowClick?: (row: TData) => void
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   rowCount = 0,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -115,8 +117,12 @@ export function DataTable<TData, TValue>({
   })
 
   const handleRowClick = (rowData: unknown) => {
-    setSelectedPaciente(rowData as PacienteFila)
-    setSheetOpen(true)
+    if (onRowClick) {
+      onRowClick(rowData as TData)
+    } else {
+      setSelectedPaciente(rowData as PacienteFila)
+      setSheetOpen(true)
+    }
   }
 
   const goToPage = (page: number) => {
@@ -248,11 +254,14 @@ export function DataTable<TData, TValue>({
         </div>
       )}
 
-      <PacienteSheet 
-        paciente={selectedPaciente} 
-        open={sheetOpen} 
-        onOpenChange={setSheetOpen} 
-      />
+      {/* O Sheet agora é controlado pelo Wrapper se onRowClick for fornecido */}
+      {!onRowClick && (
+        <PacienteSheet 
+          paciente={selectedPaciente} 
+          open={sheetOpen} 
+          onOpenChange={setSheetOpen} 
+        />
+      )}
     </div>
   )
 }

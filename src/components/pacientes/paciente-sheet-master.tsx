@@ -1,6 +1,4 @@
-"use client"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Sheet,
   SheetContent,
@@ -20,46 +18,86 @@ import {
   User, 
   Phone, 
   Edit, 
-  Copy 
+  Copy,
+  Loader2
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Paciente } from "./columns"
 import { PacienteForm, PacienteFormData } from "./paciente-form"
 import { HistoricoClinico } from "./historico-clinico"
 import { AvaliacaoSocialForm } from "./avaliacao-social-form"
+import { buscarPacienteCompleto } from "@/actions"
+import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "sonner"
 
 interface PacienteSheetMasterProps {
-  paciente: Paciente | null
+  pacienteId: string | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSheetMasterProps) {
+export function PacienteSheetMaster({ pacienteId, open, onOpenChange }: PacienteSheetMasterProps) {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState("clinico")
+  const [paciente, setPaciente] = useState<Paciente | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Reset state when sheet closes using the onOpenChange wrapper
+  // Busca dados completos sempre que o sheet abrir com um novo ID
+  useEffect(() => {
+    async function loadPaciente() {
+      if (open && pacienteId) {
+        setIsLoading(true)
+        try {
+          const response = await buscarPacienteCompleto(pacienteId)
+          if (response.success && response.data) {
+            setPaciente(response.data)
+          } else {
+            toast.error("Erro ao carregar dados do paciente")
+            onOpenChange(false)
+          }
+        } catch (error) {
+          toast.error("Erro inesperado ao carregar dados")
+          console.error(error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadPaciente()
+  }, [open, pacienteId, onOpenChange])
+
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setIsEditing(false)
       setActiveTab("clinico")
+      // Não limpamos o paciente aqui para evitar flicker ao fechar, 
+      // mas o useEffect cuidará de atualizar ao abrir o próximo.
     }
     onOpenChange(newOpen)
   }
-
-  if (!paciente) return null
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent side="right" className="p-0 flex flex-col bg-background overflow-hidden text-foreground w-full sm:max-w-[820px] border-l border-border">
         <SheetHeader className="mb-0 flex flex-row items-center justify-between shrink-0 p-6 bg-clinico-900 shadow-md border-b border-white/10">
-          <div>
+          <div className="flex-1">
             <SheetTitle className="flex items-center gap-2 text-white font-black">
               <User className="w-5 h-5 text-white/70" />
-              {isEditing ? "EDITAR CADASTRO" : "PRONTUÁRIO INTEGRADO"}
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-white/50" />
+                  <span>CARREGANDO...</span>
+                </div>
+              ) : isEditing ? (
+                "EDITAR CADASTRO"
+              ) : (
+                "PRONTUÁRIO INTEGRADO"
+              )}
             </SheetTitle>
-            {!isEditing && (
+            
+            {!isLoading && paciente && !isEditing && (
               <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mt-1 flex items-center gap-2">
                 CNS: <strong className="font-mono text-white/90">{paciente.cns}</strong>
                 <Button variant="ghost" size="icon" className="h-5 w-5 rounded-none text-white/40 hover:text-white hover:bg-white/10" onClick={() => navigator.clipboard.writeText(paciente.cns)}>
@@ -67,6 +105,7 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
                 </Button>
               </p>
             )}
+
             {isEditing && (
               <button 
                 onClick={() => setIsEditing(false)}
@@ -77,7 +116,7 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
             )}
           </div>
           
-          {!isEditing && (
+          {!isLoading && paciente && !isEditing && (
             <Button 
                 variant="outline" 
                 size="sm" 
@@ -91,7 +130,24 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
         </SheetHeader>
 
         <div className="flex-1 overflow-hidden flex flex-col">
-          {isEditing ? (
+          {isLoading ? (
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <Skeleton className="h-32 w-full rounded-none" />
+                <Skeleton className="h-32 w-full rounded-none" />
+              </div>
+              <Skeleton className="h-8 w-full rounded-none" />
+              <div className="space-y-4">
+                <Skeleton className="h-20 w-full rounded-none" />
+                <Skeleton className="h-20 w-full rounded-none" />
+                <Skeleton className="h-20 w-full rounded-none" />
+              </div>
+            </div>
+          ) : !paciente ? (
+             <div className="flex-1 flex items-center justify-center p-12 text-center text-muted-foreground uppercase text-xs font-bold tracking-widest">
+                Nenhum paciente selecionado ou erro na carga.
+             </div>
+          ) : isEditing ? (
             <div className="flex-1 overflow-y-auto">
               <PacienteForm 
                 initialData={Object.fromEntries(
@@ -117,7 +173,6 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
 
               <div className="flex-1 overflow-y-auto px-6 py-4">
                 <TabsContent value="clinico" className="mt-0 space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
-                  {/* VIEW MODE CARDS */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-card p-5 rounded-none border border-border shadow-sm space-y-4">
                       <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
@@ -132,11 +187,11 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
                         <div className="grid grid-cols-2 gap-2">
                           <div>
                             <Label className="text-[10px] text-muted-foreground uppercase font-bold">CPF</Label>
-                            <p className="font-mono text-xs text-foreground">{paciente.cpf || "Não informado"}</p>
+                            <p className="font-mono text-xs text-foreground uppercase">{paciente.cpf || "Não informado"}</p>
                           </div>
                           <div>
                             <Label className="text-[10px] text-muted-foreground uppercase font-bold">Nascimento</Label>
-                            <p className="text-sm text-foreground">{new Date(paciente.data_nascimento).toLocaleDateString("pt-BR", {timeZone: 'UTC'})}</p>
+                            <p className="text-sm text-foreground">{paciente.data_nascimento ? new Date(paciente.data_nascimento).toLocaleDateString("pt-BR", {timeZone: 'UTC'}) : "-"}</p>
                           </div>
                         </div>
                       </div>
@@ -155,13 +210,12 @@ export function PacienteSheetMaster({ paciente, open, onOpenChange }: PacienteSh
                         </div>
                         <div>
                           <Label className="text-[10px] text-muted-foreground uppercase font-bold">Localidade</Label>
-                          <p className="text-sm text-foreground">{paciente.cidade} - {paciente.uf}</p>
+                          <p className="text-sm text-foreground uppercase">{paciente.cidade} - {paciente.uf}</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* SEÇÃO DE HISTÓRICO - EVOLUÇÃO CLÍNICA */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 border-b border-border/50 pb-2">
                       <History className="w-4 h-4 text-primary" />

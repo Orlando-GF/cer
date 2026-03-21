@@ -1,5 +1,5 @@
 import { buscarPacientes } from "@/actions"
-import { DataTable } from "@/components/pacientes/data-table"
+import { PacienteClientWrapper } from "@/components/pacientes/paciente-client-wrapper"
 import { columns } from "@/components/pacientes/columns"
 import { NovoPacienteSheet } from "@/components/pacientes/novo-paciente-sheet"
 import { validarAcessoRota } from "@/lib/access-control"
@@ -49,9 +49,9 @@ export default async function PacientesPage({
         </div>
       )}
 
-      {/* DATA TABLE */}
+      {/* DATA TABLE COM WRAPPER */}
       {response.success && (
-        <DataTable columns={columns} data={pacientes} rowCount={total} />
+        <PacienteClientWrapper columns={columns} data={pacientes} total={total} />
       )}
     </div>
   )

@@ -148,6 +148,18 @@ export async function buscarPacientePorDocumento(documento: string): Promise<Act
   return { success: true, data: data as unknown as Paciente }
 }
 
+export async function buscarPacienteCompleto(id: string): Promise<ActionResponse<Paciente>> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('pacientes')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error || !data) return { success: false, error: 'Paciente não encontrado' }
+  return { success: true, data: data as unknown as Paciente }
+}
+
 // --- FILA DE ESPERA ---
 
 export async function incluirPacienteNaFila(rawData: unknown): Promise<ActionResponse> {
@@ -712,6 +724,7 @@ export async function buscarFilaEspera(params: {
     const diffDays = Math.ceil(Math.abs(hoje.getTime() - new Date(r.data_entrada_fila).getTime()) / (1000 * 60 * 60 * 24))
     return {
       id: r.id,
+      paciente_id: r.pacientes?.id || '',
       nome: r.pacientes?.nome_completo || 'Desconhecido',
       cns: r.pacientes?.cns || 'S/N',
       prioridade: r.nivel_prioridade as PacienteFila['prioridade'],
@@ -722,7 +735,7 @@ export async function buscarFilaEspera(params: {
       profissional_nome: null,
       faltas: r.faltas_consecutivas || 0,
       numeroProcesso: r.numero_processo_judicial,
-    }
+    } as PacienteFila
   })
 
   return { success: true, data: { data: filaMapped, total: count || 0 } }

@@ -282,6 +282,7 @@ export interface AgendamentoHistoricoComJoins
 
 export type PacienteFila = {
   id: string
+  paciente_id: string // ID real do paciente para o Sheet
   nome: string
   cns: string
   prioridade: "Rotina" | "Urgencia Clinica" | "Mandado Judicial"

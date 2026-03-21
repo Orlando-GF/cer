@@ -1,5 +1,5 @@
 import { buscarFilaEspera } from '@/actions'
-import { DataTable } from '@/components/fila/data-table'
+import { FilaClientWrapper } from '@/components/fila/fila-client-wrapper'
 import { judicialColumns } from '@/components/fila/judicial-columns'
 import { validarAcessoRota } from '@/lib/access-control'
 import { AlertTriangle } from 'lucide-react'
@@ -51,9 +51,9 @@ export default async function JudiciaisPage({
         </div>
       )}
 
-      {/* DATA TABLE */}
+      {/* DATA TABLE COM WRAPPER */}
       {response.success && (
-        <DataTable columns={judicialColumns} data={mandados} rowCount={total} />
+        <FilaClientWrapper columns={judicialColumns} data={mandados} total={total} />
       )}
     </div>
   )
