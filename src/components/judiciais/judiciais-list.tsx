@@ -1,11 +1,12 @@
 "use client"
 
-import { PacienteFila } from "@/types"
+import { PacienteFilaTerapia } from "@/types"
 import { FilaClientWrapper } from "@/components/fila/fila-client-wrapper"
 import { Scale, AlertCircle } from "lucide-react"
 
 interface JudiciaisListProps {
-  initialData: PacienteFila[]
+  initialData: PacienteFilaTerapia[]
+  total: number
 }
 
 export function JudiciaisList({ initialData }: JudiciaisListProps) {

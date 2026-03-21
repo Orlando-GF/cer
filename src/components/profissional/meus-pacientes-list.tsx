@@ -82,7 +82,7 @@ export function MeusPacientesList({ pacientesIniciais }: MeusPacientesListProps)
 
       {selectedPaciente && (
         <PacienteSheetMaster 
-          paciente={selectedPaciente} 
+          pacienteId={selectedPaciente.id} 
           open={sheetOpen} 
           onOpenChange={setSheetOpen} 
         />

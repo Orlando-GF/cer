@@ -156,7 +156,7 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
 
       {selectedPaciente && (
         <PacienteSheetMaster 
-          paciente={selectedPaciente} 
+          pacienteId={selectedPaciente.id} 
           open={sheetOpen} 
           onOpenChange={setSheetOpen} 
         />

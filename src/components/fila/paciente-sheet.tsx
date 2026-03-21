@@ -15,10 +15,10 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { registrarFaltaPaciente, buscarHistoricoFaltas } from "@/actions"
-import { PacienteFila, FaltaRegistro } from "@/types"
+import { PacienteFilaTerapia, FaltaRegistro } from "@/types"
 
 export interface PacienteSheetProps {
-  paciente: PacienteFila | null
+  paciente: PacienteFilaTerapia | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -73,7 +73,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
   if (!paciente) return null
 
   const statusMap = {
-    Aguardando: { color: "bg-alert-warning-bg text-alert-warning-text border-alert-warning-text/20", label: "Aguardando" },
+    "Aguardando Vaga": { color: "bg-alert-warning-bg text-alert-warning-text border-alert-warning-text/20", label: "Aguardando Vaga" },
     "Em Atendimento": { color: "bg-alert-success-bg text-alert-success-text border-alert-success-text/20", label: "Em Atendimento" },
     "Em Risco": { color: "bg-alert-danger-bg text-alert-danger-text border-alert-danger-text/20", label: "Em Risco" },
     Desistencia: { color: "bg-muted text-muted-foreground border-border", label: "Desistência" },
@@ -86,7 +86,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
     "Mandado Judicial": { color: "text-alert-danger-text bg-alert-danger-bg border-alert-danger-text/20", label: "Mandado Judicial" },
   }
 
-  const s = statusMap[paciente.status] || statusMap.Aguardando
+  const s = statusMap[paciente.status as keyof typeof statusMap] || statusMap["Aguardando Vaga"]
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

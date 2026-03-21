@@ -116,3 +116,19 @@ Pare e valide estes 10 pontos antes de concluir qualquer implementação ou PR:
 [ ] Design System: Usei as cores e espaçamentos padronizados (bg-muted, text-primary, border-border) em vez de magic numbers (ex: #ff0000)?
 
 [ ] Testabilidade: A minha lógica complexa de negócio (ex: projectAgendaSessions) está extraída num ficheiro /lib isolado, puro e testável sem precisar renderizar o React?
+
+7. Dicionário de Dados Base (Core Schema)
+
+Referência para IA e Queries do Supabase: Garante que as consultas usam a nomenclatura exata do banco de dados, evitando alucinações de colunas.
+
+pacientes: id, nome_completo, cns, telefone_principal, status_cadastro (Ativo/Inativo/Alta).
+
+profissionais: id, nome_completo, cargo, status.
+
+linhas_cuidado_especialidades: id, nome_especialidade.
+
+vagas_fixas: id, paciente_id, profissional_id, especialidade_id, dia_semana (0-6), horario_inicio, horario_fim, status_vaga (Ativa/Encerrada).
+
+agendamentos_historico: id, paciente_id, profissional_id, vaga_fixa_id (opcional), data_hora_inicio, data_hora_fim, status_comparecimento (Projetado, Presente, Falta Justificada, Falta Nao Justificada, Cancelado), evolucao_clinica, conduta, tipo_vaga.
+
+agendamentos_logs: Tabela de auditoria (registro_id, tabela_afetada, acao, dados_anteriores, dados_novos, usuario_id).

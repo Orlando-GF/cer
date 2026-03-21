@@ -3,15 +3,15 @@
 import { RowData, ColumnDef, Row, Table } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
+import { PacienteFilaTerapia } from "@/types"
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
-    onOpenSheet?: (paciente: PacienteFila) => void
-    onAlterarStatus?: (filaId: string, novoStatus: "Aguardando" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Alta") => void
+    onOpenSheet?: (paciente: PacienteFilaTerapia) => void
+    onAlterarStatus?: (filaId: string, novoStatus: "Aguardando Vaga" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Alta") => void
   }
 }
-import { PacienteFila } from "@/types"
 import { MoreHorizontal, Copy, Eye, CalendarPlus, CheckCircle2, XOctagon } from "lucide-react"
 import {
   DropdownMenu,
@@ -32,7 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-function CellActions({ row, table }: { row: Row<PacienteFila>; table: Table<PacienteFila> }) {
+function CellActions({ row, table }: { row: Row<PacienteFilaTerapia>; table: Table<PacienteFilaTerapia> }) {
   const paciente = row.original
   const [openAlta, setOpenAlta] = useState(false)
   const [openDesistencia, setOpenDesistencia] = useState(false)
@@ -151,7 +151,7 @@ function CellActions({ row, table }: { row: Row<PacienteFila>; table: Table<Paci
   )
 }
 
-export const columns: ColumnDef<PacienteFila>[] = [
+export const columns: ColumnDef<PacienteFilaTerapia>[] = [
   {
     accessorKey: "nome",
     header: "Paciente",
@@ -188,7 +188,7 @@ export const columns: ColumnDef<PacienteFila>[] = [
     cell: ({ row }) => {
       const v = row.getValue("status") as string
       const map: Record<string, string> = {
-        "Aguardando": "bg-alert-warning-bg text-alert-warning-text border-none",
+        "Aguardando Vaga": "bg-alert-warning-bg text-alert-warning-text border-none",
         "Em Atendimento": "bg-alert-success-bg text-alert-success-text border-none",
         "Desistencia": "bg-muted text-muted-foreground border-none",
         "Alta": "bg-alert-shared-bg text-alert-shared-text border-none",

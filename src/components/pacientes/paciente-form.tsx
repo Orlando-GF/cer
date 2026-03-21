@@ -23,41 +23,14 @@ import {
   Truck,
 } from "lucide-react"
 import { cadastrarPaciente, atualizarPaciente } from "@/actions"
-import { type ActionResponse } from "@/types"
+import { type ActionResponse, type Paciente } from "@/types"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { formatarNomeClinico, buscarEnderecoPorCep } from "@/lib/utils/string-utils"
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
 
-export interface PacienteFormData {
-  id?: string
-  nome_completo?: string
-  data_nascimento?: string
-  sexo?: string
-  nome_mae?: string
-  nome_pai?: string
-  cns?: string
-  cpf?: string
-  endereco_cep?: string
-  logradouro?: string
-  numero?: string
-  bairro?: string
-  cidade?: string
-  uf?: string
-  telefone_principal?: string
-  telefone_secundario?: string
-  nome_responsavel?: string
-  telefone_responsavel?: string
-  pactuado?: boolean
-  municipio_pactuado?: string
-  cid_principal?: string
-  cid_secundario?: string
-  necessita_transporte?: boolean
-  tags_acessibilidade?: string[]
-  id_legado_vba?: string
-  status_cadastro?: "Ativo" | "Inativo" | "Obito" | "Alta"
-}
+export type PacienteFormData = Partial<Paciente>
 
 // ─── funções de máscara ───────────────────────────────────────────────────────
 

@@ -135,23 +135,29 @@ export interface AlertaAbsenteismo {
   ultimas_faltas: string[]
 }
 
+/**
+ * ESTA INTERFACE GERENCIA O ATENDIMENTO NO DIA (CHECK-IN)
+ * Utilizada pela recepção para registrar a chegada do paciente na clínica.
+ */
 export interface AgendamentoHistorico {
   id: string
   paciente_id: string
   profissional_id: string
   especialidade_id: string
   vaga_fixa_id?: string | null
-  data_hora_inicio: string
+  data_hora_inicio: string // Horário agendado
   data_hora_fim: string
+  
+  // --- GESTÃO DE FLUXO E ESPERA EM RECEPÇÃO ---
   status_comparecimento: StatusComparecimento
+  horario_chegada?: string | null // Quando o paciente fez o check-in
+  ordem_chegada?: number | null
+  tempo_espera_minutos?: number | null // Calculado: início_atendimento - horário_chegada
+  // ------------------------------------------
+
   evolucao_clinica?: string | null
   conduta?: string | null
   tipo_vaga?: string | null
-  // Individual | Compartilhado
-  tipo_agendamento?: string | null
-  // Para atendimentos em bloco
-  ordem_chegada?: number | null
-  // Substituto digital da assinatura do paciente
   confirmado_pelo_paciente?: boolean
   criado_em?: string
   atualizado_em?: string
@@ -164,7 +170,8 @@ export interface AgendamentoHistorico {
 // Enum canônico — usar SEMPRE esta forma, nunca 'Falta Injustificada'
 export type StatusComparecimento =
   | "Agendado"
-  | "Presente"
+  | "Presente" // Check-in realizado, aguardando na recepção
+  | "Em Atendimento" // O paciente entrou na sala com o terapeuta
   | "Falta Justificada"
   | "Falta Nao Justificada"
   | "Cancelado"
@@ -191,13 +198,11 @@ export const CriarAgendamentoSchema = z.object({
   status_comparecimento: z.enum([
     "Agendado",
     "Presente",
+    "Em Atendimento",
     "Falta Justificada",
     "Falta Nao Justificada",
     "Cancelado",
   ]),
-  evolucao_clinica: z.string().optional(),
-  conduta: z.string().optional(),
-  tipo_vaga: z.string().optional(),
 })
 
 export type CriarAgendamentoInput = z.infer<typeof CriarAgendamentoSchema>
@@ -280,17 +285,24 @@ export interface AgendamentoHistoricoComJoins
   >
 }
 
-export type PacienteFila = {
+/**
+ * ESTA FILA É PARA ESPERA DE TERAPIAS (DEMANDA REPRIMIDA)
+ * Pacientes que já passaram pelo Acolhimento/Triagem e aguardam 
+ * disponibilidade de vaga em especialidades específicas (ex: Fono, TO, Fisioterapia).
+ */
+export type PacienteFilaTerapia = {
   id: string
-  paciente_id: string // ID real do paciente para o Sheet
+  paciente_id: string 
   nome: string
   cns: string
+  // Prioridade baseada em gravidade clínica ou ordem judicial
   prioridade: "Rotina" | "Urgencia Clinica" | "Mandado Judicial"
-  status: "Aguardando" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Alta"
+  // Status do paciente dentro desta fila específica
+  status: "Aguardando Vaga" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Alta"
   especialidade: string
   data_encaminhamento: string
   dias_espera: number
-  profissional_nome: string | null
+  profissional_nome: string | null // Profissional preferencial ou designado
   faltas: number
   numeroProcesso: string | null
 }
