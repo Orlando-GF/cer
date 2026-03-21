@@ -1,32 +1,107 @@
-import React, { Suspense } from "react"
-import { validarAcessoRota } from "@/lib/access-control"
-import { AgendaContent } from "@/components/agenda/agenda-content"
-import { buscarProfissionais, buscarEspecialidades } from "@/actions"
+import React, { Suspense } from 'react'
+import { validarAcessoRota } from '@/lib/access-control'
+import { AgendaContent } from '@/components/agenda/agenda-content'
+import {
+  buscarProfissionais,
+  buscarEspecialidades,
+  buscarAgendaData,
+  buscarAgendaLogistica,
+  buscarAgendaCoordenacao,
+} from '@/actions'
+import { projectAgendaSessions } from '@/lib/agenda-utils'
+import { startOfDay, endOfDay, parseISO, isValid } from 'date-fns'
 
-export default async function AgendamentosPage(): Promise<React.ReactNode> {
+export default async function AgendamentosPage({
+  searchParams,
+}: {
+  // Obrigatório no Next.js 15: searchParams é uma Promise
+  searchParams: Promise<{ view?: string; date?: string; profId?: string }>
+}): Promise<React.ReactNode> {
+  const params = await searchParams
+  const view = params?.view || 'recepcao'
+  const dateParam = params?.date
+  const profId = params?.profId
+
+  // 1. Resolução segura da Data via URL (SSoT)
+  let dataSelecionada = startOfDay(new Date())
+  if (dateParam && isValid(parseISO(dateParam))) {
+    dataSelecionada = startOfDay(parseISO(dateParam))
+  }
+
+  const start = dataSelecionada.toISOString()
+  const end = endOfDay(dataSelecionada).toISOString()
+
+  // 2. Busca paralela de dados base
   const [perfil, resProf, resEsp] = await Promise.all([
-    validarAcessoRota("/agendamentos"),
+    validarAcessoRota('/agendamentos'),
     buscarProfissionais(),
-    buscarEspecialidades()
+    buscarEspecialidades(),
   ])
 
   const profissionais = resProf.success && resProf.data ? resProf.data : []
   const especialidades = resEsp.success && resEsp.data ? resEsp.data : []
 
+  // 3. O SEGREDO DA PERFORMANCE: Fetch Condicional Baseado na Aba Ativa
+  // Em vez do navegador sofrer, o Servidor faz a query exata e projeta as sessões.
+  let sessoes = []
+
+  if ((view === 'recepcao' || view === 'profissional') && profId) {
+    const resAgenda = await buscarAgendaData(profId, start, end)
+    if (resAgenda.success && resAgenda.data) {
+      sessoes = projectAgendaSessions(
+        resAgenda.data.vagas,
+        resAgenda.data.hist,
+        dataSelecionada,
+        dataSelecionada,
+      )
+    }
+  } else if (view === 'logistica') {
+    const resLog = await buscarAgendaLogistica(start, end)
+    if (resLog.success && resLog.data) {
+      sessoes = projectAgendaSessions(
+        resLog.data.vagas,
+        resLog.data.hist,
+        dataSelecionada,
+        dataSelecionada,
+      )
+    }
+  } else if (view === 'coordenacao') {
+    const resCoord = await buscarAgendaCoordenacao(start, end)
+    if (resCoord.success && resCoord.data) {
+      sessoes = projectAgendaSessions(
+        resCoord.data.vagas,
+        resCoord.data.hist,
+        dataSelecionada,
+        dataSelecionada,
+      )
+    }
+  }
+
   return (
-    <div className="p-6 space-y-8 max-w-full overflow-hidden">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="max-w-full space-y-8 overflow-hidden p-6">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Agenda CER II</h1>
-          <p className="text-muted-foreground mt-1">Gestão inteligente de vagas fixas e evoluções clínicas.</p>
+          <h1 className="text-foreground text-2xl font-bold tracking-tight">
+            Agenda CER II
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Gestão inteligente de vagas fixas e evoluções clínicas.
+          </p>
         </div>
       </div>
 
-      <Suspense fallback={<div className="h-96 w-full animate-pulse bg-muted rounded-none" />}>
-        <AgendaContent 
-          perfil={perfil} 
-          profissionaisIniciais={profissionais} 
+      <Suspense
+        fallback={
+          <div className="bg-muted text-muted-foreground flex h-96 w-full animate-pulse items-center justify-center rounded-none">
+            Carregando interface da agenda...
+          </div>
+        }
+      >
+        <AgendaContent
+          perfil={perfil}
+          profissionaisIniciais={profissionais}
           especialidadesIniciais={especialidades}
+          sessoesIniciais={sessoes} // <-- Injetamos os dados já mastigados!
         />
       </Suspense>
     </div>

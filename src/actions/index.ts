@@ -281,7 +281,7 @@ export async function salvarVagaFixa(rawData: unknown): Promise<ActionResponse> 
   const { error } = await supabase.from('vagas_fixas').upsert(val.data)
   if (error) return { success: false, error: `Erro ao salvar vaga: ${error.message}` }
 
-  revalidatePath('/agenda')
+  revalidatePath('/agendamentos')
   return { success: true }
 }
 
@@ -313,7 +313,7 @@ export async function registrarSessaoHistorico(rawData: unknown): Promise<Action
     dados_novos: novo,
   })
 
-  revalidatePath('/agenda')
+  revalidatePath('/agendamentos')
   return { success: true }
 }
 
