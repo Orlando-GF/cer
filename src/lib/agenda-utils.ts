@@ -48,17 +48,17 @@ export function projectAgendaSessions(
           especialidade_id: materializacao.linhas_cuidado_especialidades!.id,
           especialidade_nome: materializacao.linhas_cuidado_especialidades!.nome_especialidade,
           data_hora_inicio: parseISO(materializacao.data_hora_inicio),
-          data_hora_fim: parseISO(materializacao.data_hora_fim),
+          data_hora_fim: parseISO(materializacao.data_hora_fim ?? new Date().toISOString()),
           status: materializacao.status_comparecimento as AgendaSession["status"],
           tipo_vaga: materializacao.tipo_vaga || "Regular",
           vaga_fixa_id: regra.id,
           laudo_vencido: checkLaudoVencido(materializacao.pacientes!.data_ultimo_laudo || null),
-          criado_em: materializacao.criado_em,
+          criado_em: materializacao.criado_em ?? undefined,
           paciente_logradouro: materializacao.pacientes!.logradouro || undefined,
           paciente_numero: materializacao.pacientes!.numero || undefined,
           paciente_bairro: materializacao.pacientes!.bairro || undefined,
           paciente_cidade: materializacao.pacientes!.cidade || undefined,
-          tags_acessibilidade: materializacao.pacientes!.tags_acessibilidade
+          tags_acessibilidade: materializacao.pacientes!.tags_acessibilidade ?? undefined
         })
       } else {
         // Sessão Projetada (Virtual)
@@ -89,7 +89,7 @@ export function projectAgendaSessions(
           paciente_numero: regra.pacientes!.numero || undefined,
           paciente_bairro: regra.pacientes!.bairro || undefined,
           paciente_cidade: regra.pacientes!.cidade || undefined,
-          tags_acessibilidade: regra.pacientes!.tags_acessibilidade
+          tags_acessibilidade: regra.pacientes!.tags_acessibilidade ?? undefined
         })
       }
     }
@@ -109,16 +109,16 @@ export function projectAgendaSessions(
       especialidade_id: a.linhas_cuidado_especialidades!.id,
       especialidade_nome: a.linhas_cuidado_especialidades!.nome_especialidade,
       data_hora_inicio: parseISO(a.data_hora_inicio),
-      data_hora_fim: parseISO(a.data_hora_fim),
+      data_hora_fim: parseISO(a.data_hora_fim ?? new Date().toISOString()),
       status: a.status_comparecimento as AgendaSession["status"],
       tipo_vaga: a.tipo_vaga || "Regular",
       laudo_vencido: checkLaudoVencido(a.pacientes!.data_ultimo_laudo || null),
-      criado_em: a.criado_em,
+      criado_em: a.criado_em ?? undefined,
       paciente_logradouro: a.pacientes!.logradouro || undefined,
       paciente_numero: a.pacientes!.numero || undefined,
       paciente_bairro: a.pacientes!.bairro || undefined,
       paciente_cidade: a.pacientes!.cidade || undefined,
-      tags_acessibilidade: a.pacientes!.tags_acessibilidade
+      tags_acessibilidade: a.pacientes!.tags_acessibilidade ?? undefined
     })
   }
 

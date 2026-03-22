@@ -1,12 +1,12 @@
 "use client"
 
 import { useTransition, useEffect } from "react"
-import { useForm, Controller } from "react-hook-form"
+import { useForm, Controller, Resolver, SubmitHandler } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import type { ActionResponse } from "@/types"
+import type { ActionResponse, Paciente } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,14 +29,12 @@ import {
 } from "lucide-react"
 
 import { cadastrarPaciente, atualizarPaciente } from "@/actions"
-import { type Paciente } from "@/types"
 import { formatarNomeClinico, buscarEnderecoPorCep } from "@/lib/utils/string-utils"
 import { pacienteSchema } from "@/lib/validations/schema"
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
-
-export type PacienteFormData = Partial<Paciente>
-type PacienteFormSchema = z.infer<typeof pacienteSchema>
+const pacienteFormSchema = pacienteSchema
+export type PacienteFormData = z.infer<typeof pacienteFormSchema> & { id?: string }
 
 // ─── funções de máscara ───────────────────────────────────────────────────────
 
@@ -123,7 +121,7 @@ function Field({
 }
 
 interface PacienteFormProps {
-  initialData?: PacienteFormData
+  initialData?: Partial<Paciente> & { id?: string }
   onSuccess?: () => void
   onCancel?: () => void
 }
@@ -132,7 +130,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  const defaultValues: Partial<PacienteFormSchema> = {
+  const defaultValues: any = {
     cidade: "Barreiras",
     uf: "BA",
     pactuado: false,
@@ -148,7 +146,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
     telefone_principal: initialData?.telefone_principal ? maskPhone(initialData.telefone_principal) : "",
     telefone_secundario: initialData?.telefone_secundario ? maskPhone(initialData.telefone_secundario) : "",
     telefone_responsavel: initialData?.telefone_responsavel ? maskPhone(initialData.telefone_responsavel) : "",
-  } as Partial<PacienteFormSchema>
+  }
 
   const {
     control,
@@ -157,11 +155,9 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
     watch,
     reset,
     formState: { errors }
-  } = useForm<PacienteFormSchema>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(pacienteSchema) as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    defaultValues: defaultValues as any,
+  } = useForm<z.infer<typeof pacienteFormSchema>>({
+    resolver: zodResolver(pacienteFormSchema) as Resolver<z.infer<typeof pacienteFormSchema>>,
+    defaultValues: defaultValues,
   })
 
   // Sincroniza forms após sheet opens/changes
@@ -201,7 +197,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
 
   const pactuadoAtual = watch("pactuado")
 
-  const onSubmit = (data: PacienteFormSchema) => {
+  const onSubmit = (data: z.infer<typeof pacienteFormSchema>) => {
     startTransition(async () => {
       // O Zod já fez todo o trabalho sujo de validação (DRY)
       // As máscaras foram limpas pelo .transform() e .preprocess() e data agora tem os dados puros para o DB.
@@ -225,7 +221,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, (err) => {
+    <form onSubmit={handleSubmit(onSubmit as SubmitHandler<z.infer<typeof pacienteFormSchema>>, (err) => {
       toast.error("Por favor, preencha os campos obrigatórios corretamente.")
       console.error(err)
     })} className="flex flex-col h-full overflow-hidden">

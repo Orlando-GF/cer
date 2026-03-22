@@ -44,7 +44,6 @@ export function NovaEspecialidadeSheet({
 
   const [dados, setDados] = useState({
     nome_especialidade: "",
-    descricao: "",
     equipe_responsavel: "",
     linha_reabilitacao: "",
     tipo_atendimento: "Consulta Medica" as TipoAtendimento,
@@ -55,7 +54,6 @@ export function NovaEspecialidadeSheet({
     if (especialidade && open) {
       const novosDados = {
         nome_especialidade: especialidade.nome_especialidade,
-        descricao: especialidade.descricao || "",
         equipe_responsavel: especialidade.equipe_responsavel || "",
         linha_reabilitacao: especialidade.linha_reabilitacao || "",
         tipo_atendimento: (especialidade.tipo_atendimento as TipoAtendimento) || "Consulta Medica",
@@ -68,7 +66,6 @@ export function NovaEspecialidadeSheet({
     } else if (!especialidade && open) {
       const vazio = {
         nome_especialidade: "",
-        descricao: "",
         equipe_responsavel: "",
         linha_reabilitacao: "",
         tipo_atendimento: "Consulta Medica" as TipoAtendimento,
@@ -99,7 +96,6 @@ export function NovaEspecialidadeSheet({
         if (!isEditing) {
           setDados({
             nome_especialidade: "",
-            descricao: "",
             equipe_responsavel: "",
             linha_reabilitacao: "",
             tipo_atendimento: "Consulta Medica",
@@ -192,9 +188,9 @@ export function NovaEspecialidadeSheet({
           <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Descrição / Observações</Label>
             <Input 
-              value={dados.descricao}
-              onChange={(e) => setDados({...dados, descricao: e.target.value})}
-              className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs"
+              value={""}
+              readOnly
+              className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-muted/30 uppercase text-xs"
             />
           </div>
 

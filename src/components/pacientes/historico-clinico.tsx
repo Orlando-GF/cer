@@ -1,32 +1,16 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { buscarHistoricoClinicoPaciente } from "@/actions"
 import { AgendamentoHistoricoComJoins } from "@/types"
 import { format, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Loader2, Calendar, User, Stethoscope, MessageSquare } from "lucide-react"
 
 interface HistoricoClinicoProps {
-  pacienteId: string
+  historico: AgendamentoHistoricoComJoins[]
+  isLoading?: boolean
 }
 
-export function HistoricoClinico({ pacienteId }: HistoricoClinicoProps) {
-  const [historico, setHistorico] = useState<AgendamentoHistoricoComJoins[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true)
-      const result = await buscarHistoricoClinicoPaciente(pacienteId)
-      if (result.success && result.data) {
-        setHistorico(result.data)
-      }
-      setIsLoading(false)
-    }
-    loadData()
-  }, [pacienteId])
-
+export function HistoricoClinico({ historico, isLoading }: HistoricoClinicoProps) {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">

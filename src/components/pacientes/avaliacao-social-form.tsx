@@ -97,7 +97,6 @@ export function AvaliacaoSocialForm({ pacienteId, onSuccess, onCancel }: Avaliac
   }
 
   return (
-    // @ts-expect-error ignorando erro transitorio hookform
     <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden bg-background">
       <div className="flex-1 overflow-y-auto px-7 py-6 space-y-6">
         

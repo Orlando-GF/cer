@@ -250,7 +250,7 @@ export async function cadastrarAvaliacaoSocial(
     .single()
   if (!prof) return { success: false, error: 'Profissional não encontrado' }
 
-  const { error } = await supabase.from('avaliacoes_servico_social').insert({
+  const { error } = await (supabase as any).from('avaliacoes_servico_social').insert({
     ...val.data,
     profissional_id: prof.id,
   })
@@ -422,7 +422,7 @@ export async function buscarFilaEspera(
         'Em Risco',
       ])
     } else {
-      query = query.eq('status_fila', status)
+      query = query.eq('status_fila', status as "Alta" | "Aguardando" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Aguardando Vaga")
     }
   }
 
@@ -539,7 +539,7 @@ async function registrarLogAuditoria(params: {
       data: { user },
     } = await supabase.auth.getUser()
 
-    await supabase.from('logs_auditoria').insert({
+    await (supabase as any).from('logs_auditoria').insert({
       // ✅ CORRIGIDO: era 'agendamentos_logs'
       tabela_afetada: 'agendamentos_historico',
       registro_id: params.agendamento_id,
@@ -654,7 +654,7 @@ export async function buscarAgendaData(
       .from('agendamentos_historico')
       .select(
         `
-      id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id,
+      id, data_hora_inicio, data_hora_fim, status_comparecimento, profissional_id, paciente_id, especialidade_id,
       pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
       profissionais (id, nome_completo),
       linhas_cuidado_especialidades (id, nome_especialidade)
@@ -786,7 +786,7 @@ export async function buscarAgendaCoordenacao(
       .from('agendamentos_historico')
       .select(
         `
-      id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id,
+      id, data_hora_inicio, data_hora_fim, status_comparecimento, profissional_id, paciente_id, especialidade_id,
       pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
       profissionais (id, nome_completo),
       linhas_cuidado_especialidades (id, nome_especialidade)
@@ -896,7 +896,7 @@ export async function buscarGradesHorarias(): Promise<
   ActionResponse<GradeHoraria[]>
 > {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('grade_horaria')
     .select(
       'id, dia_semana, horario_inicio, horario_fim, ativo, profissional_id, especialidade_id, profissional:profissionais(nome_completo)',
@@ -914,7 +914,7 @@ export async function salvarGradeHoraria(
   const val = gradeHorariaSchema.safeParse(rawData)
   if (!val.success) return { success: false, error: 'Dados inválidos.' }
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('grade_horaria')
     .upsert([val.data])
     .select()
@@ -930,7 +930,7 @@ export async function toggleAtivaGradeHoraria(
   ativo: boolean,
 ): Promise<ActionResponse> {
   const supabase = await createClient()
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from('grade_horaria')
     .update({ ativo })
     .eq('id', id)
@@ -1270,7 +1270,7 @@ export async function buscarHistoricoClinicoPaciente(
     .from('agendamentos_historico')
     .select(
       `
-    id, data_hora_inicio, data_hora_fim, status_comparecimento, observacao, profissional_id, paciente_id, especialidade_id,
+    id, data_hora_inicio, data_hora_fim, status_comparecimento, profissional_id, paciente_id, especialidade_id,
     pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
     profissionais (id, nome_completo),
     linhas_cuidado_especialidades (id, nome_especialidade)

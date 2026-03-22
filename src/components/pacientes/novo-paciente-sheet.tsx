@@ -200,7 +200,7 @@ export function NovoPacienteSheet() {
           ) : (
             /* FORMULÁRIO DE DADOS REAL */
             <PacienteForm 
-              initialData={dados} 
+              initialData={dados as import("./paciente-form").PacienteFormData} 
               onSuccess={() => handleOpen(false)}
               onCancel={() => setEtapa("busca")} 
             />

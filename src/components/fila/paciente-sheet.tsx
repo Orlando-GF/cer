@@ -56,7 +56,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
     if (!paciente) return
     startTransition(async () => {
       const res = await registrarFaltaPaciente({
-        paciente_id: paciente.id,
+        fila_id: paciente.id,
         justificada,
         observacao,
       })

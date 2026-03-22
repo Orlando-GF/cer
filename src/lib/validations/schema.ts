@@ -5,13 +5,13 @@ import { formatarNomeClinico } from "@/lib/utils/string-utils"
 
 export const SexoEnum = z.enum(["M", "F", "Outro"])
 export const NivelPrioridadeEnum = z.enum(["Rotina", "Urgencia Clinica", "Mandado Judicial"])
-export const StatusFilaEnum = z.enum(["Aguardando", "Em Atendimento", "Em Risco", "Desistencia", "Alta", "Aguardando Vaga"])
+export const StatusFilaEnum = z.enum(["Aguardando", "Em Atendimento", "Em Risco", "Desistencia", "Alta"])
 export const FrequenciaRecomendadaEnum = z.enum(["A definir", "Semanal", "Quinzenal", "Mensal"])
 export const PerfilAcessoEnum = z.enum(["Recepcao", "Enfermagem", "Medico_Terapeuta", "Administracao", "Motorista"])
 export const StatusVagaEnum = z.enum(["Ativa", "Suspensa", "Encerrada"])
 export const StatusCadastroEnum = z.enum(["Ativo", "Inativo", "Obito", "Alta"])
 export const TipoAtendimentoEnum = z.enum(["Consulta Medica", "Terapia Continua", "Dispensacao_OPM", "Avaliacao_Diagnostica"])
-export const StatusComparecimentoEnum = z.enum(["Agendado", "Presente", "Falta Nao Justificada", "Falta Injustificada", "Falta Justificada", "Cancelado"])
+export const StatusComparecimentoEnum = z.enum(["Agendado", "Presente", "Falta Nao Justificada", "Falta Justificada", "Cancelado"])
 export const CondutaEvolucaoEnum = z.enum([
   "Retorno", 
   "Alta por Melhoria", 
@@ -192,8 +192,8 @@ export const profissionalSchema = z.object({
 
 export const especialidadeSchema = z.object({
   nome_especialidade: z.string().min(3, "Nome da especialidade é obrigatório"),
-  equipe_responsavel: z.string().optional().nullable(),
-  linha_reabilitacao: z.string().optional().nullable(),
+  equipe_responsavel: z.string().min(1, "Equipe responsável é obrigatória"),
+  linha_reabilitacao: z.string().min(1, "Linha de reabilitação é obrigatória"),
   tipo_atendimento: TipoAtendimentoEnum.default("Terapia Continua"),
   ativo: z.boolean().default(true),
 })

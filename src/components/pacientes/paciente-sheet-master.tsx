@@ -22,12 +22,13 @@ import {
   Loader2
 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { Paciente } from "./columns"
+import { type Paciente } from "@/types"
 import { PacienteForm, PacienteFormData } from "./paciente-form"
 import { HistoricoClinico } from "./historico-clinico"
 import { AvaliacaoSocialForm } from "./avaliacao-social-form"
 import { RegistroAtendimentoForm } from "../profissional/registro-atendimento-form"
-import { buscarPacienteCompleto } from "@/actions"
+import { buscarPacienteCompleto, buscarHistoricoClinicoPaciente } from "@/actions"
+import { AgendamentoHistoricoComJoins } from "@/types"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import { PlusCircle } from "lucide-react"
@@ -55,26 +56,38 @@ export function PacienteSheetMaster({
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState(defaultTab || "clinico")
   const [paciente, setPaciente] = useState<Paciente | null>(null)
+  const [historico, setHistorico] = useState<AgendamentoHistoricoComJoins[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingHistorico, setIsLoadingHistorico] = useState(false)
 
   // Busca dados completos sempre que o sheet abrir com um novo ID
   useEffect(() => {
     async function loadPaciente() {
       if (open && pacienteId) {
         setIsLoading(true)
+        setIsLoadingHistorico(true)
         try {
-          const response = await buscarPacienteCompleto(pacienteId)
-          if (response.success && response.data) {
-            setPaciente(response.data)
+          const [pacienteRes, historicoRes] = await Promise.all([
+            buscarPacienteCompleto(pacienteId),
+            buscarHistoricoClinicoPaciente(pacienteId)
+          ])
+
+          if (pacienteRes.success) {
+            setPaciente(pacienteRes.data ?? null)
           } else {
             toast.error("Erro ao carregar dados do paciente")
             onOpenChange(false)
+          }
+
+          if (historicoRes.success && historicoRes.data) {
+            setHistorico(historicoRes.data)
           }
         } catch (error) {
           toast.error("Erro inesperado ao carregar dados")
           console.error(error)
         } finally {
           setIsLoading(false)
+          setIsLoadingHistorico(false)
         }
       }
     }
@@ -244,7 +257,7 @@ export function PacienteSheetMaster({
                         Evoluções e Cronologia
                       </h3>
                     </div>
-                    <HistoricoClinico pacienteId={paciente.id} />
+                    <HistoricoClinico historico={historico} isLoading={isLoadingHistorico} />
                   </div>
                 </TabsContent>
 
@@ -282,6 +295,8 @@ export function PacienteSheetMaster({
                         profissionalId={profissionalIdContext}
                         especialidadeId={especialidadeIdContext}
                         vagaFixaId={vagaFixaIdContext}
+                        dataHoraInicio={new Date().toISOString()}
+                        dataHoraFim={new Date().toISOString()}
                         onSuccess={() => {
                           setActiveTab("clinico")
                           router.refresh()

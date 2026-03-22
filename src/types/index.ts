@@ -77,7 +77,6 @@ export const CriarAgendamentoSchema = z.object({
     "Agendado",
     "Presente",
     "Falta Nao Justificada",
-    "Falta Injustificada",
     "Falta Justificada",
     "Cancelado"
   ]),
