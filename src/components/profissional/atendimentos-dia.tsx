@@ -20,12 +20,14 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
   const router = useRouter()
   const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
-  const [selectedVagaId, setSelectedVagaId] = useState<string | null>(null)
-  const [selectedEspecId, setSelectedEspecId] = useState<string | null>(null)
-  const [selectedProfId, setSelectedProfId] = useState<string | null>(null)
-  const [selectedDataHoraInicio, setSelectedDataHoraInicio] = useState<string | null>(null)
-  const [selectedDataHoraFim, setSelectedDataHoraFim] = useState<string | null>(null)
-  const [defaultTab, setDefaultTab] = useState<string>("clinico")
+  const [sheetTab, setSheetTab] = useState("clinico")
+  const [contextoRegistro, setContextoRegistro] = useState<{ 
+    vagaId?: string; 
+    especialidadeId?: string; 
+    profissionalId?: string;
+    dataHoraInicio?: string;
+    dataHoraFim?: string;
+  }>({})
 
   const hoje = new Date().toISOString().split("T")[0]
 
@@ -92,8 +94,11 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
                     className="flex-1 rounded-none text-[10px] h-9 font-bold uppercase tracking-widest"
                     onClick={() => {
                         setSelectedPaciente(atend.pacientes as unknown as Paciente)
-                        setSelectedDataHoraInicio(atend.data_hora_inicio)
-                        setSelectedDataHoraFim(atend.data_hora_fim || new Date().toISOString())
+                        setContextoRegistro({ 
+                          dataHoraInicio: atend.data_hora_inicio, 
+                          dataHoraFim: atend.data_hora_fim || new Date().toISOString() 
+                        })
+                        setSheetTab("clinico")
                         setSheetOpen(true)
                     }}
                   >
@@ -104,12 +109,14 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
                     className="flex-1 rounded-none text-[10px] h-9 font-bold uppercase tracking-widest border-primary/20 text-primary"
                     onClick={() => {
                       setSelectedPaciente(atend.pacientes as unknown as Paciente)
-                      setSelectedVagaId(atend.vaga_fixa_id || null)
-                      setSelectedEspecId(atend.especialidade_id)
-                      setSelectedProfId(atend.profissional_id)
-                      setSelectedDataHoraInicio(atend.data_hora_inicio)
-                      setSelectedDataHoraFim(atend.data_hora_fim || new Date().toISOString())
-                      setDefaultTab(atend.status_comparecimento === 'Presente' ? 'clinico' : 'registrar')
+                      setContextoRegistro({ 
+                        vagaId: atend.vaga_fixa_id || undefined,
+                        especialidadeId: atend.especialidade_id || undefined,
+                        profissionalId: atend.profissional_id || undefined,
+                        dataHoraInicio: atend.data_hora_inicio,
+                        dataHoraFim: (atend.data_hora_fim || new Date().toISOString()) || undefined
+                      })
+                      setSheetTab(atend.status_comparecimento === 'Presente' ? 'clinico' : 'registrar')
                       setSheetOpen(true)
                     }}
                   >
@@ -151,12 +158,14 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
                     className="w-full rounded-none text-[10px] h-9 font-bold uppercase tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white"
                     onClick={() => {
                         setSelectedPaciente(vaga.pacientes as unknown as Paciente)
-                        setSelectedVagaId(vaga.id)
-                        setSelectedEspecId(vaga.especialidade_id)
-                        setSelectedProfId(vaga.profissional_id)
-                        setSelectedDataHoraInicio(`${hoje}T${vaga.horario_inicio.substring(0,5)}:00Z`)
-                        setSelectedDataHoraFim(`${hoje}T${vaga.horario_fim.substring(0,5)}:00Z`)
-                        setDefaultTab('registrar')
+                        setContextoRegistro({ 
+                          vagaId: vaga.id, 
+                          especialidadeId: vaga.linhas_cuidado_especialidades?.id, 
+                          profissionalId: vaga.profissionais?.id,
+                          dataHoraInicio: `${hoje}T${vaga.horario_inicio.substring(0,5)}:00Z`,
+                          dataHoraFim: `${hoje}T${vaga.horario_fim.substring(0,5)}:00Z`
+                        })
+                        setSheetTab("registrar")
                         setSheetOpen(true)
                     }}
                   >
@@ -182,13 +191,13 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
         <PacienteSheetMaster 
           pacienteId={selectedPaciente.id} 
           open={sheetOpen} 
-          onOpenChange={setSheetOpen} 
-          defaultTab={defaultTab}
-          vagaFixaIdContext={selectedVagaId || undefined}
-          especialidadeIdContext={selectedEspecId || undefined}
-          profissionalIdContext={selectedProfId || undefined}
-          dataHoraInicioContext={selectedDataHoraInicio || undefined}
-          dataHoraFimContext={selectedDataHoraFim || undefined}
+          onOpenChange={setSheetOpen}
+          defaultTab={sheetTab}
+          vagaFixaIdContext={contextoRegistro.vagaId}
+          especialidadeIdContext={contextoRegistro.especialidadeId}
+          profissionalIdContext={contextoRegistro.profissionalId}
+          dataHoraInicioContext={contextoRegistro.dataHoraInicio}
+          dataHoraFimContext={contextoRegistro.dataHoraFim}
         />
       )}
     </div>

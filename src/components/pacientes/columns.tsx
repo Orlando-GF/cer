@@ -1,5 +1,7 @@
 "use client"
 
+import { type Paciente } from "@/types"
+
 import { RowData, ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { MoreHorizontal, Copy, Eye } from "lucide-react"
@@ -9,29 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-export interface Paciente {
-  id: string
-  nome_completo: string
-  cns: string
-  cpf: string | null
-  data_nascimento: string
-  sexo: string
-  nome_mae: string
-  nome_pai?: string | null
-  telefone_principal: string | null
-  telefone_secundario?: string | null
-  nome_responsavel?: string | null
-  telefone_responsavel?: string | null
-  endereco_cep?: string | null
-  logradouro?: string | null
-  numero?: string | null
-  bairro?: string | null
-  cidade: string
-  uf: string
-  pactuado?: boolean
-  criado_em?: string // timestamp
-}
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

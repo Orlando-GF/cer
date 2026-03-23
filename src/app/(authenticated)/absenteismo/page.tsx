@@ -44,7 +44,11 @@ export default async function AbsenteismoPage() {
               </div>
               <Badge
                 variant="outline"
-                className="bg-alert-danger-bg text-alert-danger-text border-alert-danger-text/20 rounded-none px-3 py-1"
+                className={`rounded-none px-3 py-1 ${
+                  alertas.length > 0 
+                    ? 'bg-alert-danger-bg text-alert-danger-text border-alert-danger-text/20' 
+                    : 'bg-alert-success-bg text-alert-success-text border-alert-success-text/20'
+                }`}
               >
                 {alertas.length} Pacientes Críticos
               </Badge>

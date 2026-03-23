@@ -1,7 +1,7 @@
 "use client"
 
 import { useTransition, useEffect } from "react"
-import { useForm, Controller, Resolver, SubmitHandler } from "react-hook-form"
+import { useForm, Controller, Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useRouter } from "next/navigation"
@@ -130,7 +130,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  const defaultValues: any = {
+  const defaultValues: Partial<PacienteFormData> = {
     cidade: "Barreiras",
     uf: "BA",
     pactuado: false,
@@ -140,13 +140,13 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
     id_legado_vba: "",
     status_cadastro: "Ativo",
     ...initialData,
-    cpf: initialData?.cpf ? maskCPF(initialData.cpf) : "",
-    cns: initialData?.cns ? maskCNS(initialData.cns) : "",
-    endereco_cep: initialData?.endereco_cep ? maskCEP(initialData.endereco_cep) : "",
-    telefone_principal: initialData?.telefone_principal ? maskPhone(initialData.telefone_principal) : "",
-    telefone_secundario: initialData?.telefone_secundario ? maskPhone(initialData.telefone_secundario) : "",
-    telefone_responsavel: initialData?.telefone_responsavel ? maskPhone(initialData.telefone_responsavel) : "",
-  }
+    cpf: initialData?.cpf ? maskCPF(initialData.cpf) : undefined,
+    cns: initialData?.cns ? maskCNS(initialData.cns) : undefined,
+    endereco_cep: initialData?.endereco_cep ? maskCEP(initialData.endereco_cep) : undefined,
+    telefone_principal: initialData?.telefone_principal ? maskPhone(initialData.telefone_principal) : undefined,
+    telefone_secundario: initialData?.telefone_secundario ? maskPhone(initialData.telefone_secundario) : undefined,
+    telefone_responsavel: initialData?.telefone_responsavel ? maskPhone(initialData.telefone_responsavel) : undefined,
+  } as Partial<PacienteFormData>
 
   const {
     control,
@@ -155,9 +155,9 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
     watch,
     reset,
     formState: { errors }
-  } = useForm<z.infer<typeof pacienteFormSchema>>({
-    resolver: zodResolver(pacienteFormSchema) as Resolver<z.infer<typeof pacienteFormSchema>>,
-    defaultValues: defaultValues,
+  } = useForm<PacienteFormData>({
+    resolver: zodResolver(pacienteFormSchema) as unknown as Resolver<PacienteFormData>,
+    defaultValues: defaultValues as PacienteFormData,
   })
 
   // Sincroniza forms após sheet opens/changes
@@ -172,7 +172,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
         telefone_principal: initialData.telefone_principal ? maskPhone(initialData.telefone_principal) : "",
         telefone_secundario: initialData.telefone_secundario ? maskPhone(initialData.telefone_secundario) : "",
         telefone_responsavel: initialData.telefone_responsavel ? maskPhone(initialData.telefone_responsavel) : "",
-      } as Record<string, unknown>)
+      } as Partial<PacienteFormData>)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, reset])
@@ -197,14 +197,9 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
 
   const pactuadoAtual = watch("pactuado")
 
-  const onSubmit = (data: z.infer<typeof pacienteFormSchema>) => {
+  const onSubmit = (data: PacienteFormData) => {
     startTransition(async () => {
-      // O Zod já fez todo o trabalho sujo de validação (DRY)
-      // As máscaras foram limpas pelo .transform() e .preprocess() e data agora tem os dados puros para o DB.
-
-      const payload = {
-        ...data,
-      } // passamos a representação do Zod validada para payload.
+      const payload = { ...data }
 
       const result: ActionResponse = initialData?.id
         ? await atualizarPaciente(initialData.id, payload)
@@ -221,7 +216,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit as SubmitHandler<z.infer<typeof pacienteFormSchema>>, (err) => {
+    <form onSubmit={handleSubmit(onSubmit, (err) => {
       toast.error("Por favor, preencha os campos obrigatórios corretamente.")
       console.error(err)
     })} className="flex flex-col h-full overflow-hidden">

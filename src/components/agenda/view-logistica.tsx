@@ -20,11 +20,11 @@ import {
 } from '@/components/ui/table'
 
 // 3. Tipos
-import type { SerializedAgendaSession } from '@/types'
+import type { AgendaSession } from '@/types'
 
 interface ViewLogisticaProps {
-  // 🚨 NOVA PROP: Dados injetados pelo Servidor (Serializados)
-  sessoes: SerializedAgendaSession[]
+  // 🚨 NOVA PROP: Dados injetados pelo Servidor como objetos Date nativos
+  sessoes: AgendaSession[]
 }
 
 export function ViewLogistica({
@@ -108,7 +108,7 @@ export function ViewLogistica({
                       className="hover:bg-muted border-border transition-colors"
                     >
                       <TableCell className="text-muted-foreground font-bold tabular-nums">
-                        {format(parseISO(sessao.data_hora_inicio), 'HH:mm')}
+                        {format(sessao.data_hora_inicio, 'HH:mm')}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">

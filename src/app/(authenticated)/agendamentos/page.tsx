@@ -94,13 +94,6 @@ export default async function AgendamentosPage({
     }
   }
 
-  // 5. SERIALIZAÇÃO: Convertendo Datas para String (Segurança para Client Components)
-  const sessoesSerializadas = sessoes.map(sessao => ({
-    ...sessao,
-    data_hora_inicio: sessao.data_hora_inicio.toISOString(),
-    data_hora_fim: sessao.data_hora_fim.toISOString(),
-  }))
-
   return (
     <div className="max-w-full space-y-8 overflow-hidden p-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -118,8 +111,8 @@ export default async function AgendamentosPage({
         perfil={perfil}
         profissionaisIniciais={profissionais}
         especialidadesIniciais={especialidades}
-        sessoesIniciais={sessoesSerializadas}
-        vagasConfiguracao={vagasConfiguracao} // <-- Injetamos as vagas fixas!
+        sessoesIniciais={sessoes}
+        vagasConfiguracao={vagasConfiguracao}
       />
     </div>
   )

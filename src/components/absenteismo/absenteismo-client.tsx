@@ -139,6 +139,7 @@ export function AbsenteismoClient({ alertas }: AbsenteismoClientProps) {
                       size="sm"
                       variant="outline"
                       className="hover:bg-alert-success-bg hover:text-alert-success-text border-border h-8 gap-2 rounded-none text-xs"
+                      disabled={!alerta.paciente.telefone_principal}
                       onClick={() =>
                         abrirWhatsApp(
                           alerta.paciente.telefone_principal || '',

@@ -211,7 +211,7 @@ export const gradeHorariaSchema = z.object({
 
 export const avaliacaoServicoSocialSchema = z.object({
   paciente_id: z.string().uuid("Paciente inválido"),
-  profissional_id: z.string().uuid("Profissional inválido"),
+  profissional_id: z.string().uuid().optional(),
   
   // Composição Familiar
   quantidade_membros_familia: z.number().int().min(1, "Quantidade de membros deve ser pelo menos 1"),

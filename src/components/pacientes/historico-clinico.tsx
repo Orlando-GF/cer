@@ -65,7 +65,7 @@ export function HistoricoClinico({ historico, isLoading }: HistoricoClinicoProps
                   <User className="w-3 h-3" /> Profissional
                 </span>
                 <p className="font-semibold text-foreground">
-                  {Array.isArray(item.profissionais) ? item.profissionais[0]?.nome_completo : item.profissionais?.nome_completo}
+                  {item.profissionais?.nome_completo}
                 </p>
               </div>
               <div className="space-y-1">
@@ -73,9 +73,7 @@ export function HistoricoClinico({ historico, isLoading }: HistoricoClinicoProps
                   <Stethoscope className="w-3 h-3" /> Especialidade
                 </span>
                 <p className="font-semibold text-foreground">
-                  {Array.isArray(item.linhas_cuidado_especialidades) 
-                    ? item.linhas_cuidado_especialidades[0]?.nome_especialidade 
-                    : item.linhas_cuidado_especialidades?.nome_especialidade}
+                  {item.linhas_cuidado_especialidades?.nome_especialidade}
                 </p>
               </div>
             </div>

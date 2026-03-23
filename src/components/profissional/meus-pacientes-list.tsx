@@ -12,12 +12,11 @@ interface MeusPacientesListProps {
 }
 
 export function MeusPacientesList({ pacientesIniciais }: MeusPacientesListProps) {
-  const [pacientes] = useState<Paciente[]>(pacientesIniciais)
   const [search, setSearch] = useState("")
   const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
-  const filtrados = pacientes.filter(p => 
+  const filtrados = pacientesIniciais.filter(p => 
     p.nome_completo.toLowerCase().includes(search.toLowerCase()) ||
     p.cns.includes(search)
   )

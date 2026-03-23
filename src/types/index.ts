@@ -100,10 +100,7 @@ export interface AgendaSession {
   tags_acessibilidade?: string[]
 }
 
-export interface SerializedAgendaSession extends Omit<AgendaSession, 'data_hora_inicio' | 'data_hora_fim'> {
-  data_hora_inicio: string
-  data_hora_fim: string
-}
+
 
 export type VagaFixaComJoins = Omit<
     VagaFixa,

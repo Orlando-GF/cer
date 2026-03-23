@@ -64,7 +64,6 @@ export function AvaliacaoSocialForm({ pacienteId, onSuccess, onCancel }: Avaliac
     resolver: zodResolver(avaliacaoServicoSocialSchema),
     defaultValues: {
       paciente_id: pacienteId,
-      profissional_id: "00000000-0000-0000-0000-000000000000",
       quantidade_membros_familia: 1,
       renda_familiar_total: 0,
       recebe_beneficio: false,
@@ -81,10 +80,9 @@ export function AvaliacaoSocialForm({ pacienteId, onSuccess, onCancel }: Avaliac
   })
 
   // Watch fields for conditional rendering or state-dependent components
-  // eslint-disable-next-line react-hooks/incompatible-library
   const recebeBeneficio = watch("recebe_beneficio")
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: AvaliacaoServicoSocialInput) => {
     startTransition(async () => {
       const resp = await cadastrarAvaliacaoSocial(data as AvaliacaoServicoSocialInput)
       if (resp.success) {

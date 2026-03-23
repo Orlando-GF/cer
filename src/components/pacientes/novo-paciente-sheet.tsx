@@ -20,18 +20,10 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { PacienteForm } from "./paciente-form"
+import { PacienteForm, type PacienteFormData } from "./paciente-form"
 import { buscarPacientePorDocumento } from "@/actions"
 import { type Paciente } from "@/types"
 
-// ─── TIPAGEM RIGOROSA ────────────────────────────────────────────────────────
-
-/**
- * Interface para os dados do formulário. 
- * Usamos Partial<Paciente> para garantir que apenas campos existentes 
- * na base de dados sejam aceitos, eliminando o uso de 'any'.
- */
-export type PacienteFormData = Partial<Paciente>
 
 // ─── UTILITÁRIOS DE MÁSCARA ───────────────────────────────────────────────────
 
@@ -61,7 +53,7 @@ export function NovoPacienteSheet() {
   const [identificador, setIdentificador] = useState("")
   const [buscando, setBuscando] = useState(false)
   const [statusBusca, setStatusBusca] = useState<"idle" | "encontrado" | "nao_encontrado">("idle")
-  const [dados, setDados] = useState<PacienteFormData>({})
+  const [dados, setDados] = useState<Partial<PacienteFormData>>({})
 
   function handleOpen(v: boolean) {
     setOpen(v)
@@ -200,7 +192,7 @@ export function NovoPacienteSheet() {
           ) : (
             /* FORMULÁRIO DE DADOS REAL */
             <PacienteForm 
-              initialData={dados as import("./paciente-form").PacienteFormData} 
+              initialData={dados as PacienteFormData} 
               onSuccess={() => handleOpen(false)}
               onCancel={() => setEtapa("busca")} 
             />

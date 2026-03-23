@@ -57,44 +57,35 @@ export function PacienteSelector({ onSelect, value }: PacienteSelectorProps) {
 
   // Tratar preservação do paciente selecionado, se vier via a prop 'value'
   React.useEffect(() => {
-    async function fetchInitialValue() {
-      if (!value) return;
-      // Para não fazer select extra, verificamos se ele já tá na lista local
-      const found = pacientes.find(p => p.id === value)
-      if (found) {
-        setSelectedPaciente(found)
-      } else {
-        // Se precisarmos exibir o paciente selecionado que veio de fora (e.g. initialData)
-        // teremos de buscar ele especificamente. 
-        // Idealmente a responsabilidade seria do componente pai enviar o {id, nome}
-      }
-    }
-    fetchInitialValue()
+    if (!value) return
+    const found = pacientes.find(p => p.id === value)
+    if (found) setSelectedPaciente(found)
   }, [value, pacientes])
 
   return (
     <div className="relative w-full">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
-          render={
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-full justify-between rounded-none border-border h-12 font-bold bg-card uppercase text-xs focus:ring-primary"
-            >
-              {selectedPaciente ? (
-                <div className="flex items-center gap-2 truncate">
-                  <User className="h-4 w-4 text-primary shrink-0" />
-                  <span className="truncate">{selectedPaciente.nome_completo}</span>
-                </div>
-              ) : (
-                <span className="text-muted-foreground">PESQUISAR PACIENTE...</span>
-              )}
-              <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          }
-        />
+        render={(props) => (
+          <Button
+            {...props}
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between rounded-none border-border h-12 font-bold bg-card uppercase text-xs focus:ring-primary"
+          >
+            {selectedPaciente ? (
+              <div className="flex items-center gap-2 truncate">
+                <User className="h-4 w-4 text-primary shrink-0" />
+                <span className="truncate">{selectedPaciente.nome_completo}</span>
+              </div>
+            ) : (
+              <span className="text-muted-foreground">PESQUISAR PACIENTE...</span>
+            )}
+            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        )}
+      />
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-none border-border shadow-2xl">
           <Command className="rounded-none bg-card">
             <CommandInput 

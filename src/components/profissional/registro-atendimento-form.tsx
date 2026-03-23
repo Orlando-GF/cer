@@ -18,33 +18,17 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { registrarSessaoHistorico } from '@/actions'
+import { agendamentoHistoricoSchema } from '@/lib/validations/schema'
 
-const registroAtendimentoFormSchema = z.object({
-  paciente_id: z.string().uuid(),
-  profissional_id: z.string().uuid(),
-  especialidade_id: z.string().uuid(),
-  vaga_fixa_id: z.string().uuid().nullable().optional(),
-  data_hora_inicio: z.string().datetime(),
-  data_hora_fim: z.string().datetime(),
-  status_comparecimento: z.enum([
-    'Presente',
-    'Falta Justificada',
-    'Falta Nao Justificada',
-    'Cancelado',
-  ]),
-  evolucao_clinica: z.string().nullable().optional(),
-  conduta: z.string().nullable().optional(),
-})
-
-type FormValues = z.infer<typeof registroAtendimentoFormSchema>
+type FormValues = z.input<typeof agendamentoHistoricoSchema>
 
 interface RegistroAtendimentoFormProps {
   pacienteId: string
   profissionalId: string
   especialidadeId: string
   vagaFixaId?: string
-  dataHoraInicio: string
-  dataHoraFim: string
+  dataHoraInicio?: string
+  dataHoraFim?: string
   onSuccess: () => void
 }
 
@@ -66,17 +50,19 @@ export function RegistroAtendimentoForm({
     setValue,
     formState: { errors },
   } = useForm<FormValues>({
-    resolver: zodResolver(registroAtendimentoFormSchema),
+    resolver: zodResolver(agendamentoHistoricoSchema),
     defaultValues: {
       paciente_id: pacienteId,
       profissional_id: profissionalId,
       especialidade_id: especialidadeId,
-      vaga_fixa_id: vagaFixaId ?? null,
-      data_hora_inicio: dataHoraInicio,
-      data_hora_fim: dataHoraFim,
+      vaga_fixa_id: vagaFixaId || undefined,
+      data_hora_inicio: dataHoraInicio || new Date().toISOString(),
+      data_hora_fim: dataHoraFim || undefined,
       status_comparecimento: 'Presente',
-      evolucao_clinica: null,
-      conduta: null,
+      evolucao_clinica: undefined,
+      conduta: undefined,
+      tipo_vaga: 'Regular',
+      tipo_agendamento: 'Individual',
     },
   })
 

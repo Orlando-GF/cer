@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect } from "react"
 import {
   Sheet,
@@ -248,7 +250,7 @@ export function PacienteSheetMaster({
                         </div>
                         <div>
                           <Label className="text-[10px] text-muted-foreground uppercase font-bold">Localidade</Label>
-                          <p className="text-sm text-foreground uppercase">{paciente.cidade} - {paciente.uf}</p>
+                          <p className="text-sm text-foreground uppercase">{paciente.cidade ?? "N/I"} - {paciente.uf ?? "N/I"}</p>
                         </div>
                       </div>
                     </div>

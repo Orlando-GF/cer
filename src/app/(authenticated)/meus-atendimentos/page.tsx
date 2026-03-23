@@ -4,7 +4,8 @@ import { validarAcessoRota } from "@/lib/access-control"
 
 export default async function MeusAtendimentosPage() {
   await validarAcessoRota("/meus-atendimentos")
-  const hoje = new Date().toISOString().split("T")[0]
+  // Força o fuso horário de Brasília/Bahia e formata como YYYY-MM-DD (padrão en-CA)
+  const hoje = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
   const res = await buscarMeusAtendimentos(hoje)
   const data = res.success ? (res.data ?? { vagas: [], hist: [] }) : { vagas: [], hist: [] }
 

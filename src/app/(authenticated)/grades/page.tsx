@@ -1,10 +1,10 @@
 import { buscarProfissionais, buscarGradesHorarias } from "@/actions"
 import { GradeHorariaSheet } from "@/components/grades/grade-horaria-sheet"
+import { ProfissionalSelectFilter } from "@/components/grades/profissional-select-filter"
+import { DeleteGradeButton } from "@/components/grades/delete-grade-button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Clock, User, Plus } from "lucide-react"
+import { Clock, User } from "lucide-react"
 import { validarAcessoRota } from "@/lib/access-control"
 
 const DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
@@ -26,7 +26,7 @@ export default async function GradesPage({
   const todasGrades = gradesRes.data || []
   
   const profissionalSelecionado = profissionais.find(p => p.id === profId)
-  const gradesDoProfissional = todasGrades.filter(g => g.profissional_id === profId)
+  const gradesDoProfissional = todasGrades.filter(g => g.profissional_id === profId && g.ativo !== false)
 
   // Agrupar por dia da semana para facilitar a visualização
   const gradesAgrupadas = gradesDoProfissional.reduce((acc, curr) => {
@@ -47,29 +47,7 @@ export default async function GradesPage({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 bg-card border border-border px-3 h-10">
             <User className="h-4 w-4 text-muted-foreground" />
-            <form action="" method="get" className="flex items-center">
-              <Select name="profId" defaultValue={profId}>
-                <SelectTrigger className="w-[200px] md:w-[280px] h-8 border-none shadow-none font-bold text-[11px] uppercase tracking-wider focus:ring-0">
-                  <SelectValue placeholder="SELECIONE O PROFISSIONAL" />
-                </SelectTrigger>
-                <SelectContent className="rounded-none border-border shadow-2xl">
-                  {profissionais.map((p) => (
-                    <SelectItem key={p.id} value={p.id} className="font-bold uppercase text-[10px]">
-                      {p.nome_completo}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {/* Script auto-submit ao mudar o select */}
-              <button type="submit" id="submit-prof" className="hidden" />
-              <script dangerouslySetInnerHTML={{ __html: `
-                document.querySelector('select[name="profId"]').addEventListener('change', () => {
-                   const url = new URL(window.location.href);
-                   url.searchParams.set('profId', event.target.value);
-                   window.location.href = url.toString();
-                });
-              `}} />
-            </form>
+            <ProfissionalSelectFilter profissionais={profissionais} defaultValue={profId} />
           </div>
           {profId && <GradeHorariaSheet profissionalId={profId} />}
         </div>
@@ -140,9 +118,7 @@ export default async function GradesPage({
                               {g.data_inicio_vigencia ? new Date(g.data_inicio_vigencia).toLocaleDateString('pt-BR') : '-'}
                             </TableCell>
                             <TableCell className="text-right py-3">
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-none text-muted-foreground hover:text-alert-danger-text hover:bg-alert-danger-bg/10">
-                                <Plus className="h-3.5 w-3.5 rotate-45" />
-                              </Button>
+                              <DeleteGradeButton id={g.id} />
                             </TableCell>
                           </TableRow>
                         ))
