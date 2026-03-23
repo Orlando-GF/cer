@@ -41,6 +41,8 @@ interface PacienteSheetMasterProps {
   vagaFixaIdContext?: string
   especialidadeIdContext?: string
   profissionalIdContext?: string
+  dataHoraInicioContext?: string
+  dataHoraFimContext?: string
 }
 
 export function PacienteSheetMaster({ 
@@ -50,7 +52,9 @@ export function PacienteSheetMaster({
   defaultTab,
   vagaFixaIdContext,
   especialidadeIdContext,
-  profissionalIdContext
+  profissionalIdContext,
+  dataHoraInicioContext,
+  dataHoraFimContext
 }: PacienteSheetMasterProps) {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
@@ -295,8 +299,8 @@ export function PacienteSheetMaster({
                         profissionalId={profissionalIdContext}
                         especialidadeId={especialidadeIdContext}
                         vagaFixaId={vagaFixaIdContext}
-                        dataHoraInicio={new Date().toISOString()}
-                        dataHoraFim={new Date().toISOString()}
+                        dataHoraInicio={dataHoraInicioContext ?? new Date().toISOString()}
+                        dataHoraFim={dataHoraFimContext ?? new Date().toISOString()}
                         onSuccess={() => {
                           setActiveTab("clinico")
                           router.refresh()

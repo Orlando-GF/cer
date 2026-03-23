@@ -23,6 +23,8 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
   const [selectedVagaId, setSelectedVagaId] = useState<string | null>(null)
   const [selectedEspecId, setSelectedEspecId] = useState<string | null>(null)
   const [selectedProfId, setSelectedProfId] = useState<string | null>(null)
+  const [selectedDataHoraInicio, setSelectedDataHoraInicio] = useState<string | null>(null)
+  const [selectedDataHoraFim, setSelectedDataHoraFim] = useState<string | null>(null)
   const [defaultTab, setDefaultTab] = useState<string>("clinico")
 
   const hoje = new Date().toISOString().split("T")[0]
@@ -90,6 +92,8 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
                     className="flex-1 rounded-none text-[10px] h-9 font-bold uppercase tracking-widest"
                     onClick={() => {
                         setSelectedPaciente(atend.pacientes as unknown as Paciente)
+                        setSelectedDataHoraInicio(atend.data_hora_inicio)
+                        setSelectedDataHoraFim(atend.data_hora_fim || new Date().toISOString())
                         setSheetOpen(true)
                     }}
                   >
@@ -103,6 +107,8 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
                       setSelectedVagaId(atend.vaga_fixa_id || null)
                       setSelectedEspecId(atend.especialidade_id)
                       setSelectedProfId(atend.profissional_id)
+                      setSelectedDataHoraInicio(atend.data_hora_inicio)
+                      setSelectedDataHoraFim(atend.data_hora_fim || new Date().toISOString())
                       setDefaultTab(atend.status_comparecimento === 'Presente' ? 'clinico' : 'registrar')
                       setSheetOpen(true)
                     }}
@@ -148,6 +154,8 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
                         setSelectedVagaId(vaga.id)
                         setSelectedEspecId(vaga.especialidade_id)
                         setSelectedProfId(vaga.profissional_id)
+                        setSelectedDataHoraInicio(`${hoje}T${vaga.horario_inicio.substring(0,5)}:00Z`)
+                        setSelectedDataHoraFim(`${hoje}T${vaga.horario_fim.substring(0,5)}:00Z`)
                         setDefaultTab('registrar')
                         setSheetOpen(true)
                     }}
@@ -179,6 +187,8 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
           vagaFixaIdContext={selectedVagaId || undefined}
           especialidadeIdContext={selectedEspecId || undefined}
           profissionalIdContext={selectedProfId || undefined}
+          dataHoraInicioContext={selectedDataHoraInicio || undefined}
+          dataHoraFimContext={selectedDataHoraFim || undefined}
         />
       )}
     </div>

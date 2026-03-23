@@ -10,7 +10,7 @@ export const FrequenciaRecomendadaEnum = z.enum(["A definir", "Semanal", "Quinze
 export const PerfilAcessoEnum = z.enum(["Recepcao", "Enfermagem", "Medico_Terapeuta", "Administracao", "Motorista"])
 export const StatusVagaEnum = z.enum(["Ativa", "Suspensa", "Encerrada"])
 export const StatusCadastroEnum = z.enum(["Ativo", "Inativo", "Obito", "Alta"])
-export const TipoAtendimentoEnum = z.enum(["Consulta Medica", "Terapia Continua", "Dispensacao_OPM", "Avaliacao_Diagnostica"])
+export const TipoAtendimentoEnum = z.enum(["Consulta Medica", "Terapia Continua", "Dispensacao_OPM", "Avaliacao_Diagnostica", "Acolhimento"])
 export const StatusComparecimentoEnum = z.enum(["Agendado", "Presente", "Falta Nao Justificada", "Falta Justificada", "Cancelado"])
 export const CondutaEvolucaoEnum = z.enum([
   "Retorno", 
@@ -203,9 +203,11 @@ export const gradeHorariaSchema = z.object({
   dia_semana: z.number().min(0).max(6),
   horario_inicio: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Horário de início inválido (HH:mm)"),
   horario_fim: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Horário de fim inválido (HH:mm)"),
-  capacidade: z.number().int().min(1).default(1),
+  capacidade_atendimentos: z.number().int().min(1).default(1),
+  data_inicio_vigencia: z.string().length(10, "Data inválida").optional().nullable(),
   ativo: z.boolean().default(true),
 })
+
 
 export const avaliacaoServicoSocialSchema = z.object({
   paciente_id: z.string().uuid("Paciente inválido"),

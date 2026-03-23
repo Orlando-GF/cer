@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -102,6 +102,78 @@ export type Database = {
           },
           {
             foreignKeyName: "agendamentos_profissional_id_fkey"
+            columns: ["profissional_id"]
+            isOneToOne: false
+            referencedRelation: "profissionais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      avaliacoes_servico_social: {
+        Row: {
+          criado_em: string | null
+          data_avaliacao: string
+          descricao_barreiras_arquitetonicas: string | null
+          id: string
+          impacto_incapacidade_trabalho: string | null
+          paciente_id: string
+          parecer_final: string
+          profissional_id: string
+          quantidade_membros_familia: number
+          recebe_beneficio: boolean | null
+          relatorio_social: string
+          renda_familiar_total: number
+          tem_energia_eletrica: boolean | null
+          tem_saneamento_basico: boolean | null
+          tipo_beneficio: string | null
+          tipo_moradia: string | null
+        }
+        Insert: {
+          criado_em?: string | null
+          data_avaliacao: string
+          descricao_barreiras_arquitetonicas?: string | null
+          id?: string
+          impacto_incapacidade_trabalho?: string | null
+          paciente_id: string
+          parecer_final: string
+          profissional_id: string
+          quantidade_membros_familia: number
+          recebe_beneficio?: boolean | null
+          relatorio_social: string
+          renda_familiar_total: number
+          tem_energia_eletrica?: boolean | null
+          tem_saneamento_basico?: boolean | null
+          tipo_beneficio?: string | null
+          tipo_moradia?: string | null
+        }
+        Update: {
+          criado_em?: string | null
+          data_avaliacao?: string
+          descricao_barreiras_arquitetonicas?: string | null
+          id?: string
+          impacto_incapacidade_trabalho?: string | null
+          paciente_id?: string
+          parecer_final?: string
+          profissional_id?: string
+          quantidade_membros_familia?: number
+          recebe_beneficio?: boolean | null
+          relatorio_social?: string
+          renda_familiar_total?: number
+          tem_energia_eletrica?: boolean | null
+          tem_saneamento_basico?: boolean | null
+          tipo_beneficio?: string | null
+          tipo_moradia?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avaliacoes_servico_social_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avaliacoes_servico_social_profissional_id_fkey"
             columns: ["profissional_id"]
             isOneToOne: false
             referencedRelation: "profissionais"
@@ -215,6 +287,50 @@ export type Database = {
             columns: ["paciente_id"]
             isOneToOne: false
             referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grade_horaria: {
+        Row: {
+          ativo: boolean | null
+          capacidade_atendimentos: number
+          criado_em: string | null
+          data_inicio_vigencia: string | null
+          dia_semana: number
+          horario_fim: string
+          horario_inicio: string
+          id: string
+          profissional_id: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          capacidade_atendimentos?: number
+          criado_em?: string | null
+          data_inicio_vigencia?: string | null
+          dia_semana: number
+          horario_fim: string
+          horario_inicio: string
+          id?: string
+          profissional_id: string
+        }
+        Update: {
+          ativo?: boolean | null
+          capacidade_atendimentos?: number
+          criado_em?: string | null
+          data_inicio_vigencia?: string | null
+          dia_semana?: number
+          horario_fim?: string
+          horario_inicio?: string
+          id?: string
+          profissional_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grade_horaria_profissional_id_fkey"
+            columns: ["profissional_id"]
+            isOneToOne: false
+            referencedRelation: "profissionais"
             referencedColumns: ["id"]
           },
         ]
@@ -639,6 +755,7 @@ export type Database = {
         | "Terapia Continua"
         | "Dispensacao_OPM"
         | "Avaliacao_Diagnostica"
+        | "Acolhimento"
       tipo_reabilitacao_enum: "Fisica" | "Intelectual" | "Ambas"
     }
     CompositeTypes: {
@@ -815,6 +932,7 @@ export const Constants = {
         "Terapia Continua",
         "Dispensacao_OPM",
         "Avaliacao_Diagnostica",
+        "Acolhimento",
       ],
       tipo_reabilitacao_enum: ["Fisica", "Intelectual", "Ambas"],
     },

@@ -29,6 +29,7 @@ import {
   type DadosUsuario,
   type PerfilAcesso,
 } from '@/types'
+import { Json } from '@/types/database.types'
 
 // ==========================================
 // FUNÇÕES UTILITÁRIAS INTERNAS
@@ -41,17 +42,21 @@ function extrairJoin<T>(relacionamento: unknown): T | null {
 }
 
 // ✅ NOVO: Elimina a duplicação do padrão extrairJoin + .map() que existia 4× no ficheiro
-function mapearAgendaComJoins<T extends Record<string, unknown>>(
-  items: T[],
-): T[] {
-  return items.map((item) => ({
-    ...item,
-    pacientes: extrairJoin(item.pacientes),
-    profissionais: extrairJoin(item.profissionais),
-    linhas_cuidado_especialidades: extrairJoin(
-      item.linhas_cuidado_especialidades,
-    ),
-  }))
+function mapearAgendaComJoins<T>(dados: Record<string, unknown>[]): T[] {
+  return dados.map((item) => {
+    const {
+      pacientes,
+      profissionais,
+      linhas_cuidado_especialidades,
+      ...resto
+    } = item
+    return {
+      ...resto,
+      paciente: extrairJoin(pacientes),
+      profissional: extrairJoin(profissionais),
+      especialidade: extrairJoin(linhas_cuidado_especialidades),
+    } as unknown as T
+  })
 }
 
 function validarLimiteDias(
@@ -250,7 +255,7 @@ export async function cadastrarAvaliacaoSocial(
     .single()
   if (!prof) return { success: false, error: 'Profissional não encontrado' }
 
-  const { error } = await (supabase as any).from('avaliacoes_servico_social').insert({
+  const { error } = await supabase.from('avaliacoes_servico_social').insert({
     ...val.data,
     profissional_id: prof.id,
   })
@@ -422,7 +427,16 @@ export async function buscarFilaEspera(
         'Em Risco',
       ])
     } else {
-      query = query.eq('status_fila', status as "Alta" | "Aguardando" | "Em Atendimento" | "Em Risco" | "Desistencia" | "Aguardando Vaga")
+      query = query.eq(
+        'status_fila',
+        status as
+          | 'Alta'
+          | 'Aguardando'
+          | 'Em Atendimento'
+          | 'Em Risco'
+          | 'Desistencia'
+          | 'Aguardando Vaga',
+      )
     }
   }
 
@@ -539,13 +553,13 @@ async function registrarLogAuditoria(params: {
       data: { user },
     } = await supabase.auth.getUser()
 
-    await (supabase as any).from('logs_auditoria').insert({
+    await supabase.from('logs_auditoria').insert({
       // ✅ CORRIGIDO: era 'agendamentos_logs'
       tabela_afetada: 'agendamentos_historico',
       registro_id: params.agendamento_id,
       acao: params.acao === 'CRIAR' ? 'INSERT' : 'UPDATE', // ✅ conforme CHECK do BD
-      dados_antigos: params.dados_anteriores,
-      dados_novos: params.dados_novos,
+      dados_antigos: params.dados_anteriores as Json,
+      dados_novos: params.dados_novos as Json,
       autor_id: user?.id ?? null,
     })
   } catch (e) {
@@ -829,7 +843,7 @@ export async function buscarEspecialidades(): Promise<
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('linhas_cuidado_especialidades')
-    .select('id, nome_especialidade, ativo, cor_hex, descricao, criado_em')
+    .select('id, nome_especialidade, ativo, criado_em')
     .order('nome_especialidade')
   if (error) return { success: false, error: error.message }
   return { success: true, data: data as unknown as Especialidade[] }
@@ -896,15 +910,15 @@ export async function buscarGradesHorarias(): Promise<
   ActionResponse<GradeHoraria[]>
 > {
   const supabase = await createClient()
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('grade_horaria')
     .select(
-      'id, dia_semana, horario_inicio, horario_fim, ativo, profissional_id, especialidade_id, profissional:profissionais(nome_completo)',
+      'id, dia_semana, horario_inicio, horario_fim, ativo, profissional_id, profissional:profissionais(nome_completo)',
     )
     .order('dia_semana')
     .order('horario_inicio')
   if (error) return { success: false, error: error.message }
-  return { success: true, data: data as unknown as GradeHoraria[] }
+  return { success: true, data: data as GradeHoraria[] }
 }
 
 export async function salvarGradeHoraria(
@@ -914,7 +928,7 @@ export async function salvarGradeHoraria(
   const val = gradeHorariaSchema.safeParse(rawData)
   if (!val.success) return { success: false, error: 'Dados inválidos.' }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('grade_horaria')
     .upsert([val.data])
     .select()
@@ -922,7 +936,7 @@ export async function salvarGradeHoraria(
   if (error) return { success: false, error: error.message }
 
   revalidatePath('/grades')
-  return { success: true, data: data as unknown as GradeHoraria }
+  return { success: true, data: data as GradeHoraria }
 }
 
 export async function toggleAtivaGradeHoraria(
@@ -930,7 +944,7 @@ export async function toggleAtivaGradeHoraria(
   ativo: boolean,
 ): Promise<ActionResponse> {
   const supabase = await createClient()
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('grade_horaria')
     .update({ ativo })
     .eq('id', id)
@@ -1236,7 +1250,7 @@ export async function buscarVagasFixas(
   if (error) return { success: false, error: error.message }
   return {
     success: true,
-    data: mapearAgendaComJoins(data || []) as unknown as VagaFixaComJoins[],
+    data: mapearAgendaComJoins<VagaFixaComJoins>(data || []),
   }
 }
 
@@ -1282,9 +1296,7 @@ export async function buscarHistoricoClinicoPaciente(
   if (error) return { success: false, error: error.message }
   return {
     success: true,
-    data: mapearAgendaComJoins(
-      data || [],
-    ) as unknown as AgendamentoHistoricoComJoins[],
+    data: mapearAgendaComJoins<AgendamentoHistoricoComJoins>(data || []),
   }
 }
 
@@ -1337,8 +1349,8 @@ export async function buscarMeusPacientesVagaFixa(): Promise<
   const listaPacientes: Paciente[] = []
   const idsVistos = new Set<string>()
   if (data) {
-    ;(data as unknown as { pacientes: Paciente }[]).forEach((v) => {
-      const p = v.pacientes
+    ;(data as { pacientes: unknown }[]).forEach((v) => {
+      const p = extrairJoin<Paciente>(v.pacientes)
       if (p && !idsVistos.has(p.id)) {
         idsVistos.add(p.id)
         listaPacientes.push(p)

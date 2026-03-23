@@ -24,6 +24,7 @@ import {
 import { PlusCircle, Loader2, Pencil } from "lucide-react"
 import { cadastrarEspecialidade, atualizarEspecialidade } from "@/actions"
 import { type Especialidade, type TipoAtendimento } from "@/types"
+import { especialidadeSchema } from "@/lib/validations/schema"
 
 export function NovaEspecialidadeSheet({
   especialidade,
@@ -51,36 +52,33 @@ export function NovaEspecialidadeSheet({
   })
 
   useEffect(() => {
-    if (especialidade && open) {
-      const novosDados = {
-        nome_especialidade: especialidade.nome_especialidade,
-        equipe_responsavel: especialidade.equipe_responsavel || "",
-        linha_reabilitacao: especialidade.linha_reabilitacao || "",
-        tipo_atendimento: (especialidade.tipo_atendimento as TipoAtendimento) || "Consulta Medica",
-        ativo: especialidade.ativo ?? true,
-      };
-
-      if (JSON.stringify(dados) !== JSON.stringify(novosDados)) {
-        setDados(novosDados);
-      }
-    } else if (!especialidade && open) {
-      const vazio = {
-        nome_especialidade: "",
-        equipe_responsavel: "",
-        linha_reabilitacao: "",
-        tipo_atendimento: "Consulta Medica" as TipoAtendimento,
-        ativo: true,
-      };
-      if (JSON.stringify(dados) !== JSON.stringify(vazio)) {
-        setDados(vazio);
+    if (open) {
+      if (especialidade) {
+        setDados({
+          nome_especialidade: especialidade.nome_especialidade,
+          equipe_responsavel: especialidade.equipe_responsavel || "",
+          linha_reabilitacao: especialidade.linha_reabilitacao || "",
+          tipo_atendimento: (especialidade.tipo_atendimento as TipoAtendimento) || "Consulta Medica",
+          ativo: especialidade.ativo ?? true,
+        })
+      } else {
+        setDados({
+          nome_especialidade: "",
+          equipe_responsavel: "",
+          linha_reabilitacao: "",
+          tipo_atendimento: "Consulta Medica" as TipoAtendimento,
+          ativo: true,
+        })
       }
     }
-  }, [especialidade, open, dados])
+  }, [especialidade, open])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!dados.nome_especialidade) {
-      toast.error("O nome da especialidade é obrigatório.")
+    
+    const validacao = especialidadeSchema.safeParse(dados)
+    if (!validacao.success) {
+      toast.error(validacao.error.issues?.[0]?.message || "Preencha os campos obrigatórios corretamente")
       return
     }
 
@@ -160,6 +158,7 @@ export function NovaEspecialidadeSheet({
                 <SelectItem value="Terapia Continua" className="font-bold uppercase text-[11px]">TERAPIA CONTÍNUA</SelectItem>
                 <SelectItem value="Avaliacao_Diagnostica" className="font-bold uppercase text-[11px]">AVALIAÇÃO DIAGNÓSTICA</SelectItem>
                 <SelectItem value="Acolhimento" className="font-bold uppercase text-[11px]">ACOLHIMENTO</SelectItem>
+                <SelectItem value="Dispensacao_OPM" className="font-bold uppercase text-[11px]">DISPENSAÇÃO OPM</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -183,15 +182,6 @@ export function NovaEspecialidadeSheet({
                 className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-card uppercase text-xs"
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Descrição / Observações</Label>
-            <Input 
-              value={""}
-              readOnly
-              className="rounded-none border-border h-12 font-bold focus-visible:ring-primary bg-muted/30 uppercase text-xs"
-            />
           </div>
 
           <div className="pt-8 flex gap-3">

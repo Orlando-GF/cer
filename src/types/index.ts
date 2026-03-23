@@ -15,15 +15,7 @@ export type Profissional = Database["public"]["Tables"]["profissionais"]["Row"] 
   especialidades_permitidas?: string[]
 }
 
-export interface GradeHoraria {
-  id: string
-  profissional_id: string
-  dia_semana: number
-  horario_inicio: string
-  horario_fim: string
-  capacidade_atendimentos: number
-  data_inicio_vigencia?: string | null
-  ativo: boolean
+export type GradeHoraria = Database["public"]["Tables"]["grade_horaria"]["Row"] & {
   profissional?: {
     nome_completo: string
   }
@@ -113,11 +105,10 @@ export interface SerializedAgendaSession extends Omit<AgendaSession, 'data_hora_
   data_hora_fim: string
 }
 
-export interface VagaFixaComJoins
-  extends Omit<
+export type VagaFixaComJoins = Omit<
     VagaFixa,
     "pacientes" | "profissionais" | "linhas_cuidado_especialidades"
-  > {
+  > & {
   pacientes: Pick<
     Paciente,
     | "id"
@@ -140,11 +131,10 @@ export interface VagaFixaComJoins
   >
 }
 
-export interface AgendamentoHistoricoComJoins
-  extends Omit<
+export type AgendamentoHistoricoComJoins = Omit<
     AgendamentoHistorico,
     "pacientes" | "profissionais" | "linhas_cuidado_especialidades"
-  > {
+  > & {
   pacientes: Pick<
     Paciente,
     | "id"
