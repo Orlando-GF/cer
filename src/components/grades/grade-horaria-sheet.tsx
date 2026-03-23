@@ -61,7 +61,7 @@ export function GradeHorariaSheet({
     horario_inicio: "",
     horario_fim: "",
     capacidade_atendimentos: 1,
-    data_inicio_vigencia: new Date().toISOString().split('T')[0],
+    data_inicio_vigencia: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }),
   })
 
   async function handleSubmit() {
@@ -95,11 +95,11 @@ export function GradeHorariaSheet({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger>
+      <SheetTrigger render={
         <Button className="h-9 px-4 rounded-none font-bold uppercase tracking-widest text-[10px] bg-primary text-white hover:bg-primary/90">
           <Plus className="mr-2 h-3.5 w-3.5" /> Adicionar Horário
         </Button>
-      </SheetTrigger>
+      } />
       <SheetContent className="overflow-y-auto">
         <SheetHeader className="mb-6">
           <SheetTitle>Adicionar Horário à Grade</SheetTitle>

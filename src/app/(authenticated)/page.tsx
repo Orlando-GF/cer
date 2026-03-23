@@ -19,8 +19,8 @@ export default async function PainelGeral() {
     supabase.from("pacientes").select("*", { count: "exact", head: true }),
     supabase.from("agendamentos_historico")
       .select("*", { count: "exact", head: true })
-      .gte("data_hora_inicio", new Date().toISOString().split('T')[0] + 'T00:00:00Z')
-      .lte("data_hora_inicio", new Date().toISOString().split('T')[0] + 'T23:59:59Z'),
+      .gte("data_hora_inicio", new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }) + 'T00:00:00-03:00')
+      .lte("data_hora_inicio", new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }) + 'T23:59:59-03:00'),
   ])
 
   return (

@@ -1,7 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ClipboardList } from "lucide-react"
+import { validarAcessoRota } from "@/lib/access-control"
 
-export default function ProntuariosPage() {
+export default async function ProntuariosPage() {
+  await validarAcessoRota("/prontuarios")
+  
   return (
     <main className="min-h-screen bg-background p-6 space-y-8">
       <div>

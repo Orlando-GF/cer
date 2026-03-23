@@ -185,7 +185,7 @@ export function PacienteSheet({ paciente, open, onOpenChange }: PacienteSheetPro
                             <div className={`mt-1.5 h-2.5 w-2.5 rounded-none ${f.justificada ? 'bg-alert-shared-text' : 'bg-alert-danger-text'}`} />
                             <div className="flex-1">
                               <div className="flex justify-between items-center mb-1.5">
-                                <span className="text-xs font-black text-foreground tabular-nums">{new Date(f.data_falta).toLocaleDateString('pt-BR')}</span>
+                                <span className="text-xs font-black text-foreground tabular-nums">{new Date(f.data_falta.split('T')[0].replace(/-/g, '/')).toLocaleDateString('pt-BR')}</span>
                                 <Badge variant="outline" className={`text-[9px] uppercase font-black border-none rounded-none ${f.justificada ? 'text-alert-shared-text bg-alert-shared-bg' : 'text-alert-danger-text bg-alert-danger-bg'}`}>
                                   {f.justificada ? 'Justificada' : 'Não Justificada'}
                                 </Badge>

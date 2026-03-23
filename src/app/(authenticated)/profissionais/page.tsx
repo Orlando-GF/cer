@@ -1,21 +1,9 @@
-import { buscarProfissionais, buscarEspecialidades, toggleAtivoProfissional } from "@/actions"
+import { buscarProfissionais, buscarEspecialidades } from "@/actions"
 import { NovoProfissionalSheet } from "@/components/especialidades/novo-profissional-sheet"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Power, PowerOff } from "lucide-react"
+import { ToggleProfissionalButton } from "@/components/profissionais/toggle-profissional-button"
 import { validarAcessoRota } from "@/lib/access-control"
 
 export default async function ProfissionaisPage() {
@@ -83,49 +71,11 @@ export default async function ProfissionaisPage() {
                     profissional={prof}
                   />
 
-                    <AlertDialog>
-                      <AlertDialogTrigger render={
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className={`h-8 w-8 p-0 rounded-none ${
-                            prof.ativo 
-                              ? "text-muted-foreground hover:text-alert-danger-text hover:bg-alert-danger-bg/10" 
-                              : "text-muted-foreground hover:text-alert-success-text hover:bg-alert-success-bg/20"
-                          }`}
-                        >
-                          {prof.ativo ? <Power className="h-3.5 w-3.5" /> : <PowerOff className="h-3.5 w-3.5" />}
-                        </Button>
-                      } />
-                      <AlertDialogContent className="rounded-none border-border shadow-2xl">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            {prof.ativo ? "Desativar Profissional?" : "Ativar Profissional?"}
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {prof.ativo 
-                              ? "Isso impedirá novos agendamentos para este profissional. Agendamentos existentes não serão afetados." 
-                              : "Isso permitirá que o profissional volte a receber novos agendamentos na agenda."}
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="rounded-none border-border font-bold uppercase tracking-widest text-[10px]">CANCELAR</AlertDialogCancel>
-                          <form action={async () => {
-                            "use server"
-                            await toggleAtivoProfissional(prof.id, !prof.ativo)
-                          }}>
-                            <AlertDialogAction 
-                              type="submit"
-                              className={`rounded-none font-bold uppercase tracking-widest text-[10px] ${
-                                prof.ativo ? "bg-alert-danger-text text-white hover:bg-alert-danger-text/90" : "bg-primary text-white hover:bg-primary/90"
-                              }`}
-                            >
-                              {prof.ativo ? "DESATIVAR" : "ATIVAR"}
-                            </AlertDialogAction>
-                          </form>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <ToggleProfissionalButton 
+                      id={prof.id} 
+                      nome={prof.nome_completo} 
+                      ativo={!!prof.ativo} 
+                    />
                   </TableCell>
                 </TableRow>
               ))

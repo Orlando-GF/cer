@@ -1,7 +1,18 @@
 import { LoginForm } from "@/components/auth/login-form"
 import { ShieldCheck } from "lucide-react"
+import { createClient } from "@/utils/supabase/server"
+import { redirect } from "next/navigation"
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    redirect("/")
+  }
+
+  const anoAtual = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', year: 'numeric' }).format(new Date())
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-clinico-900 overflow-hidden relative">
       {/* Elementos decorativos de fundo para sensação premium */}
@@ -26,7 +37,7 @@ export default function LoginPage() {
         <LoginForm />
 
         <div className="text-white/40 text-[10px] uppercase tracking-widest font-bold">
-          © {new Date().getFullYear()} CER - Gestão em Saúde Pública
+          © {anoAtual} CER - Gestão em Saúde Pública
         </div>
       </div>
     </main>

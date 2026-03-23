@@ -9,7 +9,7 @@ interface JudiciaisListProps {
   total: number
 }
 
-export function JudiciaisList({ initialData }: JudiciaisListProps) {
+export function JudiciaisList({ initialData, total }: JudiciaisListProps) {
   const data = initialData
 
   return (
@@ -37,7 +37,7 @@ export function JudiciaisList({ initialData }: JudiciaisListProps) {
           </div>
         </div>
       ) : (
-        <FilaClientWrapper variant="judicial" data={data} total={data.length} />
+        <FilaClientWrapper variant="judicial" data={data} total={total} />
       )}
     </div>
   )

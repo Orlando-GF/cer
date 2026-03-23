@@ -90,8 +90,8 @@ export function AbsenteismoClient({ alertas }: AbsenteismoClientProps) {
               </TableCell>
             </TableRow>
           ) : (
-            alertas.map((alerta, idx) => (
-              <TableRow key={idx} className="hover:bg-muted transition-colors">
+            alertas.map((alerta) => (
+              <TableRow key={`${alerta.paciente.id}-${alerta.especialidade}`} className="hover:bg-muted transition-colors">
                 <TableCell>
                   <div className="flex flex-col">
                     <span className="text-foreground font-bold">

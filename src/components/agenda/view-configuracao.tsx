@@ -212,7 +212,7 @@ export function ViewConfiguracao({
         dia_semana: parseInt(diaSemana),
         horario_inicio: buildUtcTime(horaInicio),
         horario_fim: buildUtcTime(horaFim),
-        data_inicio_contrato: new Date().toISOString().split('T')[0],
+        data_inicio_contrato: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }),
         status_vaga: 'Ativa',
       })
 
