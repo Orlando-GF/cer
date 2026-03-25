@@ -1,4 +1,4 @@
-import { buscarMeusPacientesVagaFixa } from "@/actions"
+import { buscarMeusPacientesVagaFixa } from "@/actions/agendamentos-actions"
 import { MeusPacientesList } from "@/components/profissional/meus-pacientes-list"
 import { validarAcessoRota } from "@/lib/access-control"
 

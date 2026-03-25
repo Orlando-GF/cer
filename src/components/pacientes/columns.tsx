@@ -21,7 +21,7 @@ declare module '@tanstack/react-table' {
 
 function calcularIdade(dataNascimento: string) {
   if (!dataNascimento) return "-"
-  const nasci = new Date(dataNascimento)
+  const nasci = new Date(dataNascimento.split('T')[0].replace(/-/g, '/'))
   const hoje = new Date()
   let idade = hoje.getFullYear() - nasci.getFullYear()
   const m = hoje.getMonth() - nasci.getMonth()

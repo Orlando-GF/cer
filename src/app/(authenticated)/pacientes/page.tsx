@@ -1,4 +1,4 @@
-import { buscarPacientes } from "@/actions"
+import { buscarPacientes } from "@/actions/pacientes-actions"
 import { NovoPacienteSheet } from "@/components/pacientes/novo-paciente-sheet"
 import { validarAcessoRota } from "@/lib/access-control"
 // IMPORTAÇÃO NOVA: Trocamos a DataTable crua pelo nosso Wrapper inteligente

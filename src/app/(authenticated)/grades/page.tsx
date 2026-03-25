@@ -1,4 +1,4 @@
-import { buscarProfissionais, buscarGradesHorarias } from "@/actions"
+import { buscarProfissionais, buscarGradesHorarias } from "@/actions/index"
 import { GradeHorariaSheet } from "@/components/grades/grade-horaria-sheet"
 import { ProfissionalSelectFilter } from "@/components/grades/profissional-select-filter"
 import { DeleteGradeButton } from "@/components/grades/delete-grade-button"

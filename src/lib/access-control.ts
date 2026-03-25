@@ -1,4 +1,4 @@
-import { getMeuPerfil } from "@/actions"
+import { getMeuPerfil } from "@/actions/index"
 import { redirect } from "next/navigation"
 
 export type PerfilSessao = "Recepcao" | "Enfermagem" | "Medico_Terapeuta" | "Administracao" | "Motorista"

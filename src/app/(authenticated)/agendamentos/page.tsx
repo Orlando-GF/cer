@@ -4,11 +4,13 @@ import { AgendaContent } from '@/components/agenda/agenda-content'
 import {
   buscarProfissionais,
   buscarEspecialidades,
+} from '@/actions/index'
+import {
   buscarAgendaData,
   buscarAgendaLogistica,
   buscarAgendaCoordenacao,
   buscarVagasFixas
-} from '@/actions'
+} from '@/actions/agendamentos-actions'
 import { projectAgendaSessions } from '@/lib/agenda-utils'
 import { startOfDay, endOfDay, parseISO, isValid } from 'date-fns'
 import type { AgendaSession, VagaFixaComJoins } from '@/types'

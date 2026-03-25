@@ -1,4 +1,4 @@
-import { buscarEspecialidades } from "@/actions"
+import { buscarEspecialidades } from "@/actions/index"
 import { NovaEspecialidadeSheet } from "@/components/especialidades/nova-especialidade-sheet"
 import { ToggleEspecialidadeButton } from "@/components/especialidades/toggle-especialidade-button"
 import { Badge } from "@/components/ui/badge"

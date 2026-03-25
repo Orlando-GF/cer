@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select"
 import { Loader2, Save } from "lucide-react"
 import { avaliacaoServicoSocialSchema, type AvaliacaoServicoSocialInput } from "@/lib/validations/schema"
-import { cadastrarAvaliacaoSocial } from "@/actions"
+import { cadastrarAvaliacaoSocial } from "@/actions/pacientes-actions"
 import { toast } from "sonner"
 
 interface AvaliacaoSocialFormProps {
@@ -71,7 +71,7 @@ export function AvaliacaoSocialForm({ pacienteId, onSuccess, onCancel }: Avaliac
       tipo_moradia: "Propria",
       tem_saneamento_basico: true,
       tem_energia_eletrica: true,
-      data_avaliacao: new Date().toISOString().split("T")[0],
+      data_avaliacao: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }),
       impacto_incapacidade_trabalho: null,
       descricao_barreiras_arquitetonicas: null,
       relatorio_social: "",

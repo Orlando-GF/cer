@@ -1,4 +1,4 @@
-import { buscarMeusAtendimentos } from "@/actions"
+import { buscarMeusAtendimentos } from "@/actions/agendamentos-actions"
 import { AtendimentosDia } from "@/components/profissional/atendimentos-dia"
 import { validarAcessoRota } from "@/lib/access-control"
 

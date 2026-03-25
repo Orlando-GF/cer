@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { registrarSessaoHistorico } from '@/actions'
+import { registrarSessaoHistorico } from '@/actions/agendamentos-actions'
 import { agendamentoHistoricoSchema } from '@/lib/validations/schema'
 
 type FormValues = z.input<typeof agendamentoHistoricoSchema>

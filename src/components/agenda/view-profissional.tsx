@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { registrarSessaoHistorico } from '@/actions'
+import { registrarSessaoHistorico } from '@/actions/agendamentos-actions'
 
 // 3. Tipos
 import type { AgendaSession, Profissional } from '@/types'

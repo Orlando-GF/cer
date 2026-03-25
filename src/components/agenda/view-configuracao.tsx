@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { salvarVagaFixa, encerrarVagaFixa } from '@/actions'
+import { salvarVagaFixa, encerrarVagaFixa } from '@/actions/agendamentos-actions'
 import { Plus, Calendar, Clock, User, Trash2, MapPin } from 'lucide-react'
 import {
   type Profissional,

@@ -167,7 +167,7 @@ export const agendamentoHistoricoSchema = z.object({
   data_hora_fim: z.string().optional().nullable(),
   status_comparecimento: StatusComparecimentoEnum.default("Agendado"),
   evolucao_clinica: optionalStr,
-  conduta: CondutaEvolucaoEnum.optional().nullable(), // Alterado para texto livre conforme requisito de Textarea
+  conduta: z.string().optional().nullable(), // Alterado para texto livre conforme requisito de Textarea
   tipo_vaga: z.string().default("Regular"),
   tipo_agendamento: z.string().default("Individual"),
   ordem_chegada: z.number().int().optional().nullable(),

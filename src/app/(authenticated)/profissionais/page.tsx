@@ -1,4 +1,4 @@
-import { buscarProfissionais, buscarEspecialidades } from "@/actions"
+import { buscarProfissionais, buscarEspecialidades } from "@/actions/index"
 import { NovoProfissionalSheet } from "@/components/especialidades/novo-profissional-sheet"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"

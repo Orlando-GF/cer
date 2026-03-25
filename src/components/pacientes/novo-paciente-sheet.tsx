@@ -21,9 +21,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PacienteForm, type PacienteFormData } from "./paciente-form"
-import { buscarPacientePorDocumento } from "@/actions"
-import { type Paciente } from "@/types"
-
+import { buscarPacientePorDocumento } from "@/actions/pacientes-actions"
 
 // ─── UTILITÁRIOS DE MÁSCARA ───────────────────────────────────────────────────
 

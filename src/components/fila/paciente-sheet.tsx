@@ -14,7 +14,7 @@ import { Calendar, Clock, AlertTriangle, Stethoscope, Hash, Loader2, CheckCircle
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { registrarFaltaPaciente, buscarHistoricoFaltas } from "@/actions"
+import { registrarFaltaPaciente, buscarHistoricoFaltas } from "@/actions/fila-actions"
 import { PacienteFilaTerapia, FaltaRegistro } from "@/types"
 
 export interface PacienteSheetProps {

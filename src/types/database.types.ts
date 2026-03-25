@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -17,7 +17,7 @@ export type Database = {
       agendamentos_historico: {
         Row: {
           atualizado_em: string | null
-          conduta: Database["public"]["Enums"]["conduta_evolucao_enum"] | null
+          conduta: string | null
           confirmado_pelo_paciente: boolean | null
           criado_em: string | null
           data_hora_fim: string | null
@@ -38,7 +38,7 @@ export type Database = {
         }
         Insert: {
           atualizado_em?: string | null
-          conduta?: Database["public"]["Enums"]["conduta_evolucao_enum"] | null
+          conduta?: string | null
           confirmado_pelo_paciente?: boolean | null
           criado_em?: string | null
           data_hora_fim?: string | null
@@ -59,7 +59,7 @@ export type Database = {
         }
         Update: {
           atualizado_em?: string | null
-          conduta?: Database["public"]["Enums"]["conduta_evolucao_enum"] | null
+          conduta?: string | null
           confirmado_pelo_paciente?: boolean | null
           criado_em?: string | null
           data_hora_fim?: string | null

@@ -28,7 +28,7 @@ import {
   Truck,
 } from "lucide-react"
 
-import { cadastrarPaciente, atualizarPaciente } from "@/actions"
+import { cadastrarPaciente, atualizarPaciente } from "@/actions/pacientes-actions"
 import { formatarNomeClinico, buscarEnderecoPorCep } from "@/lib/utils/string-utils"
 import { pacienteSchema } from "@/lib/validations/schema"
 
@@ -264,7 +264,7 @@ export function PacienteForm({ initialData, onSuccess, onCancel }: PacienteFormP
                         field.onChange(val);
                       }}
                       min="1900-01-01"
-                      max={new Date().toISOString().split("T")[0]}
+                      max={new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })}
                       className="rounded-none border border-border h-12 w-full px-2.5 font-bold bg-card text-xs tracking-wider cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     />
                   )}

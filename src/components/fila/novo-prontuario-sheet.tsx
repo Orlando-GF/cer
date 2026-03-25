@@ -29,7 +29,9 @@ import {
   User,
   ArrowRight
 } from "lucide-react"
-import { buscarPacientePorDocumento, incluirPacienteNaFila } from "@/actions"
+import { buscarPacientePorDocumento } from "@/actions/pacientes-actions"
+import { incluirPacienteNaFila } from "@/actions/fila-actions"
+
 import { type ActionResponse, type Paciente } from "@/types"
 import { toast } from "sonner"
 import Link from "next/link"

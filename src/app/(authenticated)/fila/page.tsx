@@ -1,4 +1,5 @@
-import { buscarFilaEspera, buscarEspecialidades } from "@/actions"
+import { buscarFilaEspera } from "@/actions/fila-actions"
+import { buscarEspecialidades } from "@/actions/index"
 // ❌ APAGAR ESTE IMPORT (Risco de Serialização)
 // import { columns } from "@/components/fila/columns"
 import { NovoProntuarioSheet } from "@/components/fila/novo-prontuario-sheet"
@@ -40,7 +41,7 @@ export default async function FilaPage({
           </p>
         </div>
         <div className="shrink-0 flex gap-2">
-          <NovoProntuarioSheet especialidades={especialidades.map(e => ({ id: e.id, nome_especialidade: e.nome_especialidade }))} />
+          <NovoProntuarioSheet especialidades={especialidades.map((e: { id: string; nome_especialidade: string }) => ({ id: e.id, nome_especialidade: e.nome_especialidade }))} />
         </div>
       </div>
 

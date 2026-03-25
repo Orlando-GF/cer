@@ -1,81 +1,86 @@
-import { buscarAlertasAbsenteismo } from '@/actions'
+import { validarAcessoRota } from '@/lib/access-control'
+import { buscarFaltasRecentes, buscarAlertasAbsenteismo } from '@/actions/absenteismo-actions'
 import {
   Card,
-  CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AlertTriangle } from 'lucide-react'
-import type { AlertaAbsenteismo } from '@/types'
-import { AbsenteismoClient } from '@/components/absenteismo/absenteismo-client'
-import { validarAcessoRota } from '@/lib/access-control'
+import { PainelAbsenteismo } from '@/components/absenteismo/painel-absenteismo'
 
 export default async function AbsenteismoPage() {
   await validarAcessoRota('/absenteismo')
-  const res = await buscarAlertasAbsenteismo()
-  const alertas: AlertaAbsenteismo[] = res.success
-    ? ((res.data ?? []) as AlertaAbsenteismo[])
-    : []
+
+  const [resFaltas, resAlertas] = await Promise.all([
+    buscarFaltasRecentes(),
+    buscarAlertasAbsenteismo(),
+  ])
+
+  const faltasRecentes = resFaltas.success ? (resFaltas.data ?? []) : []
+  const alertasCriticos = resAlertas.success ? (resAlertas.data ?? []) : []
+
+  const naoJustificadas = faltasRecentes.filter(
+    (f) => f.status_comparecimento === 'Falta Nao Justificada',
+  )
 
   return (
     <div className="space-y-8 p-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-foreground text-2xl font-bold tracking-tight">
-          Gestão de Absenteísmo
-        </h1>
-        <p className="text-muted-foreground">
-          Pacientes com 3 ou mais faltas consecutivas (Regra de Desligamento).
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6">
-        <Card className="border-border bg-card rounded-none border shadow-none">
-          <CardHeader className="bg-muted/30 border-border border-b pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-destructive flex items-center gap-2 text-lg font-semibold">
-                  <AlertTriangle className="h-5 w-5" /> Alertas de Desligamento
-                </CardTitle>
-                <CardDescription>
-                  Estes pacientes perderam o vínculo de 3 sessões consecutivas.
-                </CardDescription>
-              </div>
-              <Badge
-                variant="outline"
-                className={`rounded-none px-3 py-1 ${
-                  alertas.length > 0 
-                    ? 'bg-alert-danger-bg text-alert-danger-text border-alert-danger-text/20' 
-                    : 'bg-alert-success-bg text-alert-success-text border-alert-success-text/20'
-                }`}
-              >
-                {alertas.length} Pacientes Críticos
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            {/* Delegação SSoT: O componente Cliente gere o estado de lista vazia agora */}
-            <AbsenteismoClient alertas={alertas} />
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="border-alert-warning-text/20 bg-alert-warning-bg flex gap-4 rounded-none border p-4">
-        <AlertTriangle className="text-alert-warning-text h-6 w-6 shrink-0" />
-        <div className="space-y-1">
-          <p className="text-foreground text-sm font-semibold underline">
-            Importante:
-          </p>
-          <p className="text-muted-foreground text-xs leading-relaxed">
-            De acordo com a regra de negócio Item 8, o acúmulo de 3 faltas
-            consecutivas sem justificativa plausível permite à coordenação o
-            desligamento do paciente para liberação da vaga à fila de espera
-            externa. Sempre tente contato antes de processar o desligamento
-            definitivo.
+      {/* CABEÇALHO */}
+      <div className="flex flex-col gap-1 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Controlo de Absenteísmo
+          </h1>
+          <p className="mt-1 text-muted-foreground">
+            Monitoramento e gestão de faltas para prevenção de abandono de tratamento.
           </p>
         </div>
+        <div className="flex gap-2 flex-wrap">
+          {alertasCriticos.length > 0 && (
+            <Badge
+              variant="outline"
+              className="rounded-none border-alert-danger-text/30 bg-alert-danger-bg text-alert-danger-text text-[10px] font-bold tracking-widest px-3 py-1.5 gap-1.5"
+            >
+              <AlertTriangle className="h-3 w-3" />
+              {alertasCriticos.length} CRÍT{alertasCriticos.length !== 1 ? 'ICOS' : 'ICO'}
+            </Badge>
+          )}
+          <Badge
+            variant="outline"
+            className="rounded-none border-border text-[10px] font-bold tracking-widest px-3 py-1.5"
+          >
+            {naoJustificadas.length} S/ JUST. (30D)
+          </Badge>
+        </div>
       </div>
+
+      {/* PAINEL PRINCIPAL */}
+      <PainelAbsenteismo
+        faltasRecentes={faltasRecentes}
+        alertasCriticos={alertasCriticos}
+      />
+
+      {/* AVISO REGULATÓRIO */}
+      <Card className="rounded-none border-alert-warning-text/20 bg-alert-warning-bg shadow-none">
+        <CardHeader className="py-3 px-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-alert-warning-text mt-0.5" />
+            <div className="space-y-1">
+              <CardTitle className="text-xs font-bold tracking-widest uppercase text-alert-warning-text">
+                Protocolo de Desligamento — Item 8
+              </CardTitle>
+              <CardDescription className="text-xs leading-relaxed text-foreground/70">
+                O acúmulo de 3 faltas consecutivas sem justificativa autoriza a coordenação
+                a processar o desligamento para liberação da vaga à fila externa. É{' '}
+                <strong>obrigatório</strong> tentar contato com o paciente antes de confirmar
+                o desligamento definitivo.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { buscarFilaEspera } from '@/actions'
+import { buscarFilaEspera } from '@/actions/fila-actions'
 import { FilaClientWrapper } from '@/components/fila/fila-client-wrapper'
 import { validarAcessoRota } from '@/lib/access-control'
 import { AlertTriangle } from 'lucide-react'

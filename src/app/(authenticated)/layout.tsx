@@ -1,7 +1,7 @@
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { CommandMenu } from "@/components/command-menu";
-import { getMeuPerfil } from "@/actions";
+import { getMeuPerfil } from "@/actions/index";
 
 export default async function AuthenticatedLayout({
   children,
