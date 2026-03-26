@@ -61,27 +61,27 @@ export function AgendaContent({
     >
       <TabsList variant="agenda">
         {canSeeRecepcao && (
-          <TabsTrigger value="recepcao" icon={<Users />}>
+          <TabsTrigger value="recepcao" icon={<Users />} className="uppercase font-bold tracking-widest text-[10px]">
             Recepção
           </TabsTrigger>
         )}
         {canSeeProfissional && (
-          <TabsTrigger value="profissional" icon={<CalendarDays />}>
+          <TabsTrigger value="profissional" icon={<CalendarDays />} className="uppercase font-bold tracking-widest text-[10px]">
             Profissional
           </TabsTrigger>
         )}
         {canSeeLogistica && (
-          <TabsTrigger value="logistica" icon={<Truck />}>
+          <TabsTrigger value="logistica" icon={<Truck />} className="uppercase font-bold tracking-widest text-[10px]">
             Logística
           </TabsTrigger>
         )}
         {canSeeCoordenacao && (
-          <TabsTrigger value="coordenacao" icon={<CalendarDays />}>
+          <TabsTrigger value="coordenacao" icon={<CalendarDays />} className="uppercase font-bold tracking-widest text-[10px]">
             Coordenação
           </TabsTrigger>
         )}
         {canSeeConfig && (
-          <TabsTrigger value="configuracao" icon={<Settings />}>
+          <TabsTrigger value="configuracao" icon={<Settings />} className="uppercase font-bold tracking-widest text-[10px]">
             Configuração
           </TabsTrigger>
         )}

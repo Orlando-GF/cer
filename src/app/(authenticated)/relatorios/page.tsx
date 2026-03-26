@@ -1,7 +1,7 @@
 import { validarAcessoRota } from '@/lib/access-control'
 import { buscarIndicadoresGerais } from '@/actions/relatorios-actions'
 import { PainelRelatorios } from '@/components/relatorios/painel-relatorios'
-import { BarChart3, TrendingUp, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
 export default async function RelatoriosPage() {
@@ -23,50 +23,35 @@ export default async function RelatoriosPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="p-6 space-y-8">
       {/* CABEÇALHO DA PÁGINA */}
-      <header className="border-b border-border bg-card px-6 py-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center border border-border bg-muted">
-              <BarChart3 className="h-6 w-6 text-foreground" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black tracking-tight uppercase">
-                Painel de Indicadores & BI
-              </h1>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <TrendingUp className="h-3.5 w-3.5" />
-                <p className="text-xs font-bold tracking-widest uppercase">
-                  Regulação e Produtividade em Tempo Real
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className="rounded-none border-primary/20 bg-primary/5 text-primary text-[10px] font-bold tracking-widest px-3 py-1.5 uppercase"
-            >
-              Mês de Referência: {new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}
-            </Badge>
-          </div>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight uppercase">
+            Painel de Indicadores & BI
+          </h1>
+          <p className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground mt-1">
+            Regulação e Produtividade em Tempo Real
+          </p>
         </div>
-      </header>
+
+        <div className="flex items-center gap-2">
+          <Badge
+            variant="outline"
+            className="rounded-none border-2 border-border bg-muted/10 text-foreground text-[10px] font-bold tracking-widest px-4 py-2 uppercase tabular-nums shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]"
+          >
+            Mês de Referência: {new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}
+          </Badge>
+        </div>
+      </div>
 
       {/* CONTEÚDO */}
-      <main className="flex-1">
-        <PainelRelatorios data={response.data} />
-      </main>
+      <PainelRelatorios data={response.data} />
 
       {/* NOTA DE RODAPÉ/LEGENDA */}
-      <footer className="border-t border-border bg-muted/30 px-6 py-4">
-        <div className="flex items-center gap-2 text-[10px] text-muted-foreground tracking-wide uppercase font-bold">
-          <Info className="h-3.5 w-3.5" />
-          <span>Dados atualizados conforme materialização do histórico e fluxo da fila de espera.</span>
-        </div>
-      </footer>
+      <div className="border-t border-border pt-4 text-[10px] text-muted-foreground tracking-wide uppercase font-bold">
+        <span>Dados atualizados conforme materialização do histórico e fluxo da fila de espera.</span>
+      </div>
     </div>
   )
 }

@@ -1,7 +1,6 @@
 import { buscarFilaEspera } from '@/actions/fila-actions'
 import { FilaClientWrapper } from '@/components/fila/fila-client-wrapper'
 import { validarAcessoRota } from '@/lib/access-control'
-import { AlertTriangle } from 'lucide-react'
 
 export default async function JudiciaisPage({
   searchParams,
@@ -32,11 +31,10 @@ export default async function JudiciaisPage({
       {/* CABEÇALHO */}
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-foreground flex items-center gap-2 text-2xl font-bold tracking-tight">
-            <AlertTriangle className="text-alert-danger-text h-6 w-6" />
+          <h1 className="text-foreground text-2xl font-black tracking-widest uppercase">
             Mandados Judiciais
           </h1>
-          <p className="text-muted-foreground mt-1 max-w-xl">
+          <p className="uppercase tracking-wider font-bold text-[10px] text-muted-foreground mt-1 max-w-xl">
             Gestão prioritária de pacientes com determinação legal (Nível de
             Prioridade Máxima).
           </p>

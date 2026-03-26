@@ -30,10 +30,10 @@ export default async function AbsenteismoPage() {
       {/* CABEÇALHO */}
       <div className="flex flex-col gap-1 md:flex-row md:items-start md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="uppercase tracking-widest font-black text-2xl text-foreground">
             Controlo de Absenteísmo
           </h1>
-          <p className="mt-1 text-muted-foreground">
+          <p className="mt-1 uppercase tracking-wider font-bold text-[10px] text-muted-foreground">
             Monitoramento e gestão de faltas para prevenção de abandono de tratamento.
           </p>
         </div>
@@ -63,15 +63,15 @@ export default async function AbsenteismoPage() {
       />
 
       {/* AVISO REGULATÓRIO */}
-      <Card className="rounded-none border-alert-warning-text/20 bg-alert-warning-bg shadow-none">
+      <Card className="rounded-none border-2 border-alert-warning-text bg-alert-warning-bg/20 shadow-sm">
         <CardHeader className="py-3 px-4">
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-4 w-4 shrink-0 text-alert-warning-text mt-0.5" />
             <div className="space-y-1">
               <CardTitle className="text-xs font-bold tracking-widest uppercase text-alert-warning-text">
-                Protocolo de Desligamento — Item 8
+                Protocolo de Desligamento
               </CardTitle>
-              <CardDescription className="text-xs leading-relaxed text-foreground/70">
+              <CardDescription className="uppercase text-[10px] font-bold text-foreground leading-relaxed">
                 O acúmulo de 3 faltas consecutivas sem justificativa autoriza a coordenação
                 a processar o desligamento para liberação da vaga à fila externa. É{' '}
                 <strong>obrigatório</strong> tentar contato com o paciente antes de confirmar

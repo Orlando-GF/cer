@@ -75,15 +75,15 @@ export function ViewCoordenacao({
 
   return (
     <div className="space-y-6">
-      <div className="bg-card border-border flex flex-wrap items-center justify-between gap-4 rounded-none border p-5 shadow-none">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-none border-2 border-border bg-card p-5 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="space-y-3">
-            <h3 className="text-foreground text-base font-semibold tracking-tight">
+            <h3 className="text-muted-foreground text-[10px] font-black tracking-widest uppercase">
               Visualização macro
             </h3>
             <input
               type="date"
-              className="border-border bg-card focus-visible:ring-primary h-10 w-full cursor-pointer rounded-none border px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none"
+              className="h-12 w-full cursor-pointer rounded-none border-2 border-border bg-card px-2.5 text-xs font-bold uppercase shadow-sm focus-visible:ring-primary focus-visible:ring-2 focus-visible:outline-none"
               value={format(dataSelecionada, 'yyyy-MM-dd')}
               onChange={(e) => setUrlParams({ date: e.target.value })}
             />
@@ -93,25 +93,25 @@ export function ViewCoordenacao({
         <div className="flex gap-2">
           <Badge
             variant="outline"
-            className="bg-primary/10 text-primary rounded-none border-transparent"
+            className="rounded-none border-2 border-border bg-card hover:bg-muted font-black text-[10px] uppercase tracking-widest h-10 shadow-sm text-primary"
           >
             Timeline / Gantt view
           </Badge>
         </div>
       </div>
 
-      <Card className="border-border bg-card overflow-hidden rounded-none border shadow-none">
+      <Card className="rounded-none border-2 border-border bg-card overflow-hidden shadow-sm">
         <div className="custom-scrollbar overflow-x-auto">
           <div className="relative flex w-fit flex-col">
             {/* Header de Horas */}
-            <div className="bg-card sticky top-0 z-10 flex w-full border-b">
-              <div className="border-border bg-muted text-foreground sticky left-0 z-30 w-[200px] shrink-0 border-r p-4 font-bold shadow-none">
+            <div className="bg-muted/30 sticky top-0 z-10 flex w-full border-b-2 border-border">
+              <div className="border-border bg-muted text-foreground sticky left-0 z-30 w-[200px] shrink-0 border-r-2 p-4 font-black shadow-none uppercase text-[10px] tracking-widest flex items-center h-12">
                 Profissional
               </div>
               {horas.map((h) => (
                 <div
                   key={h.toISOString()}
-                  className="text-muted-foreground border-border w-[200px] shrink-0 border-r p-4 text-center text-xs font-bold tracking-tighter tabular-nums"
+                  className="text-muted-foreground border-border w-[200px] shrink-0 border-r border-dashed p-4 text-center text-[10px] font-black tracking-widest uppercase tabular-nums h-12 flex items-center justify-center"
                 >
                   {format(h, 'HH:mm')}
                 </div>
@@ -130,8 +130,8 @@ export function ViewCoordenacao({
                   key={prof.id}
                   className="hover:bg-muted group flex w-full border-b transition-colors"
                 >
-                  <div className="border-border bg-card sticky left-0 z-20 flex w-[200px] shrink-0 items-center border-r p-4 font-medium shadow-none">
-                    <span className="text-foreground truncate text-sm leading-tight font-semibold">
+                  <div className="border-border bg-card sticky left-0 z-20 flex w-[200px] shrink-0 items-center border-r-2 p-4 font-medium shadow-none">
+                    <span className="text-foreground truncate text-[11px] font-bold uppercase tracking-tight leading-tight">
                       {prof.nome_completo}
                     </span>
                   </div>
@@ -171,7 +171,7 @@ export function ViewCoordenacao({
                         <div
                           key={sessao.id}
                           className={cn(
-                            'absolute top-2 bottom-2 cursor-help overflow-hidden rounded-none border p-2 text-[10px] shadow-none transition-all hover:z-20 hover:scale-[1.02]',
+                            'absolute top-2 bottom-2 cursor-help overflow-hidden rounded-none border-2 p-2 text-[10px] shadow-sm transition-all hover:z-20 hover:scale-[1.02]',
                             sessao.status === 'Presente'
                               ? 'bg-alert-success-bg border-alert-success-text/20 text-alert-success-text'
                               : sessao.status === 'Falta Justificada' ||
@@ -203,10 +203,8 @@ export function ViewCoordenacao({
       </Card>
 
       {profissionaisIniciais.length === 0 && (
-        <div className="bg-card border-border rounded-none border border-dashed py-20 text-center">
-          <p className="text-muted-foreground">
-            Nenhum profissional cadastrado para visualização.
-          </p>
+        <div className="py-20 flex flex-col items-center justify-center text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] bg-muted/5 border-2 border-border border-dashed m-4">
+          Nenhum profissional cadastrado para visualização.
         </div>
       )}
     </div>

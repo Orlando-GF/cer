@@ -100,10 +100,10 @@ export default async function AgendamentosPage({
     <div className="max-w-full space-y-8 overflow-hidden p-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-foreground text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl font-black uppercase tracking-widest text-foreground">
             Agenda CER II
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-[10px] font-bold uppercase tracking-wider">
             Gestão inteligente de vagas fixas e evoluções clínicas.
           </p>
         </div>

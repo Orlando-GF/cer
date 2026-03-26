@@ -20,20 +20,20 @@ export default async function ProfissionaisPage() {
     <div className="p-6 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Profissionais & Acessos</h1>
-          <p className="text-muted-foreground text-sm mt-1">Gerencie o corpo clínico e seus respectivos níveis de permissão.</p>
+          <h1 className="text-2xl font-black tracking-widest uppercase">Profissionais & Acessos</h1>
+          <p className="uppercase tracking-wider font-bold text-[10px] text-muted-foreground mt-1">Gerencie o corpo clínico e seus respectivos níveis de permissão.</p>
         </div>
         <NovoProfissionalSheet especialidades={especialidades} />
       </div>
 
-      <Card className="rounded-none border-border shadow-none">
+      <Card className="rounded-none border-2 border-border shadow-none">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent border-border">
-              <TableHead className="w-[300px] font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Nome</TableHead>
-              <TableHead className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Perfil de Acesso</TableHead>
-              <TableHead className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Status</TableHead>
-              <TableHead className="text-right font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Ações</TableHead>
+            <TableRow className="hover:bg-transparent border-b-2 border-border bg-muted/30">
+              <TableHead className="w-[300px] font-black text-[10px] uppercase tracking-widest text-foreground px-4 h-12">Nome</TableHead>
+              <TableHead className="font-black text-[10px] uppercase tracking-widest text-foreground px-4 h-12">Perfil de Acesso</TableHead>
+              <TableHead className="font-black text-[10px] uppercase tracking-widest text-foreground px-4 h-12">Status</TableHead>
+              <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-foreground px-4 h-12">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -46,26 +46,26 @@ export default async function ProfissionaisPage() {
             ) : (
               profissionais.map((prof) => (
                 <TableRow key={prof.id} className="hover:bg-muted/50 transition-colors border-border">
-                  <TableCell className="font-bold text-sm py-4">
+                  <TableCell className="py-4 px-4 font-bold text-xs uppercase text-foreground">
                     {prof.nome_completo}
                   </TableCell>
-                  <TableCell className="py-4">
-                    <Badge variant="outline" className="rounded-none font-bold text-[9px] uppercase tracking-widest bg-muted/50 border-border">
+                  <TableCell className="py-4 px-4">
+                    <Badge variant="outline" className="rounded-none font-bold text-[9px] uppercase tracking-widest bg-muted/50 border-2 border-border px-2">
                       {prof.perfil_acesso}
                     </Badge>
                   </TableCell>
-                  <TableCell className="py-4">
+                  <TableCell className="py-4 px-4">
                     <Badge
-                      className={`rounded-none font-bold text-[9px] uppercase tracking-widest border-none ${
+                      className={`rounded-none font-bold text-[9px] uppercase tracking-widest border-2 px-2 py-0.5 ${
                         prof.ativo
-                          ? "bg-alert-success-bg text-alert-success-text"
-                          : "bg-alert-danger-bg/20 text-muted-foreground"
+                          ? "border-alert-success-text text-alert-success-text bg-alert-success-bg/20"
+                          : "border-alert-danger-text text-alert-danger-text bg-alert-danger-bg/20"
                       }`}
                     >
                       {prof.ativo ? "Ativo" : "Inativo"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right py-4 space-x-1">
+                  <TableCell className="text-right py-4 px-4 space-x-1">
                   <NovoProfissionalSheet 
                     especialidades={especialidades} 
                     profissional={prof}

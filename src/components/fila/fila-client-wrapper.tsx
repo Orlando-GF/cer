@@ -39,9 +39,9 @@ export function FilaClientWrapper({ data, total, variant = "standard" }: FilaCli
         rowCount={total}
         onRowClick={handleRowClick}
         searchPlaceholder="Buscar na fila por Nome ou Prontuário..."
-        // Manutenção dos nomes de parâmetros para sincronia com o servidor já estabelecida
         searchParamName="qFila" 
         pageParamName="pageFila"
+        emptyStateText="NENHUM PACIENTE AGUARDANDO NA FILA DE ACOLHIMENTO."
       />
 
       {selectedRow && (

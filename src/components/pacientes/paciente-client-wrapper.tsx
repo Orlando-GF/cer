@@ -46,7 +46,8 @@ export function PacienteClientWrapper({
         data={data}
         rowCount={total}
         onRowClick={handleRowClick}
-        searchPlaceholder="Buscar na base geral por Nome ou CNS..."
+        searchPlaceholder="BUSCAR POR NOME, CNS OU PRONTUÁRIO..."
+        emptyStateText="NENHUM PACIENTE ENCONTRADO."
       />
 
       <PacienteSheetMaster

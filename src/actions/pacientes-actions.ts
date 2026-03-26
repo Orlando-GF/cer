@@ -29,7 +29,7 @@ export async function buscarPacientes(
 
   let query = supabase
     .from('pacientes')
-    .select('id, nome_completo, cns, cpf, data_nascimento, status_cadastro', {
+    .select('id, nome_completo, numero_prontuario, cns, cpf, data_nascimento, status_cadastro', {
       count: 'exact',
     })
 
@@ -38,10 +38,12 @@ export async function buscarPacientes(
     const apenasNumeros = termo.replace(/\D/g, '')
     if (apenasNumeros.length > 0) {
       query = query.or(
-        `cpf.ilike.%${apenasNumeros}%,cns.ilike.%${apenasNumeros}%`,
+        `cpf.ilike.%${apenasNumeros}%,cns.ilike.%${apenasNumeros}%,numero_prontuario.ilike.%${apenasNumeros}%`,
       )
     } else {
-      query = query.ilike('nome_completo', `%${termo}%`)
+      query = query.or(
+        `nome_completo.ilike.%${termo}%,numero_prontuario.ilike.%${termo}%`,
+      )
     }
   }
 

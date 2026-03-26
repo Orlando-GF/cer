@@ -92,14 +92,14 @@ async function registrarLogAuditoria(params: {
 // ==========================================
 
 const SELECT_VAGA_FIXA_JOINS = `
-  id, horario_inicio, horario_fim, dia_semana, status_vaga, especialidade_id, profissional_id, paciente_id, data_inicio_contrato, data_fim_contrato,
+  *,
   pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
   profissionais (id, nome_completo),
   linhas_cuidado_especialidades (id, nome_especialidade)
 `
 
 const SELECT_HISTORICO_JOINS = `
-  id, data_hora_inicio, data_hora_fim, status_comparecimento, profissional_id, paciente_id, especialidade_id, vaga_fixa_id, tipo_vaga, criado_em,
+  *,
   pacientes (id, nome_completo, data_nascimento, cns, criado_em, data_ultimo_laudo, logradouro, numero, bairro, cidade, tags_acessibilidade, necessita_transporte),
   profissionais (id, nome_completo),
   linhas_cuidado_especialidades (id, nome_especialidade)

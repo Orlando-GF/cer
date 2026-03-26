@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import { 
   Sheet, 
@@ -67,32 +67,13 @@ export function NovoProfissionalSheet({
   const [isPending, startTransition] = useTransition()
 
   const [dados, setDados] = useState({
-    nome_completo: "",
-    registro_conselho: "",
-    cbo: "",
-    perfil_acesso: "Medico_Terapeuta" as PerfilAcesso,
-    especialidades_permitidas: [] as string[],
-    ativo: true,
+    nome_completo: profissional?.nome_completo || "",
+    registro_conselho: profissional?.registro_conselho || "",
+    cbo: profissional?.cbo || "",
+    perfil_acesso: (profissional?.perfil_acesso as PerfilAcesso) || "Medico_Terapeuta",
+    especialidades_permitidas: profissional?.especialidades_permitidas || [],
+    ativo: profissional?.ativo ?? true,
   })
-
-  // Carregar dados para edição quando o profissional mudar ou o sheet abrir
-  useEffect(() => {
-    if (profissional && open) {
-      const novosDados = {
-        nome_completo: profissional.nome_completo,
-        registro_conselho: profissional.registro_conselho || "",
-        cbo: profissional.cbo || "",
-        perfil_acesso: profissional.perfil_acesso,
-        especialidades_permitidas: profissional.especialidades_permitidas || [],
-        ativo: profissional.ativo ?? true,
-      };
-      
-      // Sincroniza apenas se mudou e o sheet está aberto
-      if (JSON.stringify(dados) !== JSON.stringify(novosDados)) {
-        setDados(novosDados);
-      }
-    }
-  }, [profissional, open, dados])
 
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -150,7 +131,7 @@ export function NovoProfissionalSheet({
           <Pencil className="h-3.5 w-3.5" />
         </Button>
       ) : (
-        <SheetTrigger render={<Button className="gap-2" />}>
+        <SheetTrigger render={<Button className="rounded-none border-2 border-primary bg-primary text-white hover:bg-primary/90 uppercase font-bold tracking-widest text-xs h-10 gap-2 px-4 shadow-sm" />}>
           <UserPlus className="h-4 w-4" />
           Novo Profissional
         </SheetTrigger>

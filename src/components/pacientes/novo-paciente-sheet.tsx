@@ -90,7 +90,7 @@ export function NovoPacienteSheet() {
   return (
     <>
       <Button 
-        className="gap-2 shadow-sm rounded-none bg-primary hover:bg-primary/90 uppercase text-xs font-bold tracking-wider px-6 h-12" 
+        className="rounded-none border-2 border-primary bg-primary text-white hover:bg-primary/90 font-black uppercase tracking-widest text-[10px] h-10 px-6 transition-all shadow-sm gap-2" 
         onClick={() => setOpen(true)}
       >
         <Plus className="w-4 h-4" /> Cadastrar Paciente

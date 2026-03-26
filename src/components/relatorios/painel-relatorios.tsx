@@ -19,55 +19,55 @@ interface PainelRelatoriosProps {
 
 export function PainelRelatorios({ data }: PainelRelatoriosProps) {
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-8">
       {/* INDICADORES NUMÉRICOS */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card className="rounded-none border-border shadow-none">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <Card className="rounded-none border-2 border-border shadow-sm bg-card transition-all hover:shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground">
+            <CardTitle className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">
               Atendimentos (Mês Atual)
             </CardTitle>
             <CalendarCheck className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-black tabular-nums tracking-tighter">
+            <div className="text-5xl font-black tabular-nums tracking-tighter text-foreground">
               {data.atendimentosMes}
             </div>
-            <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground/60">
+            <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Sessões com presença confirmada
             </p>
           </CardContent>
         </Card>
 
-        <Card className="rounded-none border-border shadow-none">
+        <Card className="rounded-none border-2 border-border shadow-sm bg-card transition-all hover:shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground">
+            <CardTitle className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">
               Pacientes na Fila
             </CardTitle>
             <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-black tabular-nums tracking-tighter">
+            <div className="text-5xl font-black tabular-nums tracking-tighter text-foreground">
               {data.pacientesNaFila}
             </div>
-            <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground/60">
+            <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Aguardando vaga ou em risco
             </p>
           </CardContent>
         </Card>
 
-        <Card className="rounded-none border-border shadow-none">
+        <Card className="rounded-none border-2 border-border shadow-sm bg-card transition-all hover:shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground">
+            <CardTitle className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">
               Total de Faltas
             </CardTitle>
             <AlertTriangle className="h-4 w-4 text-alert-danger-text" />
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-black tabular-nums tracking-tighter text-alert-danger-text">
+            <div className="text-5xl font-black tabular-nums tracking-tighter text-alert-danger-text">
               {data.totalFaltas}
             </div>
-            <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground/60">
+            <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Justificadas e injustificadas
             </p>
           </CardContent>
@@ -78,24 +78,24 @@ export function PainelRelatorios({ data }: PainelRelatoriosProps) {
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <BarChart3 className="h-5 w-5 text-primary" />
-          <h2 className="text-xs font-bold tracking-[0.2em] uppercase">
+          <h2 className="text-xs font-black tracking-[0.2em] uppercase text-foreground">
             Distribuição da Fila por Especialidade
           </h2>
-          <div className="flex-1 border-t border-border" />
+          <div className="flex-1 border-t-2 border-border" />
         </div>
 
-        <div className="border border-border bg-white">
+        <div className="border-2 border-border bg-card overflow-hidden">
           <Table>
-            <TableHeader>
-              <TableRow className="rounded-none border-b border-border bg-muted/50 hover:bg-muted/50">
-                <TableHead className="h-10 text-[10px] font-bold tracking-widest uppercase text-foreground px-4">
+            <TableHeader className="bg-muted/30 border-b-2 border-border">
+              <TableRow className="hover:bg-transparent border-b-0">
+                <TableHead className="h-12 text-[10px] font-black tracking-widest uppercase text-foreground px-6">
                   Especialidade
                 </TableHead>
-                <TableHead className="h-10 text-right text-[10px] font-bold tracking-widest uppercase text-foreground px-4">
+                <TableHead className="h-12 text-right text-[10px] font-black tracking-widest uppercase text-foreground px-6">
                   Qtd. Pacientes
                 </TableHead>
-                <TableHead className="h-10 text-right text-[10px] font-bold tracking-widest uppercase text-foreground px-4">
-                  Status
+                <TableHead className="h-12 text-right text-[10px] font-black tracking-widest uppercase text-foreground px-6">
+                  Status Operacional
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -104,21 +104,27 @@ export function PainelRelatorios({ data }: PainelRelatoriosProps) {
                 data.filaEspecialidade.map((item) => (
                   <TableRow
                     key={item.especialidadeId}
-                    className="border-b border-border/50 hover:bg-muted/30 transition-colors"
+                    className="border-b border-border transition-colors hover:bg-muted/20"
                   >
-                    <TableCell className="py-3 px-4 text-sm font-bold tracking-tight">
+                    <TableCell className="py-4 px-6 text-xs font-black uppercase tracking-widest text-foreground">
                       {item.especialidadeNome}
                     </TableCell>
-                    <TableCell className="py-3 px-4 text-right text-base font-black tabular-nums">
+                    <TableCell className="py-4 px-6 text-right text-lg font-black tabular-nums tracking-tighter">
                       {item.quantidade}
                     </TableCell>
-                    <TableCell className="py-3 px-4 text-right">
+                    <TableCell className="py-4 px-6 text-right">
                       {item.quantidade > 10 ? (
-                        <Badge variant="outline" className="rounded-none border-alert-danger-text/20 bg-alert-danger-bg text-alert-danger-text text-[9px] font-heavy tracking-widest uppercase">
+                        <Badge 
+                          variant="outline" 
+                          className="rounded-none border-2 border-alert-danger-text bg-alert-danger-bg text-alert-danger-text text-[10px] font-bold tracking-widest uppercase px-3 shadow-[2px_2px_0px_0px_rgba(239,68,68,0.1)]"
+                        >
                           Crítico
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="rounded-none border-border bg-muted/50 text-muted-foreground text-[9px] font-heavy tracking-widest uppercase">
+                        <Badge 
+                          variant="outline" 
+                          className="rounded-none border-2 border-muted-foreground text-muted-foreground bg-muted/5 text-[10px] font-bold tracking-widest uppercase px-3"
+                        >
                           Estável
                         </Badge>
                       )}
@@ -129,9 +135,9 @@ export function PainelRelatorios({ data }: PainelRelatoriosProps) {
                 <TableRow>
                   <TableCell
                     colSpan={3}
-                    className="h-24 text-center text-xs text-muted-foreground uppercase tracking-widest"
+                    className="h-32 text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] bg-muted/5"
                   >
-                    Nenhum paciente aguardando na fila.
+                    Nenhum paciente aguardando na fila estratégica.
                   </TableCell>
                 </TableRow>
               )}

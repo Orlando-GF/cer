@@ -118,7 +118,11 @@ export function NovaEspecialidadeSheet({
           <Pencil className="h-3.5 w-3.5" />
         </Button>
       ) : (
-        <SheetTrigger render={<Button className="gap-2" />}>
+        <SheetTrigger 
+          render={
+            <Button className="rounded-none border-2 border-border shadow-sm uppercase font-bold tracking-widest text-xs h-10 gap-2 px-4" />
+          }
+        >
           <PlusCircle className="h-4 w-4" />
           Nova Especialidade
         </SheetTrigger>

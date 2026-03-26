@@ -80,9 +80,9 @@ function formatLocalTime(timetzStr: string | undefined | null) {
 function VagasAtivasList({ vagas, onRemove }: VagasAtivasListProps) {
   if (vagas.length === 0) {
     return (
-      <div className="text-muted-foreground py-20 text-center">
+      <div className="py-20 flex flex-col items-center justify-center text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] bg-muted/5 border-2 border-border border-dashed m-4">
         <Calendar className="mx-auto mb-6 h-16 w-16 opacity-50" />
-        <p className="text-[10px] font-bold tracking-[0.2em] uppercase">
+        <p>
           Nenhuma vaga fixa ativa encontrada
         </p>
       </div>
@@ -94,7 +94,7 @@ function VagasAtivasList({ vagas, onRemove }: VagasAtivasListProps) {
       {vagas.map((vaga) => (
         <div
           key={vaga.id}
-          className="group bg-card border-border hover:border-primary/20 relative border p-4 transition-all hover:shadow-md"
+          className="group bg-card border-2 border-border hover:border-primary relative p-4 transition-all shadow-sm"
         >
           <div className="mb-3 flex items-start justify-between">
             <div className="flex items-center gap-2">
@@ -248,9 +248,9 @@ export function ViewConfiguracao({
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-      <Card className="border-border bg-card rounded-none shadow-none lg:col-span-1">
+      <Card className="rounded-none border-2 border-border bg-card shadow-sm lg:col-span-1">
         <CardHeader className="border-border mx-6 border-b px-0 pb-6">
-          <CardTitle className="text-foreground flex items-center gap-2 text-sm font-bold tracking-widest uppercase">
+          <CardTitle className="text-foreground flex items-center gap-2 text-sm font-black tracking-widest uppercase">
             <Plus className="text-primary h-4 w-4" />
             Nova Vaga Fixa
           </CardTitle>
@@ -274,7 +274,7 @@ export function ViewConfiguracao({
               onValueChange={handleProfissionalChange}
               value={configProfId}
             >
-              <SelectTrigger className="border-border focus:ring-primary bg-background h-12 rounded-none font-bold">
+              <SelectTrigger className="h-12 border-2 border-border focus:ring-primary bg-background rounded-none text-xs font-bold uppercase shadow-sm">
                 <SelectValue placeholder="SELECIONE O PROFISSIONAL" />
               </SelectTrigger>
               <SelectContent className="rounded-none border-none shadow-2xl">
@@ -299,7 +299,7 @@ export function ViewConfiguracao({
               onValueChange={(val) => val && setEspecialidadeId(val)}
               value={especialidadeId}
             >
-              <SelectTrigger className="border-border focus:ring-primary bg-background h-12 rounded-none font-bold">
+              <SelectTrigger className="h-12 border-2 border-border focus:ring-primary bg-background rounded-none text-xs font-bold uppercase shadow-sm">
                 <SelectValue placeholder="SELECIONE A ESPECIALIDADE" />
               </SelectTrigger>
               <SelectContent className="rounded-none border-none shadow-2xl">
@@ -325,7 +325,7 @@ export function ViewConfiguracao({
                 onValueChange={(val) => val && setDiaSemana(val)}
                 value={diaSemana}
               >
-                <SelectTrigger className="border-border focus:ring-primary bg-background h-12 rounded-none font-bold">
+                <SelectTrigger className="h-12 border-2 border-border focus:ring-primary bg-background rounded-none text-xs font-bold uppercase shadow-sm">
                   <SelectValue placeholder="DIA DA SEMANA" />
                 </SelectTrigger>
                 <SelectContent className="rounded-none border-none shadow-2xl">
@@ -350,21 +350,21 @@ export function ViewConfiguracao({
                   type="time"
                   value={horaInicio}
                   onChange={(e) => setHoraInicio(e.target.value)}
-                  className="border-border bg-card h-12 rounded-none font-bold"
+                  className="h-12 rounded-none border-2 border-border bg-card text-xs font-bold shadow-sm focus-visible:ring-primary"
                 />
                 <span className="text-muted-foreground font-bold">às</span>
                 <Input
                   type="time"
                   value={horaFim}
                   onChange={(e) => setHoraFim(e.target.value)}
-                  className="border-border bg-card h-12 rounded-none font-bold"
+                  className="h-12 rounded-none border-2 border-border bg-card text-xs font-bold shadow-sm focus-visible:ring-primary"
                 />
               </div>
             </div>
           </div>
 
           <Button
-            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 mt-4 h-14 w-full rounded-none font-bold tracking-widest uppercase shadow-lg"
+            className="rounded-none border-2 border-primary bg-primary text-white hover:bg-primary/90 font-black uppercase tracking-widest text-xs h-14 w-full shadow-md mt-4"
             onClick={handleSave}
             disabled={isPending}
           >
@@ -373,9 +373,9 @@ export function ViewConfiguracao({
         </CardContent>
       </Card>
 
-      <Card className="border-border bg-card rounded-none shadow-none lg:col-span-2">
+      <Card className="rounded-none border-2 border-border bg-card shadow-sm lg:col-span-2">
         <CardHeader className="border-border mx-6 border-b px-0 pb-6">
-          <CardTitle className="text-foreground text-sm font-bold tracking-widest uppercase">
+          <CardTitle className="text-foreground text-sm font-black tracking-widest uppercase">
             Vagas Ativas na Unidade
           </CardTitle>
           <CardDescription className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">
@@ -392,9 +392,9 @@ export function ViewConfiguracao({
           ) : configProfId ? (
             <VagasAtivasList vagas={vagasAtivas} onRemove={handleRemoveVaga} />
           ) : (
-            <div className="text-muted-foreground py-24 text-center">
+            <div className="py-20 flex flex-col items-center justify-center text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] bg-muted/5 border-2 border-border border-dashed m-4">
               <Calendar className="mx-auto mb-6 h-16 w-16 opacity-50" />
-              <p className="text-[10px] font-bold tracking-[0.2em] uppercase">
+              <p>
                 Selecione um profissional para carregar os dados
               </p>
             </div>

@@ -177,7 +177,7 @@ export function NovoProntuarioSheet({ especialidades }: NovoProntuarioSheetProps
   return (
     <>
       <Button
-        className="gap-2 shadow-sm"
+        className="rounded-none border-2 border-primary bg-primary text-white hover:bg-primary/90 font-black uppercase tracking-widest text-[10px] h-10 px-4 shadow-sm transition-all gap-2"
         onClick={() => setOpen(true)}
       >
         <Plus className="w-4 h-4" />

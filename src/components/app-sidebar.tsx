@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 import {
   Sidebar,
   SidebarContent,
@@ -124,9 +125,15 @@ export function AppSidebar({ dados }: { dados: DadosUsuario | null }) {
                     <SidebarMenuButton
                       isActive={isActive}
                       tooltip={item.label}
+                      className={cn(
+                        "uppercase tracking-wider text-xs h-9 transition-colors",
+                        isActive
+                          ? "bg-primary text-white font-black border-l-4 border-white shadow-md hover:bg-primary hover:text-white"
+                          : "text-muted-foreground font-bold border-l-4 border-transparent hover:bg-sidebar-accent hover:text-white hover:border-sidebar-accent"
+                      )}
                       render={
                         <Link href={item.href}>
-                          <item.icon />
+                          <item.icon className={cn(isActive ? "text-white" : "text-muted-foreground/60")} />
                           <span>{item.label}</span>
                         </Link>
                       }

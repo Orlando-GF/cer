@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PacienteSheetMaster } from "@/components/pacientes/paciente-sheet-master"
 import { useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 interface AtendimentosDiaProps {
   initialData: { vagas: VagaFixaComJoins[]; hist: AgendamentoHistoricoComJoins[] }
@@ -47,36 +48,37 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground uppercase">Atendimentos de Hoje</h2>
-          <p className="text-muted-foreground text-sm uppercase tracking-wider font-medium">
+          <h2 className="text-2xl font-black tracking-widest text-foreground uppercase">Atendimentos de Hoje</h2>
+          <p className="text-muted-foreground text-[10px] uppercase tracking-wider font-bold mt-1">
             {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
           </p>
         </div>
-        <Button onClick={handleRefresh} variant="outline" size="sm" className="rounded-none border-primary/20 text-primary font-bold uppercase tracking-widest text-[10px]">
+        <Button onClick={handleRefresh} variant="outline" size="sm" className="rounded-none border-2 border-border font-bold uppercase tracking-widest text-[10px] shadow-sm hover:bg-muted/50">
           Atualizar Agenda
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {atendimentos.map((atend) => (
-          <Card key={atend.id} className="rounded-none border-border hover:border-primary/50 transition-all shadow-sm overflow-hidden group">
+          <Card key={atend.id} className="rounded-none border-2 border-border hover:border-primary/50 transition-all shadow-sm overflow-hidden group">
              <div className="h-1.5 w-full bg-primary" />
              <CardHeader className="pb-3">
                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2 text-primary font-bold">
+                  <div className="flex items-center gap-2 text-primary font-black">
                     <Clock className="w-4 h-4" />
-                    <span className="text-sm">{format(new Date(atend.data_hora_inicio), "HH:mm")}</span>
+                    <span className="text-lg tabular-nums tracking-tighter">{format(new Date(atend.data_hora_inicio), "HH:mm")}</span>
                   </div>
-                  <Badge variant="outline" className={`rounded-none uppercase text-[9px] font-bold border-none ${
-                    atend.status_comparecimento === 'Presente' ? 'bg-alert-success-bg text-alert-success-text' :
-                    atend.status_comparecimento === 'Falta Nao Justificada' ? 'bg-alert-danger-bg text-alert-danger-text' :
-                    atend.status_comparecimento === 'Falta Justificada' ? 'bg-alert-warning-bg text-alert-warning-text' :
-                    'bg-primary/10 text-primary'
-                  }`}>
+                  <Badge variant="outline" className={cn(
+                    "rounded-none border-2 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest",
+                    atend.status_comparecimento === 'Presente' ? 'border-alert-success-text text-alert-success-text bg-alert-success-bg/20' :
+                    atend.status_comparecimento === 'Falta Nao Justificada' ? 'border-alert-danger-text text-alert-danger-text bg-alert-danger-bg/20' :
+                    atend.status_comparecimento === 'Falta Justificada' ? 'border-alert-warning-text text-alert-warning-text bg-alert-warning-bg/20' :
+                    'border-primary text-primary bg-primary/10'
+                  )}>
                     {atend.status_comparecimento}
                   </Badge>
                </div>
-               <CardTitle className="text-base font-bold text-foreground mt-2 line-clamp-1 uppercase">
+               <CardTitle className="text-sm font-black text-foreground mt-2 line-clamp-1 uppercase tracking-tight">
                  {atend.pacientes?.nome_completo}
                </CardTitle>
              </CardHeader>
@@ -128,20 +130,20 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
         ))}
 
         {vagasPendentes.map((vaga) => (
-          <Card key={vaga.id} className="rounded-none border-dashed border-muted-foreground/30 bg-muted/5 opacity-80 hover:opacity-100 transition-all shadow-none group">
-             <div className="h-1.5 w-full bg-muted-foreground/20" />
+          <Card key={vaga.id} className="rounded-none border-2 border-border bg-card hover:opacity-100 transition-all shadow-sm group">
+             <div className="h-1.5 w-full bg-primary/50" />
              <CardHeader className="pb-3">
                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2 text-muted-foreground font-bold">
+                  <div className="flex items-center gap-2 text-muted-foreground font-black">
                     <Clock className="w-4 h-4" />
-                    <span className="text-sm">{vaga.horario_inicio.slice(0, 5)}</span>
+                    <span className="text-lg tabular-nums tracking-tighter">{vaga.horario_inicio.slice(0, 5)}</span>
                   </div>
-                  <Badge variant="outline" className="rounded-none uppercase text-[9px] font-bold border-muted-foreground/30 text-muted-foreground">
+                  <Badge variant="outline" className="rounded-none border-2 border-alert-warning-text text-alert-warning-text bg-alert-warning-bg/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest">
                     Pendente
                   </Badge>
                </div>
-               <CardTitle className="text-base font-bold text-muted-foreground mt-2 line-clamp-1 uppercase">
-                 {vaga.pacientes?.nome_completo}
+               <CardTitle className="text-sm font-black text-muted-foreground mt-2 line-clamp-1 uppercase tracking-tight">
+                 {vaga.pacientes?.nome_completo || 'PACIENTE NÃO VINCULADO'}
                </CardTitle>
              </CardHeader>
              <CardContent className="space-y-4">
@@ -152,10 +154,11 @@ export function AtendimentosDia({ initialData }: AtendimentosDiaProps) {
                   <p className="text-sm font-semibold truncate text-muted-foreground opacity-70">{vaga.linhas_cuidado_especialidades?.nome_especialidade}</p>
                 </div>
 
-                <div className="flex gap-2 pt-2">
+                 <div className="flex gap-2 pt-2">
                   <Button 
-                    variant="outline" 
-                    className="w-full rounded-none text-[10px] h-9 font-bold uppercase tracking-widest border-primary/20 text-primary hover:bg-primary hover:text-white"
+                    variant="default" 
+                    className="w-full rounded-none h-12 border-2 border-primary bg-primary text-white hover:bg-primary/90 font-black uppercase tracking-widest text-[10px] transition-all"
+                    disabled={!vaga.pacientes}
                     onClick={() => {
                         setSelectedPaciente(vaga.pacientes as unknown as Paciente)
                         setContextoRegistro({ 

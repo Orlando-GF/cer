@@ -56,15 +56,15 @@ export function ViewLogistica({
 
   return (
     <div className="space-y-6">
-      <div className="bg-card border-border flex flex-wrap items-center justify-between gap-4 rounded-none border p-5 shadow-none">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-none border-2 border-border bg-card p-5 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="space-y-3">
-            <h3 className="text-foreground text-base font-semibold tracking-tight">
+            <h3 className="text-muted-foreground text-[10px] font-black tracking-widest uppercase">
               Transporte da data
             </h3>
             <input
               type="date"
-              className="border-border bg-card focus-visible:ring-primary h-10 w-full cursor-pointer rounded-none border px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none"
+              className="h-12 w-full cursor-pointer rounded-none border-2 border-border bg-card px-2.5 text-xs font-bold uppercase shadow-sm focus-visible:ring-primary focus-visible:ring-2 focus-visible:outline-none"
               value={format(dataSelecionada, 'yyyy-MM-dd')}
               onChange={(e) => setUrlParams({ date: e.target.value })}
             />
@@ -72,7 +72,7 @@ export function ViewLogistica({
         </div>
 
         <div className="flex gap-2">
-          <Badge className="bg-primary/10 text-primary flex gap-2 border-transparent px-3 py-1">
+          <Badge className="rounded-none border-2 border-border bg-card hover:bg-muted font-black text-[10px] uppercase tracking-widest h-10 shadow-sm text-primary flex gap-2 px-3 py-1">
             <Truck className="h-4 w-4" /> Rota do dia
           </Badge>
         </div>
@@ -83,11 +83,19 @@ export function ViewLogistica({
           <Card className="border-border bg-card overflow-hidden rounded-none shadow-none">
             <Table>
               <TableHeader>
-                <TableRow className="border-border">
-                  <TableHead className="w-[80px]">Hora</TableHead>
-                  <TableHead>Paciente / Morada</TableHead>
-                  <TableHead>Acessibilidade Crítica</TableHead>
-                  <TableHead>Terapeuta / Destino</TableHead>
+                <TableRow className="bg-muted/30 border-b-2 border-border">
+                  <TableHead className="h-12 text-[10px] font-black tracking-widest uppercase text-foreground pl-6 w-[100px]">
+                    Hora
+                  </TableHead>
+                  <TableHead className="h-12 text-[10px] font-black tracking-widest uppercase text-foreground">
+                    Paciente / Morada
+                  </TableHead>
+                  <TableHead className="h-12 text-[10px] font-black tracking-widest uppercase text-foreground">
+                    Acessibilidade Crítica
+                  </TableHead>
+                  <TableHead className="h-12 text-[10px] font-black tracking-widest uppercase text-foreground pr-6 text-right">
+                    Terapeuta / Destino
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -96,9 +104,11 @@ export function ViewLogistica({
                   <TableRow>
                     <TableCell
                       colSpan={4}
-                      className="text-muted-foreground py-12 text-center"
+                      className="p-0 border-none"
                     >
-                      Nenhum paciente necessita de transporte nesta data.
+                      <div className="py-20 flex flex-col items-center justify-center text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] bg-muted/5 border-2 border-border border-dashed m-4">
+                        Nenhum paciente necessita de transporte nesta data.
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -166,16 +176,16 @@ export function ViewLogistica({
         </div>
 
         <div className="space-y-4 md:col-span-1">
-          <div className="bg-alert-warning-bg border-alert-warning-text/20 space-y-3 rounded-none border p-4">
-            <h3 className="text-alert-warning-text flex items-center gap-2 text-sm font-bold">
+          <div className="bg-alert-warning-bg/20 border-alert-warning-text space-y-3 rounded-none border-2 p-4 shadow-sm">
+            <h3 className="text-alert-warning-text flex items-center gap-2 text-sm font-black uppercase tracking-widest">
               <Accessibility className="h-4 w-4" /> Resumo de críticos
             </h3>
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-alert-warning-text font-semibold">
+              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-alert-warning-text">
                   Cadeirantes
                 </span>
-                <Badge className="bg-alert-warning-text/20 text-alert-warning-text rounded-none border-none font-bold tabular-nums shadow-none">
+                <Badge className="bg-alert-warning-text/20 text-alert-warning-text rounded-none border-none font-black tabular-nums shadow-none">
                   {
                     sessoes.filter((s) =>
                       s.tags_acessibilidade?.includes('Cadeirante'),
@@ -183,11 +193,11 @@ export function ViewLogistica({
                   }
                 </Badge>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-alert-warning-text font-semibold">
+              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-alert-warning-text">
                   Uso de Oxigênio
                 </span>
-                <Badge className="bg-alert-warning-text/20 text-alert-warning-text rounded-none border-none font-bold tabular-nums shadow-none">
+                <Badge className="bg-alert-warning-text/20 text-alert-warning-text rounded-none border-none font-black tabular-nums shadow-none">
                   {
                     sessoes.filter((s) =>
                       s.tags_acessibilidade?.includes('Uso de Oxigénio'),
@@ -195,11 +205,11 @@ export function ViewLogistica({
                   }
                 </Badge>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-alert-warning-text font-semibold">
+              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-alert-warning-text">
                   Acamados/Maca
                 </span>
-                <Badge className="bg-alert-warning-text/20 text-alert-warning-text rounded-none border-none font-bold tabular-nums shadow-none">
+                <Badge className="bg-alert-warning-text/20 text-alert-warning-text rounded-none border-none font-black tabular-nums shadow-none">
                   {
                     sessoes.filter((s) =>
                       s.tags_acessibilidade?.includes('Acamado/Uso de Maca'),
@@ -212,7 +222,7 @@ export function ViewLogistica({
 
           <Button
             variant="outline"
-            className="text-muted-foreground border-border hover:bg-muted h-12 w-full justify-start gap-2 rounded-none shadow-none"
+            className="rounded-none border-2 border-border bg-card hover:bg-muted font-black text-[10px] uppercase tracking-widest h-12 w-full justify-start gap-2 shadow-sm"
           >
             <Phone className="h-4 w-4" /> Contatos da Logística
           </Button>

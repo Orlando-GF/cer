@@ -32,6 +32,7 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string
   searchParamName?: string
   pageParamName?: string
+  emptyStateText?: string
 }
 
 export function DataTable<TData, TValue>({
@@ -42,6 +43,7 @@ export function DataTable<TData, TValue>({
   searchPlaceholder = "Buscar...",
   searchParamName = "q",
   pageParamName = "page",
+  emptyStateText = "NENHUM REGISTRO ENCONTRADO.",
 }: DataTableProps<TData, TValue>) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -105,27 +107,27 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-card p-3 rounded-none border border-border">
-        <div className="relative w-full sm:w-[350px] group">
+        <div className="relative w-full sm:max-w-xl group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
           <Input
             placeholder={searchPlaceholder}
             value={inputValue}
             onChange={(event) => setInputValue(event.target.value)}
-            className="pl-9 h-10 w-full bg-card border-border border-opacity-50 focus-visible:border-primary transition-all rounded-none"
+            className="pl-9 h-12 w-full bg-card border-2 border-border uppercase text-xs font-bold tracking-widest focus-visible:ring-primary shadow-sm rounded-none"
           />
         </div>
-        <div className="text-xs text-muted-foreground">
-          Mostrando <span className="font-medium text-foreground">{data.length}</span> de <span className="font-medium text-foreground">{rowCount}</span> registros
+        <div className="uppercase text-[10px] font-bold tracking-widest text-muted-foreground">
+          Mostrando <span className="font-black text-foreground">{data.length}</span> de <span className="font-black text-foreground">{rowCount}</span> registros
         </div>
       </div>
 
-      <div className="rounded-none border border-border bg-card overflow-hidden">
+      <div className="rounded-none border-2 border-border bg-card overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="bg-muted/30 border-b-2 border-border">
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="text-muted-foreground font-semibold uppercase text-[10px] tracking-widest bg-muted/30">
+                  <TableHead key={header.id} className="h-12 text-[10px] font-black tracking-widest uppercase text-foreground">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -155,8 +157,8 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground">
-                  Nenhum registro encontrado.
+                <TableCell colSpan={columns.length} className="h-32 text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] bg-muted/5">
+                  {emptyStateText}
                 </TableCell>
               </TableRow>
             )}

@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Phone, MessageSquare, Loader2, CheckCircle2 } from 'lucide-react'
-import { processarDesligamentoPorAbandono } from '@/actions'
+import { processarDesligamentoPorAbandono } from '@/actions/absenteismo-actions'
 import { format, parseISO } from 'date-fns'
 import type { AlertaAbsenteismo } from '@/types'
 import {

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { format, parseISO, isValid } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { cn } from '@/lib/utils'
 import type { GrupoBairro, PacienteRota } from '@/actions/logistica-actions'
 
 // ==========================================
@@ -52,7 +53,10 @@ function TagAcessibilidade({ tag }: { tag: string }) {
   return (
     <Badge
       variant="outline"
-      className={`rounded-none text-[9px] font-bold tracking-widest px-2 py-0.5 ${cfg.color}`}
+      className={cn(
+        "rounded-none border-2 text-[10px] font-bold tracking-widest px-3 py-1 uppercase",
+        cfg.color
+      )}
     >
       {cfg.label}
     </Badge>
@@ -148,7 +152,7 @@ function GrupoBairroSection({ grupo }: { grupo: GrupoBairro }) {
         <div className="flex-1 border-t border-border" />
         <Badge
           variant="outline"
-          className="rounded-none border-border text-[9px] font-bold tracking-widest px-2 shrink-0"
+          className="rounded-none border-2 border-border text-muted-foreground bg-muted/10 px-2 py-0.5 text-[9px] font-bold tracking-widest uppercase shrink-0"
         >
           {grupo.pacientes.length} PAX
         </Badge>
@@ -178,15 +182,15 @@ export function PainelLogistica({ grupos, dataFormatada }: PainelLogisticaProps)
   // Estado vazio
   if (grupos.length === 0) {
     return (
-      <Card className="rounded-none border-border bg-card shadow-none">
+      <Card className="rounded-none border-2 border-border bg-card shadow-sm">
         <CardContent className="flex flex-col items-center justify-center gap-3 py-20 text-center">
           <Bus className="h-12 w-12 text-muted-foreground/40" />
           <div className="space-y-1">
-            <p className="text-sm font-bold text-muted-foreground">
-              Nenhum paciente com transporte agendado para {dataFormatada}.
-            </p>
-            <p className="text-xs text-muted-foreground/60">
-              Pacientes com <strong>necessita_transporte = true</strong> aparecerão aqui.
+            <h3 className="mt-4 text-xs font-black uppercase tracking-widest text-muted-foreground">
+              Nenhum paciente agendado para esta rota
+            </h3>
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+              Pacientes com necessidade de transporte sinalizada no cadastro clínico aparecerão aqui.
             </p>
           </div>
         </CardContent>

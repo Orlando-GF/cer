@@ -21,9 +21,11 @@ export function ProfissionalSelectFilter({ profissionais, defaultValue }: Profis
   }
 
   return (
-    <Select defaultValue={defaultValue} onValueChange={handleValueChange}>
-      <SelectTrigger className="w-[200px] md:w-[280px] h-8 border-none shadow-none font-bold text-[11px] uppercase tracking-wider focus:ring-0">
-        <SelectValue placeholder="SELECIONE O PROFISSIONAL" />
+    <Select value={defaultValue || undefined} onValueChange={handleValueChange}>
+      <SelectTrigger className="w-[240px] md:w-[320px] h-12 rounded-none border-2 border-border bg-card shadow-sm font-bold text-xs uppercase tracking-wider focus:ring-2 focus:ring-primary focus:border-primary">
+        <SelectValue placeholder="SELECIONE O PROFISSIONAL">
+          {defaultValue ? profissionais.find(p => p.id === defaultValue)?.nome_completo : "SELECIONE O PROFISSIONAL"}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent className="rounded-none border-border shadow-2xl">
         {profissionais.map((p) => (

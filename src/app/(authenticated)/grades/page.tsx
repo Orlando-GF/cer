@@ -4,7 +4,7 @@ import { ProfissionalSelectFilter } from "@/components/grades/profissional-selec
 import { DeleteGradeButton } from "@/components/grades/delete-grade-button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card } from "@/components/ui/card"
-import { Clock, User } from "lucide-react"
+import { Clock } from "lucide-react"
 import { validarAcessoRota } from "@/lib/access-control"
 
 const DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
@@ -40,13 +40,12 @@ export default async function GradesPage({
     <div className="p-6 space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Grades Horárias</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Gerencie os turnos e capacidades de atendimento de cada profissional.</p>
+          <h1 className="text-2xl font-black tracking-widest uppercase text-foreground">Grades Horárias</h1>
+          <p className="uppercase tracking-wider font-bold text-[10px] text-muted-foreground mt-1">Gerencie os turnos e capacidades de atendimento de cada profissional.</p>
         </div>
         
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-card border border-border px-3 h-10">
-            <User className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-3">
             <ProfissionalSelectFilter profissionais={profissionais} defaultValue={profId} />
           </div>
           {profId && <GradeHorariaSheet profissionalId={profId} />}
@@ -54,12 +53,10 @@ export default async function GradesPage({
       </div>
 
       {!profId ? (
-        <Card className="rounded-none border-border shadow-none p-12 flex flex-col items-center justify-center text-center bg-muted/20 border-dashed">
-          <div className="h-12 w-12 rounded-none bg-muted flex items-center justify-center mb-4">
-            <Clock className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-bold uppercase tracking-widest text-foreground">Aguardando Seleção</h3>
-          <p className="text-muted-foreground text-sm max-w-xs mt-2">
+        <Card className="border-2 border-dashed border-border bg-muted/5 rounded-none p-12 flex flex-col items-center justify-center text-center shadow-none">
+          <Clock className="w-16 h-16 text-muted-foreground/40 mb-6" />
+          <h3 className="text-lg font-black uppercase tracking-widest text-foreground">Aguardando Seleção</h3>
+          <p className="uppercase text-xs font-bold text-muted-foreground/80 max-w-xs mt-4">
             Selecione um profissional acima para visualizar e editar sua grade de horários semanais.
           </p>
         </Card>

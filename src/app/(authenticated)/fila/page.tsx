@@ -33,10 +33,10 @@ export default async function FilaPage({
       {/* CABEÇALHO */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-black uppercase tracking-widest text-foreground">
             Fila de Acolhimento
           </h1>
-          <p className="text-muted-foreground mt-1 max-w-xl">
+          <p className="text-muted-foreground mt-1 text-[10px] font-bold uppercase tracking-wider">
             Pacientes aguardando triagem, avaliação inicial ou reclassificação de cuidado.
           </p>
         </div>

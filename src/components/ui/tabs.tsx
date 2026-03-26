@@ -28,6 +28,7 @@ const tabsListVariants = cva(
         agenda: "p-1 bg-primary-50 border border-primary-100 rounded-none gap-1",
         // Nova variante: barra de navegação com ícone + label empilhados
         nav: "gap-0 bg-background border-b border-border w-full h-auto",
+        brutalist: "p-0 bg-card border-2 border-border rounded-none gap-0",
       },
     },
     defaultVariants: {
@@ -63,7 +64,7 @@ function TabsTrigger({ className, children, icon, ...props }: TabsTriggerProps) 
       data-slot="tabs-trigger"
       className={cn(
         // Base
-        "relative inline-flex items-center justify-center gap-2 px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-all duration-200 cursor-pointer",
+        "relative inline-flex items-center justify-center gap-2 px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-all duration-75 cursor-pointer",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
 
         // Estado inativo
@@ -108,6 +109,12 @@ function TabsTrigger({ className, children, icon, ...props }: TabsTriggerProps) 
         "group-data-[variant=nav]/tabs-list:aria-[selected=true]:border-b-2 group-data-[variant=nav]/tabs-list:data-[state=active]:border-b-2",
         "group-data-[variant=nav]/tabs-list:aria-[selected=true]:border-b-foreground group-data-[variant=nav]/tabs-list:data-[state=active]:border-b-foreground",
         "group-data-[variant=nav]/tabs-list:data-[state=active]:mb-[-2px]",
+
+        // brutalist: Estilo de alto contraste endurecido
+        "group-data-[variant=brutalist]/tabs-list:rounded-none group-data-[variant=brutalist]/tabs-list:border-r-2 group-data-[variant=brutalist]/tabs-list:border-border last:group-data-[variant=brutalist]/tabs-list:border-r-0",
+        "group-data-[variant=brutalist]/tabs-list:data-[state=active]:bg-primary group-data-[variant=brutalist]/tabs-list:data-[selected]:bg-primary group-data-[variant=brutalist]/tabs-list:aria-[selected=true]:bg-primary",
+        "group-data-[variant=brutalist]/tabs-list:data-[state=active]:text-white group-data-[variant=brutalist]/tabs-list:data-[selected]:text-white group-data-[variant=brutalist]/tabs-list:aria-[selected=true]:text-white",
+        "group-data-[variant=brutalist]/tabs-list:hover:bg-muted group-data-[variant=brutalist]/tabs-list:hover:text-white group-data-[variant=brutalist]/tabs-list:hover:border-muted",
 
         className
       )}

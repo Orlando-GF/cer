@@ -119,7 +119,7 @@ export function ViewProfissional({
 
   return (
     <div className="space-y-6">
-      <div className="bg-card border-border flex flex-wrap items-center justify-between gap-4 rounded-none border p-5 shadow-none">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-none border-2 border-border bg-card p-5 shadow-sm">
         <div className="flex items-end gap-4">
           <div className="flex flex-col gap-1.5">
             <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
@@ -130,7 +130,7 @@ export function ViewProfissional({
               value={selectedProf}
             >
               <SelectTrigger
-                className="h-10 w-[320px] rounded-none font-medium"
+                className="h-12 w-[320px] rounded-none border-2 border-border text-xs font-bold uppercase focus-visible:ring-primary"
                 aria-label="Selecione o profissional"
               >
                 <SelectValue placeholder="Selecione o seu nome profissional">
@@ -151,12 +151,12 @@ export function ViewProfissional({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+            <span className="text-muted-foreground text-[10px] font-black tracking-widest uppercase">
               Data
             </span>
             <input
               type="date"
-              className="border-border bg-card focus-visible:ring-primary h-10 w-[180px] cursor-pointer rounded-none border px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none"
+              className="h-12 w-[180px] cursor-pointer rounded-none border-2 border-border bg-card px-2.5 text-xs font-bold uppercase focus-visible:ring-primary focus-visible:ring-2 focus-visible:outline-none"
               value={format(dataSelecionada, 'yyyy-MM-dd')}
               onChange={(e) => setUrlParams({ date: e.target.value })}
             />
@@ -172,20 +172,20 @@ export function ViewProfissional({
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         <div className="lg:col-span-3">
-          <Card className="bg-card overflow-hidden rounded-none border-none shadow-none">
+          <Card className="rounded-none border-2 border-border bg-card overflow-hidden shadow-sm">
             <Table>
               <TableHeader>
-                <TableRow className="border-border border-b-2">
-                  <TableHead className="text-foreground w-[100px] pl-6 text-[10px] font-bold tracking-widest uppercase">
+                <TableRow className="bg-muted/30 border-b-2 border-border">
+                  <TableHead className="h-12 text-[10px] font-black tracking-widest uppercase text-foreground pl-6 w-[100px]">
                     Hora
                   </TableHead>
-                  <TableHead className="text-foreground text-[10px] font-bold tracking-widest uppercase">
+                  <TableHead className="h-12 text-[10px] font-black tracking-widest uppercase text-foreground">
                     Paciente
                   </TableHead>
-                  <TableHead className="text-foreground text-[10px] font-bold tracking-widest uppercase">
+                  <TableHead className="h-12 text-[10px] font-black tracking-widest uppercase text-foreground">
                     Alertas
                   </TableHead>
-                  <TableHead className="text-foreground pr-6 text-right text-[10px] font-bold tracking-widest uppercase">
+                  <TableHead className="h-12 text-[10px] font-black tracking-widest uppercase text-foreground pr-6 text-right">
                     Ação
                   </TableHead>
                 </TableRow>
@@ -195,19 +195,22 @@ export function ViewProfissional({
                   <TableRow>
                     <TableCell
                       colSpan={4}
-                      className="text-muted-foreground py-12 text-center"
+                      className="p-0 border-none"
                     >
-                      Nenhum atendimento agendado para este dia.
+                      <div className="py-20 flex flex-col items-center justify-center text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] bg-muted/5 border-2 border-border border-dashed m-4">
+                        Nenhum atendimento agendado para este dia.
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : !selectedProf ? (
                   <TableRow>
                     <TableCell
                       colSpan={4}
-                      className="text-muted-foreground py-12 text-center"
+                      className="p-0 border-none"
                     >
-                      Selecione seu perfil profissional para visualizar a
-                      agenda.
+                      <div className="py-20 flex flex-col items-center justify-center text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] bg-muted/5 border-2 border-border border-dashed m-4">
+                        Selecione seu perfil profissional para visualizar a agenda.
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (

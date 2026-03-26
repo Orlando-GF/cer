@@ -26,10 +26,10 @@ export default async function PacientesPage({
       {/* CABEÇALHO */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-black uppercase tracking-widest text-foreground">
             Base de Pacientes
           </h1>
-          <p className="text-muted-foreground mt-1 max-w-xl">
+          <p className="text-muted-foreground mt-1 text-[10px] font-bold uppercase tracking-wider">
             Cadastro mestre e informações demográficas de todos os pacientes atendidos pela instituição.
           </p>
         </div>

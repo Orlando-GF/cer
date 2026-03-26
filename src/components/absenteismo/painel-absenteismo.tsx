@@ -13,6 +13,7 @@ import {
   ClipboardCheck,
   ChevronDown,
 } from 'lucide-react'
+import Link from 'next/link'
 import {
   Table,
   TableBody,
@@ -60,6 +61,26 @@ import type { AlertaAbsenteismo } from '@/types'
 import type { FaltaRecente } from '@/actions/absenteismo-actions'
 
 // ==========================================
+// FUNÇÕES AUXILIARES
+// ==========================================
+
+const formatDateStr = (dateStr: string) => {
+  try {
+    return format(parseISO(dateStr), 'dd/MM/yyyy', { locale: ptBR })
+  } catch (e) {
+    return dateStr
+  }
+}
+
+const formatSimpleDate = (dateStr: string) => {
+  try {
+    return format(parseISO(dateStr), 'dd/MM')
+  } catch (e) {
+    return dateStr
+  }
+}
+
+// ==========================================
 // SUBCOMPONENTE: BADGE DE STATUS
 // ==========================================
 
@@ -67,11 +88,11 @@ function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; classes: string }> = {
     'Falta Nao Justificada': {
       label: 'S/ JUSTIFICATIVA',
-      classes: 'bg-alert-danger-bg text-alert-danger-text border-alert-danger-text/30',
+      classes: 'border-alert-danger-text text-alert-danger-text bg-alert-danger-bg/20',
     },
     'Falta Justificada': {
       label: 'JUSTIFICADA',
-      classes: 'bg-alert-success-bg text-alert-success-text border-alert-success-text/30',
+      classes: 'border-alert-success-text text-alert-success-text bg-alert-success-bg/20',
     },
   }
   const cfg = map[status] ?? {
@@ -81,7 +102,7 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <Badge
       variant="outline"
-      className={`rounded-none px-2 py-0.5 text-[9px] font-bold tracking-widest ${cfg.classes}`}
+      className={`rounded-none px-2 py-0.5 text-[10px] font-black tracking-widest border-2 ${cfg.classes}`}
     >
       {cfg.label}
     </Badge>
@@ -112,7 +133,7 @@ function JustificarDialog({
     startTransition(async () => {
       const res = await justificarFalta({ agendamentoId, motivo })
       if (res.success) {
-        toast.success('Falta justificada com sucesso.', {
+        toast.success('Falta justificada.', {
           description: `O registro de ${nomePaciente} foi atualizado.`,
         })
         setMotivo('')
@@ -125,24 +146,23 @@ function JustificarDialog({
 
   return (
     <Dialog open={aberto} onOpenChange={onClose}>
-      <DialogContent className="rounded-none border-border max-w-md">
+      <DialogContent className="rounded-none border-2 border-border max-w-md bg-card">
         <DialogHeader>
-          <DialogTitle className="text-xs font-bold tracking-widest uppercase">
-            Justificar Falta
+          <DialogTitle className="text-sm font-black tracking-widest uppercase">
+            Justificar Falta — Processo Corporativo
           </DialogTitle>
-          <DialogDescription className="text-xs">
-            Registando justificativa para{' '}
-            <strong>{nomePaciente}</strong>.
+          <DialogDescription className="text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
+            Paciente: <span className="text-foreground">{nomePaciente}</span>
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 py-2">
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
+        <div className="space-y-3 py-4">
+          <div className="space-y-2">
+            <Label className="text-[10px] font-black tracking-widest uppercase text-foreground">
               Motivo da Justificativa
             </Label>
             <Textarea
-              className="rounded-none border-border text-xs resize-none"
-              placeholder="Ex: Paciente informou internação hospitalar de emergência."
+              className="rounded-none border-2 border-border text-xs resize-none bg-background focus:ring-0"
+              placeholder="Descreva o motivo da ausência conforme contato realizado."
               rows={4}
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
@@ -153,14 +173,14 @@ function JustificarDialog({
           <Button
             variant="outline"
             size="sm"
-            className="rounded-none text-[10px] font-bold tracking-widest uppercase"
+            className="rounded-none border-2 border-border text-[10px] font-bold tracking-widest uppercase hover:bg-muted"
             onClick={onClose}
           >
             Cancelar
           </Button>
           <Button
             size="sm"
-            className="rounded-none text-[10px] font-bold tracking-widest uppercase"
+            className="rounded-none border-2 border-primary text-[10px] font-black tracking-widest uppercase"
             disabled={motivo.trim().length < 5 || isPending}
             onClick={handleSubmit}
           >
@@ -216,8 +236,8 @@ function ContatoDialog({
         observacao: obs || null,
       })
       if (res.success) {
-        toast.success('Contato registado com sucesso.', {
-          description: `Repescagem de ${nomePaciente} registada.`,
+        toast.success('Contato registado.', {
+          description: `Repescagem de ${nomePaciente} concluída.`,
         })
         setObs('')
         onClose()
@@ -229,24 +249,24 @@ function ContatoDialog({
 
   return (
     <Dialog open={aberto} onOpenChange={onClose}>
-      <DialogContent className="rounded-none border-border max-w-md">
+      <DialogContent className="rounded-none border-2 border-border max-w-md bg-card">
         <DialogHeader>
-          <DialogTitle className="text-xs font-bold tracking-widest uppercase">
+          <DialogTitle className="text-sm font-black tracking-widest uppercase">
             Registar Contato de Repescagem
           </DialogTitle>
-          <DialogDescription className="text-xs">
-            Paciente: <strong>{nomePaciente}</strong>
+          <DialogDescription className="text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
+            Paciente: <span className="text-foreground">{nomePaciente}</span>
             {telefone && (
-              <span className="ml-2 font-mono text-muted-foreground">
-                — {telefone}
+              <span className="ml-2 font-mono text-primary">
+                [{telefone}]
               </span>
             )}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 py-2">
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-              Tipo de Contato
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label className="text-[10px] font-black tracking-widest uppercase text-foreground">
+              Célula de Contato
             </Label>
             <div className="flex gap-2">
               {(['Ligação', 'WhatsApp', 'Presencial'] as const).map((tipo) => (
@@ -254,7 +274,9 @@ function ContatoDialog({
                   key={tipo}
                   size="sm"
                   variant={tipoContato === tipo ? 'default' : 'outline'}
-                  className="rounded-none text-[10px] font-bold tracking-widest uppercase h-8"
+                  className={`rounded-none border-2 text-[10px] font-bold tracking-widest uppercase h-8 flex-1 transition-all ${
+                    tipoContato === tipo ? 'border-primary' : 'border-border'
+                  }`}
                   onClick={() => setTipoContato(tipo)}
                 >
                   {tipo}
@@ -266,20 +288,20 @@ function ContatoDialog({
             <Button
               variant="outline"
               size="sm"
-              className="w-full rounded-none text-[10px] font-bold tracking-widest uppercase border-dashed gap-2"
+              className="w-full rounded-none border-2 border-dashed border-primary/40 text-[10px] font-bold tracking-widest uppercase gap-2 hover:bg-primary/5"
               onClick={abrirWhatsApp}
             >
               <MessageSquare className="h-3 w-3" />
-              Abrir WhatsApp Web
+              Executar WhatsApp Web
             </Button>
           )}
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-              Observação (opcional)
+          <div className="space-y-2">
+            <Label className="text-[10px] font-black tracking-widest uppercase text-foreground">
+              Atas / Observações
             </Label>
             <Textarea
-              className="rounded-none border-border text-xs resize-none"
-              placeholder="Ex: Paciente comprometeu retorno na próxima semana."
+              className="rounded-none border-2 border-border text-xs resize-none bg-background focus:ring-0"
+              placeholder="Resumo do contato realizado para o prontuário."
               rows={3}
               value={obs}
               onChange={(e) => setObs(e.target.value)}
@@ -290,21 +312,21 @@ function ContatoDialog({
           <Button
             variant="outline"
             size="sm"
-            className="rounded-none text-[10px] font-bold tracking-widest uppercase"
+            className="rounded-none border-2 border-border text-[10px] font-bold tracking-widest uppercase px-6"
             onClick={onClose}
           >
-            Cancelar
+            Fechar
           </Button>
           <Button
             size="sm"
-            className="rounded-none text-[10px] font-bold tracking-widest uppercase"
+            className="rounded-none border-2 border-primary text-[10px] font-black tracking-widest uppercase px-6"
             disabled={isPending}
             onClick={handleRegistrar}
           >
             {isPending ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              'Registar Contato'
+              'Efetuar Registro'
             )}
           </Button>
         </DialogFooter>
@@ -328,28 +350,24 @@ function AcoesLinha({ falta }: AcoesLinhaProps) {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 rounded-none border-border text-xs gap-1"
-          >
-            Ações <ChevronDown className="h-3 w-3" />
-          </Button>
+        <DropdownMenuTrigger
+          className="h-8 px-3 flex items-center justify-center rounded-none border-2 border-border text-[10px] font-black uppercase tracking-widest gap-2 bg-card hover:bg-muted focus:outline-none transition-all"
+        >
+          Ações <ChevronDown className="h-3 w-3" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="rounded-none min-w-[180px]">
+        <DropdownMenuContent align="end" className="rounded-none border-2 border-border min-w-[190px] p-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
           <DropdownMenuItem
-            className="text-xs gap-2 cursor-pointer"
+            className="text-[10px] font-bold uppercase tracking-widest gap-3 cursor-pointer p-3 hover:bg-muted focus:bg-muted"
             onClick={() => setContatoAberto(true)}
           >
             <Phone className="h-3 w-3" />
             Registar Contato
           </DropdownMenuItem>
-          {falta.status_comparecimento === 'Falta Nao Justificada' && (
+          {falta.status_comparecimento !== 'Falta Justificada' && (
             <>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuItem
-                className="text-xs gap-2 cursor-pointer"
+                className="text-[10px] font-bold uppercase tracking-widest gap-3 cursor-pointer p-3 hover:bg-muted focus:bg-muted"
                 onClick={() => setJustificarAberto(true)}
               >
                 <ClipboardCheck className="h-3 w-3" />
@@ -364,14 +382,14 @@ function AcoesLinha({ falta }: AcoesLinhaProps) {
         aberto={justificarAberto}
         onClose={() => setJustificarAberto(false)}
         agendamentoId={falta.id}
-        nomePaciente={falta.paciente.nome_completo ?? 'Paciente'}
+        nomePaciente={falta.paciente.nome_completo || 'Paciente'}
       />
       <ContatoDialog
         aberto={contatoAberto}
         onClose={() => setContatoAberto(false)}
         agendamentoId={falta.id}
-        nomePaciente={falta.paciente.nome_completo ?? 'Paciente'}
-        telefone={(falta.paciente as { telefone_principal?: string | null }).telefone_principal}
+        nomePaciente={falta.paciente.nome_completo || 'Paciente'}
+        telefone={falta.paciente.telefone_principal}
       />
     </>
   )
@@ -415,115 +433,96 @@ export function PainelAbsenteismo({
     })
   }
 
-  const naoJustificadas = faltasRecentes.filter(
-    (f) => f.status_comparecimento === 'Falta Nao Justificada',
-  )
-  const justificadas = faltasRecentes.filter(
-    (f) => f.status_comparecimento === 'Falta Justificada',
-  )
+  const naoJustificadas = faltasRecentes.filter((f) => f.status_comparecimento === 'Falta Nao Justificada')
+  const justificadas = faltasRecentes.filter((f) => f.status_comparecimento === 'Falta Justificada')
 
   return (
     <div className="space-y-6">
       {/* ALERTAS CRÍTICOS */}
       {alertasCriticos.length > 0 && (
-        <Card className="rounded-none border-alert-danger-text/30 bg-alert-danger-bg/20 shadow-none">
-          <CardHeader className="border-b border-alert-danger-text/20 pb-3">
+        <Card className="rounded-none border-2 border-alert-danger-text/60 bg-alert-danger-bg shadow-none overflow-hidden">
+          <CardHeader className="border-b border-alert-danger-text/40 pb-3 bg-alert-danger-bg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-alert-danger-text" />
-                <CardTitle className="text-sm font-bold tracking-widest uppercase text-alert-danger-text">
+                <AlertTriangle className="h-5 w-5 text-alert-danger-text" />
+                <CardTitle className="text-sm font-black tracking-widest uppercase text-alert-danger-text">
                   Alertas Críticos — Regra de Desligamento
                 </CardTitle>
               </div>
               <Badge
                 variant="outline"
-                className="rounded-none border-alert-danger-text/30 bg-alert-danger-bg text-alert-danger-text text-[10px] font-bold tracking-widest"
+                className="rounded-none border-2 border-alert-danger-text bg-alert-danger-text text-alert-danger-bg text-[10px] font-black tracking-widest px-3 tabular-nums"
               >
                 {alertasCriticos.length} PACIENTE{alertasCriticos.length !== 1 ? 'S' : ''}
               </Badge>
             </div>
-            <CardDescription className="text-xs mt-1">
-              Estes pacientes acumularam 3 faltas consecutivas sem justificativa. Protocolo: contatar antes de desligar.
+            <CardDescription className="text-[10px] mt-1 font-bold uppercase tracking-wider text-alert-danger-text/80 leading-tight">
+              Atenção: Pacientes com 3 faltas consecutivas sem justificativa. Proceder com desligamento imediato conforme regras da unidade.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
-              <TableHeader>
+              <TableHeader className="bg-muted/30 border-b-2 border-border">
                 <TableRow className="border-alert-danger-text/10 hover:bg-transparent">
-                  <TableHead className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
+                  <TableHead className="text-[11px] font-black tracking-widest uppercase text-alert-danger-text/70">
                     Paciente
                   </TableHead>
-                  <TableHead className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
+                  <TableHead className="text-[11px] font-black tracking-widest uppercase text-alert-danger-text/70">
                     Especialidade
                   </TableHead>
-                  <TableHead className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-                    Datas das Faltas
+                  <TableHead className="text-[11px] font-black tracking-widest uppercase text-alert-danger-text/70">
+                    Sessões Ausentes
                   </TableHead>
-                  <TableHead className="text-right text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-                    Ação
+                  <TableHead className="text-right text-[11px] font-black tracking-widest uppercase text-alert-danger-text/70 px-6">
+                    Ação Decisória
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {alertasCriticos.map((alerta) => (
+                {alertasCriticos.map((alerta, idx) => (
                   <TableRow
-                    key={`${alerta.paciente.id}-${alerta.especialidade}`}
-                    className="hover:bg-alert-danger-bg/10 transition-colors border-alert-danger-text/10"
+                    key={`${alerta.paciente.id}-${idx}`}
+                    className="hover:bg-alert-danger-bg/5 transition-colors border-alert-danger-text/10"
                   >
                     <TableCell>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-sm font-bold text-foreground">
-                          {alerta.paciente.nome_completo}
-                        </span>
-                        <span className="font-mono text-[10px] text-muted-foreground">
-                          CNS: {alerta.paciente.cns}
-                        </span>
-                        {alerta.paciente.telefone_principal && (
-                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                            <Phone className="h-2.5 w-2.5" />
-                            {alerta.paciente.telefone_principal}
-                          </span>
-                        )}
-                      </div>
+                      <Link
+                        href={`/dashboard/pacientes/${alerta.paciente.id}`}
+                        className="font-black uppercase tracking-tight hover:underline text-alert-danger-text text-sm"
+                      >
+                        {alerta.paciente.nome_completo}
+                      </Link>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs font-medium text-foreground">
-                          {alerta.especialidade}
-                        </span>
-                        <span className="text-[10px] italic text-muted-foreground">
-                          {alerta.profissional}
-                        </span>
-                      </div>
+                    <TableCell className="text-[10px] font-bold uppercase tracking-widest text-alert-danger-text/80">
+                      {alerta.especialidade}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {alerta.ultimas_faltas.map((data: string, i: number) => (
+                        {alerta.ultimas_faltas.map((data, fIdx) => (
                           <Badge
-                            key={i}
-                            variant="secondary"
-                            className="rounded-none border-transparent bg-alert-danger-bg/50 text-alert-danger-text text-[9px] tabular-nums font-bold"
+                            key={fIdx}
+                            variant="outline"
+                            className="rounded-none border border-alert-danger-text/30 bg-alert-danger-bg text-alert-danger-text text-[9px] font-black uppercase px-1.5 tabular-nums"
                           >
-                            {format(parseISO(data), 'dd/MM', { locale: ptBR })}
+                            {formatSimpleDate(data)}
                           </Badge>
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right px-6">
                       <Button
+                        variant="outline"
                         size="sm"
-                        variant="destructive"
-                        className="h-7 rounded-none text-[9px] font-bold tracking-widest uppercase"
-                        disabled={isPending}
+                        className="h-7 rounded-none border-2 border-alert-danger-text text-alert-danger-text hover:bg-alert-danger-text hover:text-alert-danger-bg transition-all text-[9px] font-black uppercase tracking-widest"
                         onClick={() => {
-                          setSelectedAlerta({
-                            id: alerta.paciente.id ?? '',
-                            nome: alerta.paciente.nome_completo ?? 'Paciente',
+                          setSelectedAlerta({ 
+                            id: alerta.paciente.id || '', 
+                            nome: alerta.paciente.nome_completo || 'Paciente' 
                           })
                           setConfirmDesligAberto(true)
                         }}
+                        disabled={isPending && selectedAlerta?.id === alerta.paciente.id}
                       >
-                        {isPending ? (
+                        {isPending && selectedAlerta?.id === alerta.paciente.id ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
                         ) : (
                           'Processar Desligamento'
@@ -539,182 +538,197 @@ export function PainelAbsenteismo({
       )}
 
       {/* FALTAS DOS ÚLTIMOS 30 DIAS */}
-      <Card className="rounded-none border-border bg-card shadow-none">
-        <CardHeader className="border-b border-border bg-muted/30 pb-3">
+      <Card className="rounded-none border-2 border-border bg-card shadow-none overflow-hidden">
+        <CardHeader className="border-b-2 border-border bg-muted/20 pb-4 pt-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold tracking-widest uppercase text-foreground">
-                Faltas — Últimos 30 Dias
+              <CardTitle className="text-base font-black tracking-tighter uppercase text-foreground">
+                Relatório de Absenteísmo — Últimos 30 Dias
               </CardTitle>
-              <CardDescription className="text-xs mt-0.5">
-                Registros de ausência para acompanhamento e ação.
+              <CardDescription className="text-[10px] mt-0.5 font-bold uppercase tracking-widest text-muted-foreground">
+                Controle estruturado de ausências para gestão clínica e operacional do CER II.
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge
-                variant="outline"
-                className="rounded-none border-alert-danger-text/20 bg-alert-danger-bg text-alert-danger-text text-[9px] font-bold tracking-widest"
-              >
-                {naoJustificadas.length} S/ JUST.
-              </Badge>
-              <Badge
-                variant="outline"
-                className="rounded-none border-alert-success-text/20 bg-alert-success-bg text-alert-success-text text-[9px] font-bold tracking-widest"
-              >
-                {justificadas.length} JUSTIFICADAS
-              </Badge>
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-alert-danger-text mb-1">Injustificadas</span>
+                <Badge
+                  variant="outline"
+                  className="rounded-none border-2 border-alert-danger-text bg-alert-danger-bg/20 text-alert-danger-text text-[11px] font-black tracking-widest px-3 py-0.5 tabular-nums"
+                >
+                  {naoJustificadas.length}
+                </Badge>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-alert-success-text mb-1">Justificadas</span>
+                <Badge
+                  variant="outline"
+                  className="rounded-none border-2 border-alert-success-text bg-alert-success-bg/20 text-alert-success-text text-[11px] font-black tracking-widest px-3 py-0.5 tabular-nums"
+                >
+                  {justificadas.length}
+                </Badge>
+              </div>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
           <Tabs defaultValue="todas" className="w-full">
-            <div className="border-b border-border px-4">
-              <TabsList className="h-9 rounded-none bg-transparent gap-4 p-0">
+            <div className="border-b-2 border-border px-4 py-3 bg-muted/10">
+              <TabsList className="w-full flex">
                 <TabsTrigger
                   value="todas"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none text-[10px] font-bold tracking-widest uppercase px-0 pb-2 pt-2 bg-transparent"
+                  className="uppercase font-bold tracking-widest text-[10px]"
                 >
-                  Todas ({faltasRecentes.length})
+                  Visão Geral ({faltasRecentes.length})
                 </TabsTrigger>
                 <TabsTrigger
                   value="injustificadas"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none text-[10px] font-bold tracking-widest uppercase px-0 pb-2 pt-2 bg-transparent"
+                  className="uppercase font-bold tracking-widest text-[10px]"
                 >
                   Injustificadas ({naoJustificadas.length})
                 </TabsTrigger>
                 <TabsTrigger
                   value="justificadas"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none text-[10px] font-bold tracking-widest uppercase px-0 pb-2 pt-2 bg-transparent"
+                  className="uppercase font-bold tracking-widest text-[10px]"
                 >
                   Justificadas ({justificadas.length})
                 </TabsTrigger>
               </TabsList>
             </div>
 
-            {(['todas', 'injustificadas', 'justificadas'] as const).map(
-              (tab) => {
-                const lista =
-                  tab === 'todas'
-                    ? faltasRecentes
-                    : tab === 'injustificadas'
-                      ? naoJustificadas
-                      : justificadas
+            {(['todas', 'injustificadas', 'justificadas'] as const).map((tab) => {
+              const lista =
+                tab === 'todas'
+                  ? faltasRecentes
+                  : tab === 'injustificadas'
+                    ? naoJustificadas
+                    : justificadas
 
-                return (
-                  <TabsContent key={tab} value={tab} className="m-0">
-                    {lista.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
-                        <CheckCircle2 className="h-8 w-8 text-alert-success-text" />
-                        <p className="text-sm font-medium text-muted-foreground">
-                          Nenhum registro encontrado.
+              return (
+                <TabsContent key={tab} value={tab} className="m-0">
+                  {lista.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-28 text-center gap-6 border-b-2 border-border bg-muted/5">
+                      <CheckCircle2 className="h-16 w-16 text-muted-foreground/30" />
+                      <div className="space-y-1">
+                        <h3 className="text-2xl font-black uppercase tracking-tighter text-muted-foreground/60">
+                          Operação Limpa
+                        </h3>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
+                          Nenhum registro encontrado nesta categoria.
                         </p>
                       </div>
-                    ) : (
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="hover:bg-transparent">
-                            <TableHead className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-                              Paciente
-                            </TableHead>
-                            <TableHead className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-                              Especialidade
-                            </TableHead>
-                            <TableHead className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-                              Data
-                            </TableHead>
-                            <TableHead className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-                              Status
-                            </TableHead>
-                            <TableHead className="text-right text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-                              Ações
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {lista.map((falta) => (
-                            <TableRow
-                              key={falta.id}
-                              className="hover:bg-muted/30 transition-colors"
-                            >
-                              <TableCell>
-                                <div className="flex flex-col gap-0.5">
-                                  <span className="text-sm font-bold text-foreground">
-                                    {falta.paciente.nome_completo}
-                                  </span>
-                                  <span className="font-mono text-[10px] text-muted-foreground">
-                                    CNS: {falta.paciente.cns}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col gap-0.5">
-                                  <span className="text-xs font-medium text-foreground">
-                                    {falta.especialidade}
-                                  </span>
-                                  <span className="text-[10px] italic text-muted-foreground">
-                                    {falta.profissional}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <span className="font-mono text-xs text-muted-foreground tabular-nums">
-                                  {format(
-                                    parseISO(falta.data_hora_inicio),
-                                    "dd/MM/yyyy 'às' HH:mm",
-                                    { locale: ptBR },
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader className="bg-muted/30 border-b-2 border-border">
+                        <TableRow className="border-b-0 hover:bg-transparent">
+                          <TableHead className="text-[11px] font-black tracking-widest uppercase text-foreground/70 w-[280px]">
+                            Paciente Identificado
+                          </TableHead>
+                          <TableHead className="text-[11px] font-black tracking-widest uppercase text-foreground/70">
+                            Cronograma
+                          </TableHead>
+                          <TableHead className="text-[11px] font-black tracking-widest uppercase text-foreground/70">
+                            Setor Clínico
+                          </TableHead>
+                          <TableHead className="text-[11px] font-black tracking-widest uppercase text-foreground/70">
+                            Classificação
+                          </TableHead>
+                          <TableHead className="text-right text-[11px] font-black tracking-widest uppercase text-foreground/70 px-6">
+                            Gestão
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {lista.map((falta) => (
+                          <TableRow
+                            key={falta.id}
+                            className="border-b border-border/50 hover:bg-muted/30 transition-colors"
+                          >
+                            <TableCell>
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-sm font-black uppercase tracking-tight text-foreground">
+                                  {falta.paciente.nome_completo}
+                                </span>
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                  CNS: {falta.paciente.cns || 'N/A'}
+                                  {falta.paciente.telefone_principal && (
+                                    <>
+                                      <span className="text-border">|</span>
+                                      <span className="flex items-center gap-1">
+                                        <Phone className="h-2 w-2" />
+                                        {falta.paciente.telefone_principal}
+                                      </span>
+                                    </>
                                   )}
                                 </span>
-                              </TableCell>
-                              <TableCell>
-                                <StatusBadge status={falta.status_comparecimento} />
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <AcoesLinha falta={falta} />
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </TabsContent>
-                )
-              },
-            )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="text-[11px] font-black uppercase text-foreground">
+                                  {formatDateStr(falta.data_hora_inicio)}
+                                </span>
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                  {format(parseISO(falta.data_hora_inicio), 'HH:mm')}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-[10px] font-bold uppercase tracking-widest text-foreground/80">
+                              {falta.especialidade}
+                            </TableCell>
+                            <TableCell>
+                              <StatusBadge status={falta.status_comparecimento} />
+                            </TableCell>
+                            <TableCell className="text-right px-6">
+                              <AcoesLinha falta={falta} />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </TabsContent>
+              )
+            })}
           </Tabs>
         </CardContent>
       </Card>
 
-      {/* DIALOG DE CONFIRMAÇÃO DE DESLIGAMENTO */}
+      {/* DIALOG DE CONFIRMAÇÃO DE DESLIGAMENTO (COMPARTILHADO) */}
       <AlertDialog
         open={confirmDesligAberto}
         onOpenChange={setConfirmDesligAberto}
       >
-        <AlertDialogContent className="rounded-none border-border">
+        <AlertDialogContent className="rounded-none border-4 border-alert-danger-text bg-card max-w-lg shadow-[8px_8px_0px_0px_rgba(239,68,68,0.2)]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-xs font-bold tracking-widest uppercase">
-              Confirmar Desligamento por Abandono
+            <AlertDialogTitle className="text-2xl font-black tracking-tighter uppercase text-alert-danger-text leading-none">
+              Ação Crítica de Desligamento
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs leading-relaxed">
-              Deseja realmente processar o desligamento de{' '}
-              <strong>{selectedAlerta?.nome}</strong>?<br />
-              Esta ação encerrará <strong>todas as vagas fixas</strong> e marcará
-              o cadastro como <strong>Alta</strong>. Esta operação{' '}
-              <strong>não pode ser desfeita</strong>.
-            </AlertDialogDescription>
+            <div className="py-2 border-y-2 border-alert-danger-text/20 my-4">
+              <AlertDialogDescription className="text-sm font-bold uppercase tracking-tight text-foreground leading-relaxed">
+                Você está prestes a desligar <span className="text-alert-danger-text font-black px-1 bg-alert-danger-bg">{selectedAlerta?.nome}</span> da unidade CER II por absenteísmo excessivo.
+              </AlertDialogDescription>
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              Impactos: Encerramento de todas as vagas fixas e alteração do status para ALTA.
+            </p>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-none text-[10px] font-bold tracking-widest uppercase">
-              Cancelar
+          <AlertDialogFooter className="mt-8 gap-3">
+            <AlertDialogCancel 
+              className="rounded-none border-2 border-border text-[11px] font-black tracking-widest uppercase px-8 hover:bg-muted"
+            >
+              Abortar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={(e: React.MouseEvent) => {
                 e.preventDefault()
                 handleDesligamento()
               }}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-none text-[10px] font-bold tracking-widest uppercase"
+              className="bg-alert-danger-text text-alert-danger-bg hover:bg-alert-danger-text/90 rounded-none border-2 border-alert-danger-text text-[11px] font-black tracking-widest uppercase px-8 transition-all active:translate-y-1"
               disabled={isPending}
             >
-              {isPending ? 'PROCESSANDO...' : 'CONFIRMAR DESLIGAMENTO'}
+              {isPending ? 'PROCESSANDO...' : 'EXECUTAR DESLIGAMENTO'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -33,17 +33,25 @@ function calcularIdade(dataNascimento: string) {
 
 export const columns: ColumnDef<Paciente>[] = [
   {
-    accessorKey: "cns",
-    header: "Prontuário (CNS)",
-    cell: ({ row }) => (
-      <span className="font-mono text-sm font-medium text-foreground tabular-nums">{row.getValue("cns")}</span>
-    ),
+    accessorKey: "numero_prontuario",
+    header: "PRONTUÁRIO",
+    cell: ({ row }) => {
+      const valor = row.getValue("numero_prontuario") as string | null
+      return valor ? (
+        <span className="font-mono text-sm font-medium text-foreground tabular-nums">{valor}</span>
+      ) : (
+        <span className="text-muted-foreground/50 text-[10px] uppercase font-bold tracking-widest">NÃO GERADO</span>
+      )
+    },
   },
   {
     accessorKey: "nome_completo",
     header: "Nome do Paciente",
     cell: ({ row }) => (
-      <div className="font-medium text-foreground">{row.getValue("nome_completo")}</div>
+      <div className="flex flex-col gap-0.5">
+        <span className="font-bold text-xs uppercase text-foreground">{row.getValue("nome_completo")}</span>
+        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">CNS: {row.original.cns}</span>
+      </div>
     ),
   },
   {
@@ -60,7 +68,7 @@ export const columns: ColumnDef<Paciente>[] = [
     cell: ({ row }) => {
       const dataStr = row.getValue("data_nascimento") as string
       return (
-        <Badge variant="outline" className="font-normal bg-muted/40 border-border tabular-nums">
+        <Badge variant="outline" className="rounded-none border-2 border-border bg-muted/10 text-[10px] font-black tracking-widest uppercase px-2 py-0.5 tabular-nums">
           {calcularIdade(dataStr)} anos
         </Badge>
       )
@@ -73,7 +81,7 @@ export const columns: ColumnDef<Paciente>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-none border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-none border-2 border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors focus:outline-none"
             title="Opções do paciente"
             onClick={(e) => e.stopPropagation()}
           >
@@ -85,7 +93,7 @@ export const columns: ColumnDef<Paciente>[] = [
               className="gap-2 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation()
-                navigator.clipboard.writeText(paciente.cns)
+                navigator.clipboard.writeText(paciente.numero_prontuario || "")
               }}
             >
               <Copy className="h-4 w-4" />

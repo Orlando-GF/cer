@@ -21,8 +21,8 @@ export default async function EspecialidadesPage() {
     <div className="p-6 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Especialidades</h1>
-          <p className="text-muted-foreground text-sm mt-1">Gerencie as linhas de cuidado e especialidades disponíveis para agendamento.</p>
+          <h1 className="text-2xl font-black tracking-widest uppercase">Especialidades</h1>
+          <p className="uppercase tracking-wider font-bold text-[10px] text-muted-foreground mt-1">Gerencie as linhas de cuidado e especialidades disponíveis para agendamento.</p>
         </div>
         <NovaEspecialidadeSheet />
       </div>
@@ -30,11 +30,11 @@ export default async function EspecialidadesPage() {
       <Card className="rounded-none border-border shadow-none">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent border-border">
-              <TableHead className="w-[300px] font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Especialidade</TableHead>
-              <TableHead className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Linha / Equipe</TableHead>
-              <TableHead className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Status</TableHead>
-              <TableHead className="text-right font-bold text-[10px] uppercase tracking-widest text-muted-foreground">Ações</TableHead>
+            <TableRow className="hover:bg-transparent border-b-2 border-border bg-muted/30">
+              <TableHead className="w-[300px] font-black text-[10px] uppercase tracking-widest text-foreground px-4 h-12">Especialidade</TableHead>
+              <TableHead className="font-black text-[10px] uppercase tracking-widest text-foreground px-4 h-12">Linha / Equipe</TableHead>
+              <TableHead className="font-black text-[10px] uppercase tracking-widest text-foreground px-4 h-12">Status</TableHead>
+              <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-foreground px-4 h-12">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -46,25 +46,26 @@ export default async function EspecialidadesPage() {
               </TableRow>
             ) : (
               especialidades.map((esp) => (
-                <TableRow key={esp.id} className="hover:bg-muted/50 transition-colors border-border">
-                  <TableCell className="font-bold text-sm py-4">
+                <TableRow key={esp.id} className="hover:bg-muted/30 transition-colors border-b border-border">
+                  <TableCell className="uppercase text-xs font-bold text-foreground py-4 px-4">
                     {esp.nome_especialidade}
                   </TableCell>
-                  <TableCell className="py-4 font-medium text-xs text-muted-foreground uppercase">
+                  <TableCell className="py-4 px-4 uppercase text-[10px] font-bold text-muted-foreground tracking-wider">
                     {esp.linha_reabilitacao || "-"} / {esp.equipe_responsavel || "-"}
                   </TableCell>
-                  <TableCell className="py-4">
+                  <TableCell className="py-4 px-4">
                     <Badge
-                      className={`rounded-none font-bold text-[9px] uppercase tracking-widest border-none ${
+                      variant="outline"
+                      className={`rounded-none border-2 uppercase font-black text-[10px] tracking-widest px-2 py-0.5 shadow-sm ${
                         esp.ativo
-                          ? "bg-alert-success-bg text-alert-success-text"
-                          : "bg-alert-danger-bg/20 text-muted-foreground"
+                          ? "border-alert-success-text text-alert-success-text bg-alert-success-bg/20"
+                          : "border-alert-danger-text text-alert-danger-text bg-alert-danger-bg/20"
                       }`}
                     >
                       {esp.ativo ? "Ativa" : "Inativa"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right py-4 space-x-1">
+                  <TableCell className="text-right py-4 px-4 space-x-1">
                     <NovaEspecialidadeSheet especialidade={esp} />
                     <ToggleEspecialidadeButton id={esp.id} nome={esp.nome_especialidade} ativo={!!esp.ativo} />
                   </TableCell>
